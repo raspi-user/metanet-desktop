@@ -57,7 +57,12 @@ const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterf
       await client.makeAvailable()
       await storageManager.addWalletStorageProvider(client)
       const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
-        seekPermissionsForIdentityKeyRevelation: false
+        seekPermissionsForIdentityKeyRevelation: false,
+        seekPermissionsForIdentityResolution: false,
+        seekPermissionsForKeyLinkageRevelation: false,
+        seekPermissionsForPublicKeyRevelation: false,
+        seekBasketInsertionPermissions: false,
+        seekBasketListingPermissions: false
       });
       updateManagers({
         walletManager: exampleWalletManager,
