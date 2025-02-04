@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, ReactNode, useContext } from 'react'
 import { createRoot } from 'react-dom/client'
 import { listen, emit } from '@tauri-apps/api/event';
-import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager } from '@bsv/wallet-toolbox-client'
+import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager } from '@cwi/wallet-toolbox-client'
 import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
