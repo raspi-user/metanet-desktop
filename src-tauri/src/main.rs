@@ -48,6 +48,7 @@ type PendingMap = DashMap<u64, oneshot::Sender<TsResponse>>;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             // Retrieve the main window (we only want to communicate with this window).
             let main_window = app.get_webview_window(MAIN_WINDOW_NAME)

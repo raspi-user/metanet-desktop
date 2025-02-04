@@ -1,8 +1,10 @@
 import React, { useState, useEffect, createContext, ReactNode, useContext } from 'react'
 import { createRoot } from 'react-dom/client'
 import { listen, emit } from '@tauri-apps/api/event';
-import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager } from '@cwi/wallet-toolbox-client'
+import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor } from '@cwi/wallet-toolbox-client'
 import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
+import { message } from '@tauri-apps/plugin-dialog'
+import smalltalk from 'smalltalk'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -54,7 +56,9 @@ const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterf
       const client = new StorageClient(wallet, STORAGE_URL)
       await client.makeAvailable()
       await storageManager.addWalletStorageProvider(client)
-      const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com');
+      const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
+        seekPermissionsForIdentityKeyRevelation: false
+      });
       updateManagers({
         walletManager: exampleWalletManager,
         permissionsManager
@@ -63,7 +67,7 @@ const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterf
     }
 
     const recoveryKeySaver = async (key: number[]): Promise<true> => {
-      window.alert(`SAVE YOUR KEY!!!! ${Utils.toBase64(key)}`)
+      await message(`SAVE YOUR KEY!!!! ${Utils.toBase64(key)}`)
       return true
     }
 
@@ -71,24 +75,31 @@ const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterf
       reason: string,
       test: (passwordCandidate: string) => boolean
     ): Promise<string> => {
-      return new Promise((resolve) => {
+      return new Promise(async (resolve) => {
         let pw
         while (true) {
-          pw = window.prompt(`Enter a password because REASON:\n\n${reason}`)
+          pw = await smalltalk.prompt('Question', `Enter a password because REASON:\n\n${reason}`, '10')
+          // pw = window.prompt(`Enter a password because REASON:\n\n${reason}`)
           if (!pw) continue
           if (pw === 'abort') break
           let testResult = test(pw)
           if (testResult) break
-          window.alert('wrong pw. Enter "abort" to fail the operation.')
+          message('wrong pw. Enter "abort" to fail the operation.')
         }
         resolve(pw)
       })
     }
 
+    const inMemoryInterattor: UMPTokenInteractor = {
+      findByPresentationKeyHash: async () => undefined,
+      findByRecoveryKeyHash: async () => undefined,
+      buildAndSend: async () => ''
+    }
+
     const exampleWalletManager = new ExampleWalletManager(
       'admin.com',
       walletBuilder,
-      undefined,
+      inMemoryInterattor,
       recoveryKeySaver,
       passwordRetriever,
       SECRET_SERVER_URL,
@@ -104,8 +115,16 @@ const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterf
     <div>
       <h1>test</h1>
       {managers.walletManager && (
-        <h1>Authenticated: {managers.walletManager.authenticated}</h1>
+        <h1>Authenticated: {String(managers.walletManager.authenticated)}</h1>
       )}
+      <button onClick={(async () => {
+        await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
+        await managers.walletManager?.providePassword('test-pw');
+      })}>Authenticate</button>
+      <button onClick={(async () => {
+        const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true })!
+        await message(publicKey)
+      })}>Get privileged identity key</button>
     </div>
   )
 }
