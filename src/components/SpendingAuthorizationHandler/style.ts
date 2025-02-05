@@ -1,4 +1,4 @@
-export default theme => ({
+export default (theme: any) => ({
   app_icon: {
     minWidth: '8em',
     minHeight: '8em',

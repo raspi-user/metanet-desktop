@@ -1,1 +1,1 @@
-declare module 'smalltalk';
+declare module 'boomerang-http';

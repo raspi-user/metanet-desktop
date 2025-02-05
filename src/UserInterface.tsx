@@ -1,9 +1,10 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor } from '@cwi/wallet-toolbox-client'
-import { KeyDeriver, PrivateKey, WalletInterface } from '@bsv/sdk'
+import { KeyDeriver, PrivateKey, Spend, WalletInterface } from '@bsv/sdk'
 import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
+import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
@@ -61,9 +62,10 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     const { managers, updateManagers } = useContext(WalletContext);
     const [passwordRetriever, setPasswordRetriever] = useState<(reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>>()
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
+    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState()
 
     useEffect(() => {
-        if (passwordRetriever && recoveryKeySaver) {
+        if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback) {
             const walletBuilder = async (
                 primaryKey: number[],
                 privilegedKeyManager: PrivilegedKeyManager
@@ -82,7 +84,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 });
                 permissionsManager.bindCallback('onProtocolPermissionRequested', console.log)
                 permissionsManager.bindCallback('onBasketAccessRequested', console.log)
-                permissionsManager.bindCallback('onSpendingAuthorizationRequested', console.log)
+                permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback)
                 permissionsManager.bindCallback('onCertificateAccessRequested', console.log);
                 (window as any).permissionsManager = permissionsManager;
                 updateManagers({
@@ -113,7 +115,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 walletManager: exampleWalletManager
             })
         }
-    }, [passwordRetriever, recoveryKeySaver])
+    }, [passwordRetriever, recoveryKeySaver, spendingAuthorizationCallback])
 
     return (
         <ExchangeRateContextProvider>
@@ -121,6 +123,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 <div>
                     <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
                     <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                    <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
                     <h1>test </h1>
                     <AmountDisplay>{37000}</AmountDisplay>
                     {
@@ -137,6 +140,15 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                         const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
                         await message(publicKey)
                     })}> Get privileged identity key </button>
+                    < button onClick={(async () => {
+                        await managers.walletManager?.createAction({
+                            outputs: [{
+                                lockingScript: '016a',
+                                satoshis: 1,
+                                outputDescription: 'test 123'
+                            }], description: 'action is a bar'
+                        }, 'test-nonadmin.com')!
+                    })}> Create 1sat action </button>
                 </div>
             </Theme>
         </ExchangeRateContextProvider>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {
   DialogContent,
   Typography,
@@ -13,12 +13,12 @@ import {
   Paper
 } from '@mui/material'
 import makeStyles from '@mui/styles/makeStyles'
-import style from './style'
-import AmountDisplay from '../AmountDisplay'
+import style from './style.js'
+import AmountDisplay from '../AmountDisplay/index.js'
 import { Send, Cancel } from '@mui/icons-material'
-import CustomDialog from '../CustomDialog/index.jsx'
-import UIContext from '../../UIContext'
-import AppChip from '../AppChip'
+import CustomDialog from '../CustomDialog/index.js'
+import { WalletContext } from '../../UserInterface.js'
+import AppChip from '../AppChip/index.js'
 import { Services } from '@cwi/wallet-toolbox-client'
 
 const services = new Services('main')
@@ -27,16 +27,17 @@ const useStyles = makeStyles(style, {
   name: 'SpendingAuthorizationHandler'
 })
 
-const SpendingAuthorizationHandler = () => {
+const SpendingAuthorizationHandler: React.FC<any> = ({ setSpendingAuthorizationCallback }) => {
   const {
     onFocusRequested,
     onFocusRelinquished,
-    isFocused
-  } = useContext(UIContext)
+    isFocused,
+    managers
+  } = useContext(WalletContext)
   const [usdPerBsv, setUsdPerBSV] = useState(70)
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
-  const [perms, setPerms] = useState([
+  const [perms, setPerms] = useState<Array<any>>([
     // originator
     // requestID
     // lineItems
@@ -47,7 +48,7 @@ const SpendingAuthorizationHandler = () => {
   const classes = useStyles()
 
   // Helper function to figure out the upgrade amount (note: consider moving to utils)
-  const determineUpgradeAmount = (previousAmountInSats, returnType = 'sats') => {
+  const determineUpgradeAmount = (previousAmountInSats: any, returnType = 'sats') => {
     let usdAmount
     const previousAmountInUsd = previousAmountInSats * (usdPerBsv / 100000000)
 
@@ -69,7 +70,7 @@ const SpendingAuthorizationHandler = () => {
   }
 
   const handleCancel = () => {
-    window.CWI.denySpendingAuthorization({ requestID: perms[0].requestID })
+    managers.permissionsManager!.denyPermission(perms[0].requestID)
     setPerms(p => {
       p.shift()
       if (p.length === 0) {
@@ -83,9 +84,9 @@ const SpendingAuthorizationHandler = () => {
   }
 
   const handleGrant = async ({ singular = true, amount }) => {
-    window.CWI.grantSpendingAuthorization({
+    managers.permissionsManager!.grantPermission({
       requestID: perms[0].requestID,
-      singular,
+      ephemeral: singular,
       amount
     })
     setPerms(p => {
@@ -101,11 +102,10 @@ const SpendingAuthorizationHandler = () => {
   }
 
   useEffect(() => {
-    let id
-    (async () => {
-      id = await window.CWI.bindCallback(
-        'onSpendingAuthorizationRequested',
-        async ({
+    setSpendingAuthorizationCallback(() => {
+      return async (args: any) => {
+        console.log(args)
+        const {
           requestID,
           originator,
           description,
@@ -115,39 +115,33 @@ const SpendingAuthorizationHandler = () => {
           authorizationAmount,
           renewal,
           lineItems
-        }) => {
-          setOpen(true)
-          const wasOriginallyFocused = await isFocused()
-          if (!wasOriginallyFocused) {
-            await onFocusRequested()
-          }
-          if (perms.length === 0) {
-            setWasOriginallyFocused(wasOriginallyFocused)
-          }
-          setPerms(p => {
-            p.push({
-              requestID,
-              originator,
-              description,
-              transactionAmount,
-              totalPastSpending,
-              amountPreviouslyAuthorized,
-              authorizationAmount,
-              renewal,
-              lineItems
-            })
-            return [...p]
-          })
-          const rate = await services.getBsvExchangeRate()
-          setUsdPerBSV(rate)
+        } = args
+        setOpen(true)
+        const wasOriginallyFocused = await isFocused()
+        if (!wasOriginallyFocused) {
+          await onFocusRequested()
         }
-      )
-    })()
-    return () => {
-      if (id) {
-        window.CWI.unbindCallback('onSpendingAuthorizationRequested', id)
+        if (perms.length === 0) {
+          setWasOriginallyFocused(wasOriginallyFocused)
+        }
+        setPerms(p => {
+          p.push({
+            requestID,
+            originator,
+            description,
+            transactionAmount,
+            totalPastSpending,
+            amountPreviouslyAuthorized,
+            authorizationAmount,
+            renewal,
+            lineItems
+          })
+          return [...p]
+        })
+        const rate = await services.getBsvExchangeRate()
+        setUsdPerBSV(rate)
       }
-    }
+    })
   }, [])
 
   if (typeof perms[0] === 'undefined') {
