@@ -90,7 +90,7 @@ export const satoshisOptions = {
 export const formatSatoshisAsFiat = (
   satoshis = NaN,
   satoshisPerUSD = null,
-  format = null,
+  format: any = null,
   settingsCurrency = 'SATS',
   eurPerUSD = 0.93,
   gbpPerUSD = 0.79,
@@ -139,10 +139,10 @@ export const formatSatoshisAsFiat = (
   }
 }
 export const formatSatoshis = (
-  satoshis,
+  satoshis: any,
   showPlus = false,
   abbreviate = false,
-  format = null,
+  format: any = null,
   settingsCurrency = 'SATS'
 ) => {
   if (settingsCurrency) {
@@ -152,7 +152,7 @@ export const formatSatoshis = (
     format = satsFormat
   }
   format ??= satoshisOptions.satsFormats[0]
-  let s = (Number.isInteger(Number(satoshis))) ? Number(satoshis) : null
+  let s: any = (Number.isInteger(Number(satoshis))) ? Number(satoshis) : null
   if (s === null) { return '---' }
   const sign = s < 0 ? '-' : showPlus ? '+' : ''
   s = Math.abs(s).toFixed(0)

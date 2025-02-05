@@ -1,10 +1,18 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useContext } from 'react'
+import { ReactNode, useState, useEffect, useContext } from 'react'
 import { Tooltip, Typography } from '@mui/material'
 import { formatSatoshis, formatSatoshisAsFiat, satoshisOptions } from './amountFormatHelpers'
 import { ExchangeRateContext } from './ExchangeRateContextProvider'
 import { useTheme } from '@emotion/react'
-import { SettingsContext } from '../../context/SettingsContext.js'
+import { WalletContext, WalletContextValue } from '../../UserInterface'
+
+type Props = {
+  abbreviate?: boolean,
+  showPlus?: boolean,
+  description?: string,
+  children: ReactNode,
+  showFiatAsInteger?: boolean
+}
 
 /**
  * AmountDisplay component shows an amount in either satoshis or fiat currency.
@@ -19,19 +27,21 @@ import { SettingsContext } from '../../context/SettingsContext.js'
  * Note: The component depends on the ExchangeRateContext for several pieces of data related to
  * currency preference, exchange rates, and formatting options.
  */
-const AmountDisplay = ({ abbreviate, showPlus, description, children, showFiatAsInteger }) => {
+const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, children, showFiatAsInteger }) => {
   // State variables for the amount in satoshis and the corresponding formatted strings
   const [satoshis, setSatoshis] = useState(NaN)
   const [formattedSatoshis, setFormattedSatoshis] = useState('...')
   const [formattedFiatAmount, setFormattedFiatAmount] = useState('...')
-  const theme = useTheme()
+  const theme: any = useTheme()
 
   // settings.currency : 'USD' | 'BSV' | 'SATS' | 'EUR' | 'GDP' | ''
-  const { settings } = useContext(SettingsContext)
+
+  const context = useContext<WalletContextValue>(WalletContext)
+  const [settings, setSettings] = useState<{ currency?: string }>({})
   const { currency: settingsCurrency } = settings
 
   // Retrieve necessary values and functions from the ExchangeRateContext
-  const ctx = useContext(ExchangeRateContext)
+  const ctx = useContext<any>(ExchangeRateContext)
   const {
     // Exchange rate context...
     satoshisPerUSD, eurPerUSD, gbpPerUSD,
@@ -46,6 +56,13 @@ const AmountDisplay = ({ abbreviate, showPlus, description, children, showFiatAs
   const satsFormat = opts.satsFormats[satsFormatIndex % opts.satsFormats.length]
 
   const [color, setColor] = useState('textPrimary')
+
+  // Populate settings from the context
+  useEffect(() => {
+    (async () => {
+      setSettings(await context.managers.settingsManager!.get() as any)
+    })()
+  }, [])
 
   // Update the satoshis and formattedSatoshis whenever the relevant props change
   useEffect(() => {
@@ -113,4 +130,5 @@ const AmountDisplay = ({ abbreviate, showPlus, description, children, showFiatAs
       )
   }
 }
+
 export default AmountDisplay

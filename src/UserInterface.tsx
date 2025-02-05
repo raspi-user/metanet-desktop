@@ -5,6 +5,9 @@ import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import Theme from './components/Theme'
+import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
+import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import AmountDisplay from './components/AmountDisplay'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -13,6 +16,7 @@ const CHAIN = 'test'
 interface ManagerState {
     walletManager?: ExampleWalletManager;
     permissionsManager?: WalletPermissionsManager;
+    settingsManager?: WalletSettingsManager
 }
 
 export interface WalletContextValue {
@@ -69,6 +73,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 const signer = new WalletSigner(CHAIN, keyDeriver, storageManager)
                 const services = new Services(CHAIN)
                 const wallet = new Wallet(signer, services, undefined, privilegedKeyManager)
+                const settingsManager = wallet.settingsManager
                 const client = new StorageClient(wallet, STORAGE_URL)
                 await client.makeAvailable()
                 await storageManager.addWalletStorageProvider(client)
@@ -82,7 +87,8 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 (window as any).permissionsManager = permissionsManager;
                 updateManagers({
                     walletManager: exampleWalletManager,
-                    permissionsManager
+                    permissionsManager,
+                    settingsManager
                 })
                 return permissionsManager
             }
@@ -110,26 +116,29 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     }, [passwordRetriever, recoveryKeySaver])
 
     return (
-        <Theme>
-            <div>
-                <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
-                <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
-                <h1>test </h1>
-                {
-                    managers.walletManager && (
-                        <h1>Authenticated: {String(managers.walletManager.authenticated)} </h1>
-                    )}
-                <button onClick={
-                    (async () => {
-                        await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
-                        await managers.walletManager?.providePassword('test-pw');
-                    })
-                }> Authenticate </button>
-                < button onClick={(async () => {
-                    const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
-                    await message(publicKey)
-                })}> Get privileged identity key </button>
-            </div>
-        </Theme>
+        <ExchangeRateContextProvider>
+            <Theme>
+                <div>
+                    <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                    <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                    <h1>test </h1>
+                    <AmountDisplay>{37000}</AmountDisplay>
+                    {
+                        managers.walletManager && (
+                            <h1>Authenticated: {String(managers.walletManager.authenticated)} </h1>
+                        )}
+                    <button onClick={
+                        (async () => {
+                            await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
+                            await managers.walletManager?.providePassword('test-pw');
+                        })
+                    }> Authenticate </button>
+                    < button onClick={(async () => {
+                        const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
+                        await message(publicKey)
+                    })}> Get privileged identity key </button>
+                </div>
+            </Theme>
+        </ExchangeRateContextProvider>
     )
 }

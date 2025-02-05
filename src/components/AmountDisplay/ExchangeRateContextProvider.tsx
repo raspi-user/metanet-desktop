@@ -1,5 +1,7 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { CwiExternalServices } from 'cwi-external-services'
+import { createContext, useEffect, useState } from 'react'
+import { Services } from '@cwi/wallet-toolbox-client'
+
+const services = new Services('main')
 
 const EXCHANGE_RATE_UPDATE_INTERVAL = 5 * 60 * 1000
 
@@ -12,9 +14,6 @@ const defaultState = {
   fiatFormatIndex: 0,
   satsFormatIndex: 0
 }
-
-// Options will hold the cached exchange rates and update intervals.
-export const ExchangeRateContextServiceOptions = CwiExternalServices.createDefaultOptions()
 
 // Create the exchange rate context and provider to use in the amount component
 export const ExchangeRateContext = createContext(defaultState)
@@ -35,8 +34,6 @@ export const ExchangeRateContextProvider = ({ children }) => {
       setState(oldState => ({ ...oldState, satsFormatIndex: oldState.satsFormatIndex + 1 }))
     }
   }
-
-  const services = new CwiExternalServices(ExchangeRateContextServiceOptions)
 
   useEffect(() => {
     const tick = async () => {

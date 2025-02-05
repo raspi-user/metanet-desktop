@@ -19,9 +19,10 @@ import { Send, Cancel } from '@mui/icons-material'
 import CustomDialog from '../CustomDialog/index.jsx'
 import UIContext from '../../UIContext'
 import AppChip from '../AppChip'
-import { CwiExternalServices } from 'cwi-external-services'
+import { Services } from '@cwi/wallet-toolbox-client'
 
-const services = new CwiExternalServices(CwiExternalServices.createDefaultOptions())
+const services = new Services('main')
+
 const useStyles = makeStyles(style, {
   name: 'SpendingAuthorizationHandler'
 })
