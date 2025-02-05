@@ -20,7 +20,7 @@ if (prefersDarkScheme.matches) {
 const baseTheme = createTheme(
   adaptV4Theme({
     spacing: 8,
-    maxContentWidth: '1440px',
+    // maxContentWidth: '1440px',
     typography: {
       h1: {
         fontWeight: 'bold',
@@ -155,9 +155,9 @@ const extendedTheme = (theme: Theme) => ({
 });
 
 // Define the props for our global styles component
-interface GlobalStylesProps {
-  children?: React.ReactNode;
-}
+// interface GlobalStylesProps {
+//   children?: React.ReactNode;
+// }
 
 const GlobalStyles = withStyles({
   '@global html': {
@@ -193,7 +193,7 @@ const GlobalStyles = withStyles({
   '@global h6': {
     fontSize: '1em'
   }
-})<GlobalStylesProps>(({ children }) => (
+})(({ children }: { children?: React.ReactNode }) => (
   <StyledEngineProvider injectFirst>
     <ThemeProvider theme={baseTheme}>
       <ThemeProvider theme={extendedTheme(baseTheme)}>

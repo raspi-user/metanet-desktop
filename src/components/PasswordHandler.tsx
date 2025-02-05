@@ -15,7 +15,7 @@ const PasswordHandler: React.FC<PasswordHandlerProps> = ({ setPasswordRetriever 
     onFocusRelinquished,
     isFocused
   } = useContext<WalletContextValue>(WalletContext)
-  const [wasOriginallyFocused, setWasOriginallyFocused] = useState(isFocused)
+  const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [test, setTest] = useState<Function>(() => { })
@@ -34,7 +34,7 @@ const PasswordHandler: React.FC<PasswordHandlerProps> = ({ setPasswordRetriever 
           setResolve(() => { return resolve })
           setReject(() => { return reject })
           setOpen(true)
-          // const wasOriginallyFocused = await isFocused()
+          const wasOriginallyFocused = await isFocused()
           setWasOriginallyFocused(wasOriginallyFocused)
           if (!wasOriginallyFocused) {
             await onFocusRequested()

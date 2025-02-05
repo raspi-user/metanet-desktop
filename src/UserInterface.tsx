@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor } from '@cwi/wallet-toolbox-client'
-import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
+import { KeyDeriver, PrivateKey, WalletInterface } from '@bsv/sdk'
 import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
@@ -20,12 +20,12 @@ export interface WalletContextValue {
     updateManagers: (newManagers: ManagerState) => void;
     onFocusRequested: Function;
     onFocusRelinquished: Function;
-    isFocused: boolean;
+    isFocused: Function;
 }
 
 export const WalletContext: React.Context<WalletContextValue> = createContext<WalletContextValue>({
     managers: {},
-    isFocused: true,
+    isFocused: () => { },
     onFocusRelinquished: () => { },
     onFocusRequested: () => { },
     updateManagers: () => { }
@@ -45,7 +45,7 @@ export const WalletProvider = ({ children }: any) => {
                 updateManagers,
                 onFocusRequested: () => { },
                 onFocusRelinquished: () => { },
-                isFocused: true
+                isFocused: () => { }
             }}
         >
             {children}
@@ -73,13 +73,13 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 await client.makeAvailable()
                 await storageManager.addWalletStorageProvider(client)
                 const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
-                    seekPermissionsForIdentityKeyRevelation: false,
-                    seekPermissionsForIdentityResolution: false,
-                    seekPermissionsForKeyLinkageRevelation: false,
-                    seekPermissionsForPublicKeyRevelation: false,
-                    seekBasketInsertionPermissions: false,
-                    seekBasketListingPermissions: false
+                    encryptWalletMetadata: false
                 });
+                permissionsManager.bindCallback('onProtocolPermissionRequested', console.log)
+                permissionsManager.bindCallback('onBasketAccessRequested', console.log)
+                permissionsManager.bindCallback('onSpendingAuthorizationRequested', console.log)
+                permissionsManager.bindCallback('onCertificateAccessRequested', console.log);
+                (window as any).permissionsManager = permissionsManager;
                 updateManagers({
                     walletManager: exampleWalletManager,
                     permissionsManager
@@ -126,7 +126,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                     })
                 }> Authenticate </button>
                 < button onClick={(async () => {
-                    const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' })!
+                    const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
                     await message(publicKey)
                 })}> Get privileged identity key </button>
             </div>
