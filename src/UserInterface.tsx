@@ -3,6 +3,7 @@ import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyMa
 import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
 import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
+import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import Theme from './components/Theme'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
@@ -55,9 +56,10 @@ export const WalletProvider = ({ children }: any) => {
 export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: WalletInterface) => void }) => {
     const { managers, updateManagers } = useContext(WalletContext);
     const [passwordRetriever, setPasswordRetriever] = useState<(reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>>()
+    const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
 
     useEffect(() => {
-        if (passwordRetriever) {
+        if (passwordRetriever && recoveryKeySaver) {
             const walletBuilder = async (
                 primaryKey: number[],
                 privilegedKeyManager: PrivilegedKeyManager
@@ -85,11 +87,6 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 return permissionsManager
             }
 
-            const recoveryKeySaver = async (key: number[]): Promise<true> => {
-                await message(`SAVE YOUR KEY!!!! ${Utils.toBase64(key)}`)
-                return true
-            }
-
             const inMemoryInterattor: UMPTokenInteractor = {
                 findByPresentationKeyHash: async () => undefined,
                 findByRecoveryKeyHash: async () => undefined,
@@ -110,12 +107,13 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 walletManager: exampleWalletManager
             })
         }
-    }, [passwordRetriever])
+    }, [passwordRetriever, recoveryKeySaver])
 
     return (
         <Theme>
             <div>
                 <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
                 <h1>test </h1>
                 {
                     managers.walletManager && (
