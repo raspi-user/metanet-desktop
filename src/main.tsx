@@ -26,7 +26,7 @@ import {
   DiscoverByIdentityKeyArgs,
   DiscoverByAttributesArgs,
   GetHeaderArgs,
-  
+
 } from '@bsv/sdk';
 import { listen, emit } from '@tauri-apps/api/event'
 
@@ -60,7 +60,6 @@ root.render(
           // Currently, all methods will probably return "user is not authenticated" errors, but that is expected.
           // When the UI is finished, this will no longer be the case.
 
-          const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
           // Listen for "http-request" events from the Rust backend.
           await listen('http-request', async (event) => {
             let response
@@ -74,13 +73,36 @@ root.render(
               console.log("Body:", req.body)
               console.log("Request ID:", req.request_id)
 
+              req.headers = (req.headers as string[][]).map(([k, v]) => {
+                return [
+                  k.toLowerCase(),
+                  v
+                ]
+              })
+              req.headers = Object.fromEntries(req.headers)
+
+              if (req.headers.originator && !req.headers.origin) {
+                req.headers.origin = req.headers.originator
+              }
+
+              console.log(req.headers)
+
+              if (!req.headers['origin']) {
+                emit('ts-response', {
+                  request_id: req.request_id,
+                  status: 400,
+                  body: JSON.stringify({ message: 'Origin header is required' })
+                })
+                return
+              }
+
               switch (req.path) {
                 // 1. createAction
                 case '/createAction': {
                   try {
                     const args = JSON.parse(req.body) as CreateActionArgs;
 
-                    const result = await wallet.createAction(args)
+                    const result = await wallet.createAction(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -102,7 +124,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as SignActionArgs
 
-                    const result = await wallet.signAction(args)
+                    const result = await wallet.signAction(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -124,7 +146,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as AbortActionArgs
 
-                    const result = await wallet.abortAction(args)
+                    const result = await wallet.abortAction(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -146,7 +168,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as ListActionsArgs
 
-                    const result = await wallet.listActions(args)
+                    const result = await wallet.listActions(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -168,7 +190,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as InternalizeActionArgs
 
-                    const result = await wallet.internalizeAction(args)
+                    const result = await wallet.internalizeAction(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -190,7 +212,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as ListOutputsArgs
 
-                    const result = await wallet.listOutputs(args)
+                    const result = await wallet.listOutputs(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -212,7 +234,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as RelinquishOutputArgs
 
-                    const result = await wallet.relinquishOutput(args)
+                    const result = await wallet.relinquishOutput(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -234,7 +256,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as GetPublicKeyArgs
 
-                    const result = await wallet.getPublicKey(args)
+                    const result = await wallet.getPublicKey(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -256,7 +278,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as RevealCounterpartyKeyLinkageArgs
 
-                    const result = await wallet.revealCounterpartyKeyLinkage(args)
+                    const result = await wallet.revealCounterpartyKeyLinkage(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -278,7 +300,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as RevealSpecificKeyLinkageArgs
 
-                    const result = await wallet.revealSpecificKeyLinkage(args)
+                    const result = await wallet.revealSpecificKeyLinkage(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -300,7 +322,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as WalletEncryptArgs
 
-                    const result = await wallet.encrypt(args)
+                    const result = await wallet.encrypt(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -322,7 +344,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as WalletDecryptArgs
 
-                    const result = await wallet.decrypt(args)
+                    const result = await wallet.decrypt(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -344,7 +366,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as CreateHmacArgs
 
-                    const result = await wallet.createHmac(args)
+                    const result = await wallet.createHmac(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -366,7 +388,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as VerifyHmacArgs
 
-                    const result = await wallet.verifyHmac(args)
+                    const result = await wallet.verifyHmac(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -388,7 +410,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as CreateSignatureArgs
 
-                    const result = await wallet.createSignature(args)
+                    const result = await wallet.createSignature(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -410,7 +432,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as VerifySignatureArgs
 
-                    const result = await wallet.verifySignature(args)
+                    const result = await wallet.verifySignature(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -432,7 +454,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as AcquireCertificateArgs
 
-                    const result = await wallet.acquireCertificate(args)
+                    const result = await wallet.acquireCertificate(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -454,7 +476,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as ListCertificatesArgs
 
-                    const result = await wallet.listCertificates(args)
+                    const result = await wallet.listCertificates(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -476,7 +498,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as ProveCertificateArgs
 
-                    const result = await wallet.proveCertificate(args)
+                    const result = await wallet.proveCertificate(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -498,7 +520,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as RelinquishCertificateArgs
 
-                    const result = await wallet.relinquishCertificate(args)
+                    const result = await wallet.relinquishCertificate(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -520,7 +542,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as DiscoverByIdentityKeyArgs
 
-                    const result = await wallet.discoverByIdentityKey(args)
+                    const result = await wallet.discoverByIdentityKey(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -542,7 +564,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as DiscoverByAttributesArgs
 
-                    const result = await wallet.discoverByAttributes(args)
+                    const result = await wallet.discoverByAttributes(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -562,7 +584,7 @@ root.render(
                 // 23. isAuthenticated
                 case '/isAuthenticated': {
                   try {
-                    const result = await wallet.isAuthenticated({})
+                    const result = await wallet.isAuthenticated({}, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -582,7 +604,7 @@ root.render(
                 // 24. waitForAuthentication
                 case '/waitForAuthentication': {
                   try {
-                    const result = await wallet.waitForAuthentication({})
+                    const result = await wallet.waitForAuthentication({}, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -602,7 +624,7 @@ root.render(
                 // 25. getHeight
                 case '/getHeight': {
                   try {
-                    const result = await wallet.getHeight({})
+                    const result = await wallet.getHeight({}, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -624,7 +646,7 @@ root.render(
                   try {
                     const args = JSON.parse(req.body) as GetHeaderArgs
 
-                    const result = await wallet.getHeaderForHeight(args)
+                    const result = await wallet.getHeaderForHeight(args, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -644,7 +666,7 @@ root.render(
                 // 27. getNetwork
                 case '/getNetwork': {
                   try {
-                    const result = await wallet.getNetwork({})
+                    const result = await wallet.getNetwork({}, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -664,7 +686,7 @@ root.render(
                 // 28. getVersion
                 case '/getVersion': {
                   try {
-                    const result = await wallet.getVersion({})
+                    const result = await wallet.getVersion({}, req.headers['origin'])
                     response = {
                       request_id: req.request_id,
                       status: 200,
@@ -680,7 +702,7 @@ root.render(
                   }
                   break
                 }
-                
+
                 default: {
                   response = {
                     request_id: req.request_id,
@@ -690,9 +712,6 @@ root.render(
                   break
                 }
               }
-
-              // arbitrary wait time for testing concurrent requests
-              await sleep(5000)
 
               // Emit the response back to Rust.
               emit('ts-response', response)

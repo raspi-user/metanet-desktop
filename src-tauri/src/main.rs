@@ -101,8 +101,8 @@ fn main() {
                     .expect("Failed to create Tokio runtime");
 
                 rt.block_on(async move {
-                    // Bind the Hyper server to 127.0.0.1:3301.
-                    let addr: SocketAddr = "127.0.0.1:3301".parse().expect("Invalid socket address");
+                    // Bind the Hyper server to 127.0.0.1:3321.
+                    let addr: SocketAddr = "127.0.0.1:3321".parse().expect("Invalid socket address");
                     println!("HTTP server listening on http://{}", addr);
 
                     // Create our Hyper service.
