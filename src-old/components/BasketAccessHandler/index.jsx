@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
 import CustomDialog from '../CustomDialog/index.jsx'
-import UIContext from '../../UIContext'
+import { WalletContext, WalletContextValue } from '../UserInterface'
 import AppChip from '../AppChip'
 import BasketChip from '../BasketChip'
 
@@ -10,7 +10,7 @@ const BasketAccessHandler = () => {
     onFocusRequested,
     onFocusRelinquished,
     isFocused
-  } = useContext(UIContext)
+  } = useContext < WalletContextValue > (WalletContext)
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
   const [perms, setPerms] = useState([
