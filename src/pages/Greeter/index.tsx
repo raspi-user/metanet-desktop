@@ -117,6 +117,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
   }
 
+  // TODO: Support auto-type again.
   // useEffect(() => {
   //   (async () => {
   //     if (accountStatus === 'existing-user') {

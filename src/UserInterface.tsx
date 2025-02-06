@@ -17,6 +17,9 @@ import 'react-toastify/dist/ReactToastify.css'
 import BasketAccessHandler from './components/BasketAccessHandler'
 
 import Greeter from './pages/Greeter/index'
+import Recovery from './pages/Recovery/index'
+import LostPhone from './pages/Recovery/LostPhone'
+import LostPassword from './pages/Recovery/LostPassword'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -152,9 +155,20 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                     {managers.walletManager && (
                         <Switch>
                             <Route exact path='/' component={Greeter} />
+                            <Route
+                                exact
+                                path='/recovery/lost-phone'
+                                component={LostPhone}
+                            />
+                            <Route
+                                exact
+                                path='/recovery/lost-password'
+                                component={LostPassword}
+                            />
+                            <Route exact path='/recovery' component={Recovery} />
                         </Switch>
                     )}
-                    <h1>test </h1>
+                    {/* <h1>test </h1>
                     <AmountDisplay>{37000}</AmountDisplay>
                     {
                         managers.walletManager && (
@@ -180,7 +194,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                                 outputDescription: 'test 123'
                             }], description: 'action is a bar'
                         }, 'test-nonadmin.com')!
-                    })}> Create 1sat action </button>
+                    })}> Create 1sat action </button> */}
                 </Theme>
             </ExchangeRateContextProvider>
         </Router>
