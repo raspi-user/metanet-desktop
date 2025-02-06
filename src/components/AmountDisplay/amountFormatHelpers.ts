@@ -176,7 +176,7 @@ export const formatSatoshis = (
       r = s + r
       s = ''
     } else {
-      const q = p.shift()
+      const q = p.shift()!
       r = s.substring(s.length - q[0]) + r
       if (s.length > q[0]) {
         r = q[1] + r

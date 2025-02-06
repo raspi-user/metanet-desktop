@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext, FC } from 'react'
+import { useState, useEffect, useContext, FC } from 'react'
 import { DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
 import CustomDialog from '../CustomDialog'
 import { WalletContext, WalletContextValue } from '../../UserInterface'
-import AppChip from '../AppChip'
-import BasketChip from '../BasketChip'
+import AppChip from '../AppChip/index'
+import BasketChip from '../BasketChip/index'
 
 type BasketAccessRequest = {
     requestID: string
@@ -13,29 +13,25 @@ type BasketAccessRequest = {
     renewal: boolean
 }
 
-type BasketAccessHandlerProps = {
-    /**
-     * A function to be called once to provide a "basket access" request handler.
-     * The handler itself should return a Promise<boolean>, resolving to `true`
-     * if the user grants access, or `false` if the user denies (or if the user closes).
-     */
-    setBasketAccessHandler: (
-        handler: (request: BasketAccessRequest) => Promise<boolean>
-    ) => void
-}
+// type BasketAccessHandlerProps = {
+//     /**
+//      * A function to be called once to provide a "basket access" request handler.
+//      * The handler itself should return a Promise<boolean>, resolving to `true`
+//      * if the user grants access, or `false` if the user denies (or if the user closes).
+//      */
+//     setBasketAccessHandler: (
+//         handler: (request: BasketAccessRequest) => Promise<boolean>
+//     ) => void
+// }
 
-const BasketAccessHandler: FC<BasketAccessHandlerProps> = ({ setBasketAccessHandler }) => {
-    const { onFocusRequested, onFocusRelinquished, isFocused } = useContext<WalletContextValue>(WalletContext)
+const BasketAccessHandler: FC<any> = ({ setBasketAccessHandler }) => {
+    const { onFocusRequested, onFocusRelinquished, isFocused, managers } = useContext<WalletContextValue>(WalletContext)
 
     const [open, setOpen] = useState(false)
     const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
 
     // The single "pending" request data
     const [request, setRequest] = useState<BasketAccessRequest | null>(null)
-
-    // Resolvers for the Promise we return when a request arrives
-    const [resolveFn, setResolveFn] = useState<((granted: boolean) => void) | null>(null)
-    const [rejectFn, setRejectFn] = useState<((reason?: any) => void) | null>(null)
 
     /**
      * Expose a handler for basket-access requests, following the pattern
@@ -53,21 +49,17 @@ const BasketAccessHandler: FC<BasketAccessHandlerProps> = ({ setBasketAccessHand
         */
     useEffect(() => {
         setBasketAccessHandler(() => {
-            return (incomingRequest: BasketAccessRequest) => {
-                return new Promise<boolean>(async (resolve, reject) => {
-                    // Save request + resolvers in state
-                    setRequest(incomingRequest)
-                    setResolveFn(() => resolve)
-                    setRejectFn(() => reject)
-                    setOpen(true)
+            return async (incomingRequest: BasketAccessRequest) => {
+                // Save request + resolvers in state
+                setRequest(incomingRequest)
+                setOpen(true)
 
-                    // Focus logic
-                    const currentlyFocused = await isFocused()
-                    setWasOriginallyFocused(currentlyFocused)
-                    if (!currentlyFocused) {
-                        await onFocusRequested()
-                    }
-                })
+                // Focus logic
+                const currentlyFocused = await isFocused()
+                setWasOriginallyFocused(currentlyFocused)
+                if (!currentlyFocused) {
+                    await onFocusRequested()
+                }
             }
         })
     }, [isFocused, onFocusRequested, setBasketAccessHandler])
@@ -82,26 +74,24 @@ const BasketAccessHandler: FC<BasketAccessHandlerProps> = ({ setBasketAccessHand
     }
 
     const handleGrant = async () => {
-        if (!request || !resolveFn) return
         // If your flow still needs to immediately call window.CWI.grantBasketAccess,
         // do so here. Otherwise, you might just resolve(true) and let the caller handle it:
-        window.CWI.grantBasketAccess({ requestID: request.requestID })
-        resolveFn(true)
+        managers.permissionsManager!.grantPermission({ requestID: request!.requestID })
         await closeDialog()
     }
 
     const handleDeny = async () => {
-        if (!request || !resolveFn) return
         // If your flow still needs to immediately call window.CWI.denyBasketAccess,
         // do so here. Otherwise, you might just resolve(false) and let the caller handle it:
-        window.CWI.denyBasketAccess({ requestID: request.requestID })
-        resolveFn(false)
+        managers.permissionsManager!.denyPermission(request!.requestID)
+        // resolveFn(false)
         await closeDialog()
     }
 
     const handleDialogClose = async () => {
         // If user closes via the "X" (or otherwise):
-        if (rejectFn) rejectFn(new Error('User closed basket access request dialog'))
+        managers.permissionsManager!.denyPermission(request!.requestID)
+        // if (rejectFn) rejectFn(new Error('User closed basket access request dialog'))
         await closeDialog()
     }
 

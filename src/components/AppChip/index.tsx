@@ -87,20 +87,20 @@ const AppChip: React.FC<any> = ({
   return (
     <div className={classes.chipContainer}>
       <Chip
-        style={theme.templates.chip({ size, backgroundColor })}
+        style={(theme as any).templates.chip({ size, backgroundColor })}
         label={
           (showDomain && label !== parsedLabel)
             ? <div style={{
               textAlign: 'left'
             }}>
               <span
-                style={theme.templates.chipLabelTitle({ size })}
+                style={(theme as any).templates.chipLabelTitle({ size })}
               >
                 {parsedLabel}
               </span>
               <br />
               <span
-                style={theme.templates.chipLabelSubtitle}
+                style={(theme as any).templates.chipLabelSubtitle}
               >
                 {label}
               </span>
@@ -108,7 +108,7 @@ const AppChip: React.FC<any> = ({
             : <span style={{ fontSize: `${size}em` }}>{parsedLabel}</span>
         }
         onDelete={onCloseClick}
-        deleteIcon={typeof onCloseClick === 'function' ? <CloseIcon /> : null}
+        deleteIcon={typeof onCloseClick === 'function' ? <CloseIcon /> : undefined}
         icon={(
           <Badge
             overlap='circular'
@@ -167,8 +167,8 @@ const AppChip: React.FC<any> = ({
             </Avatar>
           </Badge>
         )}
-        disableRipple={!clickable}
-        onClick={e => {
+        // disableRipple={!clickable}
+        onClick={(e: any) => {
           if (clickable) {
             if (typeof onClick === 'function') {
               onClick(e)

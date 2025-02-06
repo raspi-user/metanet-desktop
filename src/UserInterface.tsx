@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor, PermissionEventHandler } from '@cwi/wallet-toolbox-client'
-import { KeyDeriver, PrivateKey, Spend, WalletInterface } from '@bsv/sdk'
+import { KeyDeriver, PrivateKey, WalletInterface } from '@bsv/sdk'
 import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
@@ -9,7 +9,7 @@ import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
 import AmountDisplay from './components/AmountDisplay'
-import { MemoryRouter as Router, Switch, Route } from 'react-router-dom'
+import { MemoryRouter as Router, Switch } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -65,10 +65,10 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     const { managers, updateManagers } = useContext(WalletContext);
     const [passwordRetriever, setPasswordRetriever] = useState<(reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>>()
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
-    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>()
-    const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
-    const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>()
-    const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
+    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>(() => { })
+    // const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
+    // const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>()
+    // const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
 
     useEffect(() => {
         if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback) {

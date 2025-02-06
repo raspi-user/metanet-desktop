@@ -97,7 +97,7 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
   useEffect(() => {
     if (!isNaN(satoshis) && satoshisPerUSD) {
       const newFormattedFiat = formatSatoshisAsFiat(satoshis, satoshisPerUSD, fiatFormat, settingsCurrency, eurPerUSD, gbpPerUSD, showFiatAsInteger)
-      setFormattedFiatAmount(newFormattedFiat)
+      setFormattedFiatAmount(newFormattedFiat!)
     } else {
       setFormattedFiatAmount('...')
     }

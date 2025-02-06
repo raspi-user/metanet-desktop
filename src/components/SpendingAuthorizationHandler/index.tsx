@@ -85,7 +85,7 @@ const SpendingAuthorizationHandler: React.FC<{
     })
   }
 
-  const handleGrant = async ({ singular = true, amount }) => {
+  const handleGrant = async ({ singular = true, amount }: { singular?: boolean, amount?: number }) => {
     managers.permissionsManager!.grantPermission({
       requestID: perms[0].requestID,
       ephemeral: singular,
@@ -201,7 +201,7 @@ const SpendingAuthorizationHandler: React.FC<{
                 </TableRow>
               </TableHead>
               <TableBody>
-                {perms[0].lineItems.map((row) => (
+                {perms[0].lineItems.map((row: any) => (
                   <TableRow
                     key={row.description}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

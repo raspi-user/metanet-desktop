@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react'
+import { ReactNode, createContext, useEffect, useState } from 'react'
 import { Services } from '@cwi/wallet-toolbox-client'
 
 const services = new Services('main')
@@ -18,7 +18,9 @@ const defaultState = {
 // Create the exchange rate context and provider to use in the amount component
 export const ExchangeRateContext = createContext(defaultState)
 
-export const ExchangeRateContextProvider = ({ children }) => {
+export const ExchangeRateContextProvider: React.FC<{
+  children: ReactNode
+}> = ({ children }) => {
   const [state, setState] = useState(defaultState)
 
   // The function instances are created here and included in the state to ensure they have stable references
@@ -42,7 +44,7 @@ export const ExchangeRateContextProvider = ({ children }) => {
         const gbpPerUSD = await services.getFiatExchangeRate('GBP')
         const eurPerUSD = await services.getFiatExchangeRate('EUR')
         const satoshisPerUSD = 100000000 / usdPerBsv // satsPerBsv * bsvPerUSD => satsPerUSD
-        setState(oldState => ({ ...oldState, satoshisPerUSD, gbpPerUSD, eurPerUSD, whenUpdated: new Date() }))
+        setState((oldState: any) => ({ ...oldState, satoshisPerUSD, gbpPerUSD, eurPerUSD, whenUpdated: new Date() }))
       } catch (error) {
         console.error('Error fetching data: ', error)
         // You can check for error.response.status here if using a library like axios
