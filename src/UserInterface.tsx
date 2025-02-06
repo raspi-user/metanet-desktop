@@ -5,6 +5,8 @@ import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
+import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
+import CertificateAccessHandler from './components/CertificateAccessHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
@@ -68,11 +70,11 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
     const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>(() => { })
     const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>(() => { })
-    // const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
-    // const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
+    const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
+    const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
 
     useEffect(() => {
-        if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback && basketAccessCallback) {
+        if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback && basketAccessCallback && protocolPermissionCallback && certificateAccessCallback) {
             const walletBuilder = async (
                 primaryKey: number[],
                 privilegedKeyManager: PrivilegedKeyManager
@@ -89,10 +91,10 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
                     encryptWalletMetadata: false
                 });
-                permissionsManager.bindCallback('onProtocolPermissionRequested', console.log)
+                permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback)
                 permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback)
                 permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback)
-                permissionsManager.bindCallback('onCertificateAccessRequested', console.log);
+                permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback);
                 (window as any).permissionsManager = permissionsManager;
                 updateManagers({
                     walletManager: exampleWalletManager,
@@ -122,7 +124,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 walletManager: exampleWalletManager
             })
         }
-    }, [passwordRetriever, recoveryKeySaver, spendingAuthorizationCallback, basketAccessCallback])
+    }, [passwordRetriever, recoveryKeySaver, spendingAuthorizationCallback, basketAccessCallback, protocolPermissionCallback, certificateAccessCallback])
 
     return (
         <Router>
@@ -134,6 +136,8 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                         <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
                         <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
                         <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
+                        <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
+                        <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
                         <h1>test </h1>
                         <AmountDisplay>{37000}</AmountDisplay>
                         {
