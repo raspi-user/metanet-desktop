@@ -10,6 +10,8 @@ import { ExchangeRateContextProvider } from './components/AmountDisplay/Exchange
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
 import AmountDisplay from './components/AmountDisplay'
 import { MemoryRouter as Router, Switch, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -126,6 +128,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
             <Switch>
                 <ExchangeRateContextProvider>
                     <Theme>
+                        <ToastContainer position='top-center' />
                         <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
                         <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
                         <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
