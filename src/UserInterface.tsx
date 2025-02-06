@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor, PermissionEventHandler } from '@cwi/wallet-toolbox-client'
-import { KeyDeriver, PrivateKey, WalletInterface } from '@bsv/sdk'
+import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
 import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
@@ -107,9 +107,14 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
             const inMemoryInterattor: UMPTokenInteractor = {
                 findByPresentationKeyHash: async () => undefined,
                 findByRecoveryKeyHash: async () => undefined,
-                buildAndSend: async () => ''
+                buildAndSend: async () => 'abcd.0'
             }
-
+            let snap: number[] | undefined
+            if (localStorage.snap) {
+                snap = Utils.toArray(localStorage.snap, 'base64')
+            }
+            // HARDCODE SNAPSHOT
+            snap = Utils.toArray('2dtzh6LfYexvC6//w7qW52td8EQjs0HM8oCxFjwm+vJtdDs0UuvvLw/dguCoTmum+zrAjn/ibZiZSo+PGbQ14Y+5oxyU7hd3b/I95b9yYgEBBKs0/ydffe0wwIxV4ah3T2mz5UIst5RmuLrMXP9jc+k3udmp4REdBAGHDBnbR8nRBXiB1BCXdPwGGHWekDe3KEzpm7HMD1L8cOs0s5z8F+IAU4J0oDbqjCPjCvN87yJiDCEYihEm2JP04/B00aFhDM3yE6hUH6QhNH0GaYrBAA4lWPtWkI8diHp2K1pzTuBV+IEUtiYhBTolWKXduZvzbe67/sfM+NuUQkxX8mZg6gqrgYOVrJhPk6jlsGTRj/gWy2+DYoiCs0FlREPiEQA2B78AFTRfxSQrAZW29wEsBcLAzmZiGSsbF63JH0+QhcoSJYq80pDu6lHtZk+clkBkFrrlqtCXwJNTBAP6e3ZMBuwiAWqeOmxKMWoe5jG6xR4EYSWRkPfVmm3+pwpjYWJ5uyFmyOl6Y9mwhED2mJxwBB69sooIibtNCu5Cqu7MJpwq/PRj14n4W5AcgrxOhXeS7Oc0ojFrILswaofFg/S+yw5pfSPTL/KMbVIHFdHX2i6SFt3YuKf59JA3KgR4vEYUMU0YbqRJG4zHPkDfP8kmjeiJG8WmcWNvkt/Mg/TWOpqDnZxFGYW1qL6isdCiUghUn1Of6nlzsT79C4qFzDcwEdHtDIjftYEBH8kCCQoTNbNJe31HjZ+R9ZrBOPnZoc8olRftr79A4SsHgwXRq+t+cymtSiNk4Ba4XiycwFzM/yTUArGRl5pjgVAsvCUVtgAPci4NOwrOjRDZLN4otGfAefDeJPyb7eHHtsxLqeuVF648bzgrthQKVQFONiDhX1HRMxZwnob+1YsNxdMS4LuBCeytDCKnNDg3iinF7ED0ZwaZt3kOP2OnrgM0XhoMGLqSf78KrG2a/1rsBR2bfOQdGSY+No0lwWqUdyVn0iYmyUxWzmLhJVffBDJmhoCUhz0aX84KyU9wdgWglk1mw3s2BRQyYXSOrzOBlSY1fEoYeoMQe4+Lf7AyEgi2/nQ0OoDArK+uGJyPEqIN8Up4JYMmp0WFPSL5Gndg5xpi7gPs3IIRQtiQwCtSmLVnspG4cXLF8rVQ', 'base64')
             const exampleWalletManager = new ExampleWalletManager(
                 'admin.com',
                 walletBuilder,
@@ -117,7 +122,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 recoveryKeySaver,
                 passwordRetriever,
                 SECRET_SERVER_URL,
-                undefined // stateSnapshot
+                snap
             )
             onWalletReady(exampleWalletManager)
             updateManagers({
@@ -148,6 +153,8 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                             (async () => {
                                 await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
                                 await managers.walletManager?.providePassword('test-pw');
+                                const snap = managers.walletManager?.saveSnapshot()!
+                                localStorage.snap = Utils.toBase64(snap)
                             })
                         }> Authenticate </button>
                         < button onClick={(async () => {
