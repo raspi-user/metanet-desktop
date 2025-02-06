@@ -1,16 +1,17 @@
-import { useState, useEffect, useContext, FC } from 'react'
+import { Dispatch, SetStateAction, useState, useEffect, useContext, FC } from 'react'
 import { DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
 import CustomDialog from '../CustomDialog'
 import { WalletContext, WalletContextValue } from '../../UserInterface'
 import AppChip from '../AppChip/index'
 import BasketChip from '../BasketChip/index'
+import { PermissionEventHandler, PermissionRequest } from '@cwi/wallet-toolbox-client'
 
 type BasketAccessRequest = {
     requestID: string
-    basket: string
+    basket?: string
     originator: string
-    description: string
-    renewal: boolean
+    reason?: string
+    renewal?: boolean
 }
 
 // type BasketAccessHandlerProps = {
@@ -24,7 +25,9 @@ type BasketAccessRequest = {
 //     ) => void
 // }
 
-const BasketAccessHandler: FC<any> = ({ setBasketAccessHandler }) => {
+const BasketAccessHandler: FC<{
+    setBasketAccessHandler: Dispatch<SetStateAction<PermissionEventHandler>>
+}> = ({ setBasketAccessHandler }) => {
     const { onFocusRequested, onFocusRelinquished, isFocused, managers } = useContext<WalletContextValue>(WalletContext)
 
     const [open, setOpen] = useState(false)
@@ -48,8 +51,8 @@ const BasketAccessHandler: FC<any> = ({ setBasketAccessHandler }) => {
      *   })
         */
     useEffect(() => {
-        setBasketAccessHandler(() => {
-            return async (incomingRequest: BasketAccessRequest) => {
+        setBasketAccessHandler((): PermissionEventHandler => {
+            return async (incomingRequest: PermissionRequest & { requestID: string }): Promise<void> => {
                 // Save request + resolvers in state
                 setRequest(incomingRequest)
                 setOpen(true)
@@ -62,7 +65,7 @@ const BasketAccessHandler: FC<any> = ({ setBasketAccessHandler }) => {
                 }
             }
         })
-    }, [isFocused, onFocusRequested, setBasketAccessHandler])
+    }, [])
 
     const closeDialog = async () => {
         setOpen(false)
@@ -126,7 +129,7 @@ const BasketAccessHandler: FC<any> = ({ setBasketAccessHandler }) => {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gridGap: '2em', alignItems: 'center', margin: '0 1.5em' }}>
                     <span>Reason:</span>
-                    <DialogContentText>{request.description}</DialogContentText>
+                    <DialogContentText>{request.reason}</DialogContentText>
                 </div>
             </DialogContent>
             <DialogActions style={{ justifyContent: 'space-around', padding: '1em', flex: 'none' }}>

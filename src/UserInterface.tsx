@@ -12,6 +12,7 @@ import AmountDisplay from './components/AmountDisplay'
 import { MemoryRouter as Router, Switch } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import BasketAccessHandler from './components/BasketAccessHandler'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -66,12 +67,12 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     const [passwordRetriever, setPasswordRetriever] = useState<(reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>>()
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
     const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>(() => { })
+    const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>(() => { })
     // const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
-    // const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>()
     // const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
 
     useEffect(() => {
-        if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback) {
+        if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback && basketAccessCallback) {
             const walletBuilder = async (
                 primaryKey: number[],
                 privilegedKeyManager: PrivilegedKeyManager
@@ -89,7 +90,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                     encryptWalletMetadata: false
                 });
                 permissionsManager.bindCallback('onProtocolPermissionRequested', console.log)
-                permissionsManager.bindCallback('onBasketAccessRequested', console.log)
+                permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback)
                 permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback)
                 permissionsManager.bindCallback('onCertificateAccessRequested', console.log);
                 (window as any).permissionsManager = permissionsManager;
@@ -121,7 +122,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                 walletManager: exampleWalletManager
             })
         }
-    }, [passwordRetriever, recoveryKeySaver, spendingAuthorizationCallback])
+    }, [passwordRetriever, recoveryKeySaver, spendingAuthorizationCallback, basketAccessCallback])
 
     return (
         <Router>
@@ -132,6 +133,7 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                         <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
                         <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
                         <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
+                        <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
                         <h1>test </h1>
                         <AmountDisplay>{37000}</AmountDisplay>
                         {
