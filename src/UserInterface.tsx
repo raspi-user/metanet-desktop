@@ -11,10 +11,12 @@ import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
 import AmountDisplay from './components/AmountDisplay'
-import { MemoryRouter as Router, Switch } from 'react-router-dom'
+import { MemoryRouter as Router, Switch, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import BasketAccessHandler from './components/BasketAccessHandler'
+
+import Greeter from './pages/Greeter/index'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
@@ -32,6 +34,8 @@ export interface WalletContextValue {
     onFocusRequested: Function;
     onFocusRelinquished: Function;
     isFocused: Function;
+    appVersion: string;
+    appName: string;
 }
 
 export const WalletContext: React.Context<WalletContextValue> = createContext<WalletContextValue>({
@@ -39,7 +43,9 @@ export const WalletContext: React.Context<WalletContextValue> = createContext<Wa
     isFocused: () => { },
     onFocusRelinquished: () => { },
     onFocusRequested: () => { },
-    updateManagers: () => { }
+    updateManagers: () => { },
+    appVersion: '1.0.0',
+    appName: 'Example Desktop'
 });
 
 export const WalletProvider = ({ children }: any) => {
@@ -70,8 +76,8 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
     const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>(() => { })
     const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>(() => { })
-    const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>()
-    const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>()
+    const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>(() => { })
+    const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>(() => { })
 
     useEffect(() => {
         if (passwordRetriever && recoveryKeySaver && spendingAuthorizationCallback && basketAccessCallback && protocolPermissionCallback && certificateAccessCallback) {
@@ -133,46 +139,50 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
 
     return (
         <Router>
-            <Switch>
-                <ExchangeRateContextProvider>
-                    <Theme>
-                        <ToastContainer position='top-center' />
-                        <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
-                        <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
-                        <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
-                        <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
-                        <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
-                        <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
-                        <h1>test </h1>
-                        <AmountDisplay>{37000}</AmountDisplay>
-                        {
-                            managers.walletManager && (
-                                <h1>Authenticated: {String(managers.walletManager.authenticated)} </h1>
-                            )}
-                        <button onClick={
-                            (async () => {
-                                await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
-                                await managers.walletManager?.providePassword('test-pw');
-                                const snap = managers.walletManager?.saveSnapshot()!
-                                localStorage.snap = Utils.toBase64(snap)
-                            })
-                        }> Authenticate </button>
-                        < button onClick={(async () => {
-                            const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
-                            await message(publicKey)
-                        })}> Get privileged identity key </button>
-                        < button onClick={(async () => {
-                            await managers.walletManager?.createAction({
-                                outputs: [{
-                                    lockingScript: '016a',
-                                    satoshis: 1,
-                                    outputDescription: 'test 123'
-                                }], description: 'action is a bar'
-                            }, 'test-nonadmin.com')!
-                        })}> Create 1sat action </button>
-                    </Theme>
-                </ExchangeRateContextProvider>
-            </Switch>
+            <ExchangeRateContextProvider>
+                <Theme>
+                    <ToastContainer position='top-center' />
+                    <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                    <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                    <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
+                    <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
+                    <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
+                    <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
+                    {/* Only render the routes after the manager exists */}
+                    {managers.walletManager && (
+                        <Switch>
+                            <Route exact path='/' component={Greeter} />
+                        </Switch>
+                    )}
+                    <h1>test </h1>
+                    <AmountDisplay>{37000}</AmountDisplay>
+                    {
+                        managers.walletManager && (
+                            <h1>Authenticated: {String(managers.walletManager.authenticated)} </h1>
+                        )}
+                    <button onClick={
+                        (async () => {
+                            await managers.walletManager?.providePresentationKey(Array.from(new Uint8Array(32)));
+                            await managers.walletManager?.providePassword('test-pw');
+                            const snap = managers.walletManager?.saveSnapshot()!
+                            localStorage.snap = Utils.toBase64(snap)
+                        })
+                    }> Authenticate </button>
+                    < button onClick={(async () => {
+                        const { publicKey } = await managers.walletManager?.getPublicKey({ identityKey: true, privileged: true, privilegedReason: 'foo is a bar' }, 'test-nonadmin.com')!
+                        await message(publicKey)
+                    })}> Get privileged identity key </button>
+                    < button onClick={(async () => {
+                        await managers.walletManager?.createAction({
+                            outputs: [{
+                                lockingScript: '016a',
+                                satoshis: 1,
+                                outputDescription: 'test 123'
+                            }], description: 'action is a bar'
+                        }, 'test-nonadmin.com')!
+                    })}> Create 1sat action </button>
+                </Theme>
+            </ExchangeRateContextProvider>
         </Router>
     )
 }

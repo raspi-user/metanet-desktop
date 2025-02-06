@@ -59,10 +59,12 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
 
   // Populate settings from the context
   useEffect(() => {
-    (async () => {
-      setSettings(await context.managers.settingsManager!.get() as any)
-    })()
-  }, [])
+    if (context.managers.settingsManager) {
+      (async () => {
+        setSettings(await context.managers.settingsManager!.get() as any)
+      })()
+    }
+  }, [context])
 
   // Update the satoshis and formattedSatoshis whenever the relevant props change
   useEffect(() => {
