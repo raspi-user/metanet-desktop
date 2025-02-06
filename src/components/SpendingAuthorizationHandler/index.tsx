@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { Dispatch, SetStateAction, useState, useEffect, useContext } from 'react'
 import {
   DialogContent,
   Typography,
@@ -19,7 +19,7 @@ import { Send, Cancel } from '@mui/icons-material'
 import CustomDialog from '../CustomDialog/index.js'
 import { WalletContext } from '../../UserInterface.js'
 import AppChip from '../AppChip/index.js'
-import { Services } from '@cwi/wallet-toolbox-client'
+import { PermissionEventHandler, PermissionRequest, Services } from '@cwi/wallet-toolbox-client'
 
 const services = new Services('main')
 
@@ -27,7 +27,9 @@ const useStyles = makeStyles(style, {
   name: 'SpendingAuthorizationHandler'
 })
 
-const SpendingAuthorizationHandler: React.FC<any> = ({ setSpendingAuthorizationCallback }) => {
+const SpendingAuthorizationHandler: React.FC<{
+  setSpendingAuthorizationCallback: Dispatch<SetStateAction<PermissionEventHandler>>
+}> = ({ setSpendingAuthorizationCallback }) => {
   const {
     onFocusRequested,
     onFocusRelinquished,
@@ -103,19 +105,28 @@ const SpendingAuthorizationHandler: React.FC<any> = ({ setSpendingAuthorizationC
 
   useEffect(() => {
     setSpendingAuthorizationCallback(() => {
-      return async (args: any) => {
+      return async (args: PermissionRequest & { requestID: string }): Promise<void> => {
         console.log(args)
         const {
           requestID,
           originator,
-          description,
-          transactionAmount,
-          totalPastSpending,
-          amountPreviouslyAuthorized,
-          authorizationAmount,
+          reason,
           renewal,
-          lineItems
+          spending
         } = args
+        let {
+          satoshis,
+          lineItems
+        } = spending!
+        if (!lineItems) {
+          lineItems = []
+        }
+
+        // TODO: support these
+        const transactionAmount = 0
+        const totalPastSpending = 0
+        const amountPreviouslyAuthorized = 0
+
         setOpen(true)
         const wasOriginallyFocused = await isFocused()
         if (!wasOriginallyFocused) {
@@ -128,11 +139,11 @@ const SpendingAuthorizationHandler: React.FC<any> = ({ setSpendingAuthorizationC
           p.push({
             requestID,
             originator,
-            description,
+            description: reason,
             transactionAmount,
             totalPastSpending,
             amountPreviouslyAuthorized,
-            authorizationAmount,
+            authorizationAmount: satoshis,
             renewal,
             lineItems
           })
