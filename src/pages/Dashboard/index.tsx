@@ -21,7 +21,7 @@ import {
   Typography
   , IconButton, Drawer, Toolbar
 } from '@mui/material'
-// import Profile from '../../components/Profile.jsx'
+import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 
@@ -135,10 +135,9 @@ const Dashboard = () => {
       </div>
       <Drawer anchor='left' open={menuOpen} variant='persistent' onClose={handleDrawerToggle}>
         <div className={classes.list_wrap}>
-          {/* <Profile /> */}
+          <Profile />
           <List>
-            <ListItem
-              button
+            <ListItemButton
               onClick={() => navigation.push('/dashboard/apps')}
               selected={history.location.pathname === '/dashboard/apps'}
             >
@@ -148,7 +147,7 @@ const Dashboard = () => {
               <ListItemText>
                 Apps
               </ListItemText>
-            </ListItem>
+            </ListItemButton>
             {/* <ListItem disabled
               button
               onClick={() => navigation.push('/dashboard/trends')}
@@ -210,8 +209,7 @@ const Dashboard = () => {
                 Trust Network
               </ListItemText>
             </ListItemButton>
-            <ListItem
-              button
+            <ListItemButton
               onClick={() => navigation.push('/dashboard/settings')}
               selected={
                 history.location.pathname === '/dashboard/settings'
@@ -223,7 +221,7 @@ const Dashboard = () => {
               <ListItemText>
                 Settings
               </ListItemText>
-            </ListItem>
+            </ListItemButton>
 
             <ListItemButton
               onClick={() => {
