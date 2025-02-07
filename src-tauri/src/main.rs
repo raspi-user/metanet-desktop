@@ -21,7 +21,7 @@ use hyper::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
-use tauri::{Manager, Listener, Emitter};
+use tauri::{Manager, Listener, Emitter, Window};
 
 static MAIN_WINDOW_NAME: &str = "main";
 
@@ -45,6 +45,33 @@ struct TsResponse {
 
 /// A type alias for our concurrent map of pending responses.
 type PendingMap = DashMap<u64, oneshot::Sender<TsResponse>>;
+
+/// -----
+/// Tauri COMMANDS for focus management
+/// -----
+
+#[tauri::command]
+fn is_focused(window: Window) -> bool {
+    match window.is_focused() {
+        Ok(focused) => focused,
+        Err(_) => false,
+    }
+}
+
+#[tauri::command]
+fn request_focus(window: Window) {
+    // This attempts to bring the window to the foreground.
+    if let Err(e) = window.set_focus() {
+        eprintln!("Failed to set focus on window: {}", e);
+    }
+}
+
+#[tauri::command]
+fn relinquish_focus(window: Window) {
+    if let Err(e) = window.minimize() {
+        eprintln!("Failed to minimize window: {}", e);
+    }
+}
 
 fn main() {
     tauri::Builder::default()
@@ -199,6 +226,12 @@ fn main() {
 
             Ok(())
         })
+        // IMPORTANT: Register our Tauri commands here
+        .invoke_handler(tauri::generate_handler![
+            is_focused,
+            request_focus,
+            relinquish_focus
+        ])
         .run(tauri::generate_context!())
         .expect("Error while running Tauri application");
 }
