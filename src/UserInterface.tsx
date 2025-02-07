@@ -1,7 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Wallet, WalletPermissionsManager, ExampleWalletManager, PrivilegedKeyManager, Services, StorageClient, WalletSigner, WalletStorageManager, UMPTokenInteractor, PermissionEventHandler } from '@cwi/wallet-toolbox-client'
 import { KeyDeriver, PrivateKey, Utils, WalletInterface } from '@bsv/sdk'
-import { message } from '@tauri-apps/plugin-dialog'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
@@ -10,20 +9,28 @@ import CertificateAccessHandler from './components/CertificateAccessHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
-import AmountDisplay from './components/AmountDisplay'
 import { MemoryRouter as Router, Switch, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import BasketAccessHandler from './components/BasketAccessHandler'
+import { BreakpointProvider } from './utils/useBreakpoints'
 
 import Greeter from './pages/Greeter/index'
 import Recovery from './pages/Recovery/index'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
+import Dashboard from './pages/Dashboard'
 
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
 const CHAIN = 'test'
+
+const queries = {
+    xs: '(max-width: 500px)',
+    sm: '(max-width: 720px)',
+    md: '(max-width: 1024px)',
+    or: '(orientation: portrait)'
+}
 
 interface ManagerState {
     walletManager?: ExampleWalletManager;
@@ -47,7 +54,7 @@ export const WalletContext: React.Context<WalletContextValue> = createContext<Wa
     onFocusRelinquished: () => { },
     onFocusRequested: () => { },
     updateManagers: () => { },
-    appVersion: '1.0.0',
+    appVersion: '0.0.0',
     appName: 'Example Desktop'
 });
 
@@ -65,7 +72,9 @@ export const WalletProvider = ({ children }: any) => {
                 updateManagers,
                 onFocusRequested: () => { },
                 onFocusRelinquished: () => { },
-                isFocused: () => { }
+                isFocused: () => { },
+                appVersion: '0.0.0',
+                appName: 'Example Desktop'
             }}
         >
             {children}
@@ -143,32 +152,34 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
     return (
         <Router>
             <ExchangeRateContextProvider>
-                <Theme>
-                    <ToastContainer position='top-center' />
-                    <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
-                    <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
-                    <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
-                    <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
-                    <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
-                    <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
-                    {/* Only render the routes after the manager exists */}
-                    {managers.walletManager && (
-                        <Switch>
-                            <Route exact path='/' component={Greeter} />
-                            <Route
-                                exact
-                                path='/recovery/lost-phone'
-                                component={LostPhone}
-                            />
-                            <Route
-                                exact
-                                path='/recovery/lost-password'
-                                component={LostPassword}
-                            />
-                            <Route exact path='/recovery' component={Recovery} />
-                        </Switch>
-                    )}
-                    {/* <h1>test </h1>
+                <BreakpointProvider queries={queries}>
+                    <Theme>
+                        <ToastContainer position='top-center' />
+                        <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                        <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                        <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
+                        <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
+                        <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
+                        <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
+                        {/* Only render the routes after the manager exists */}
+                        {managers.walletManager && (
+                            <Switch>
+                                <Route exact path='/' component={Greeter} />
+                                <Route
+                                    exact
+                                    path='/recovery/lost-phone'
+                                    component={LostPhone}
+                                />
+                                <Route
+                                    exact
+                                    path='/recovery/lost-password'
+                                    component={LostPassword}
+                                />
+                                <Route exact path='/recovery' component={Recovery} />
+                                <Route path='/dashboard' component={Dashboard} />
+                            </Switch>
+                        )}
+                        {/* <h1>test </h1>
                     <AmountDisplay>{37000}</AmountDisplay>
                     {
                         managers.walletManager && (
@@ -195,7 +206,8 @@ export const UserInterface = ({ onWalletReady }: { onWalletReady: (wallet: Walle
                             }], description: 'action is a bar'
                         }, 'test-nonadmin.com')!
                     })}> Create 1sat action </button> */}
-                </Theme>
+                    </Theme>
+                </BreakpointProvider>
             </ExchangeRateContextProvider>
         </Router>
     )

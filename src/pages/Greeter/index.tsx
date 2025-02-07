@@ -53,8 +53,7 @@ const Greeter: React.FC<any> = ({ history }) => {
   useEffect(() => {
     (async () => {
       if (managers.walletManager!.authenticated) {
-        console.log('authenticated')
-        // history.push('/dashboard/apps')
+        history.push('/dashboard/apps')
       }
       setPageLoaded(true)
     })()
@@ -145,11 +144,11 @@ const Greeter: React.FC<any> = ({ history }) => {
       )
       if (managers.walletManager?.authenticated === true) {
         localStorage.snap = Utils.toBase64(managers.walletManager?.saveSnapshot())
-        if (accountStatus === 'new-user') {
-          history.push('/welcome')
-        } else {
-          history.push('/dashboard/apps')
-        }
+        // if (accountStatus === 'new-user') {
+        // history.push('/welcome') // todo
+        // } else {
+        // }
+        history.push('/dashboard/apps')
       } else {
         throw new Error('Not authenticated, maybe password was wrong?')
       }
