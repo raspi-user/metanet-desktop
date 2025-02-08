@@ -41,25 +41,6 @@ root.render(
           (window as any).externallyCallableWallet = wallet // for debugging / testing
           console.log('THE INTERFACE IS UP! WALLET:', wallet)
 
-          ////// TODO: MATT AND JACKIE:
-          // You are given a WalletInterface as a parameter.
-          // Your task is to do the following:
-
-          // Within this function you are already listening for HTTP requests and responses.
-          // 
-          // A request can come in over HTTP and it would be sent to you by the following code:
-          // https://github.com/bitcoin-sv/ts-sdk/blob/master/src/wallet/substrates/HTTPWalletJSON.ts
-          // 
-          // When an HTTP request comes in, that came from the above-linked code (in that format),
-          // call into the Wallet with the parameters provided by the request.
-          // Then, wait for the response. If the wallet throws an Error, the HTTP response should be an error.
-          // Otherwise, the response should be the return value from the Wallet, in the way that we would expect.
-          //
-          // Work exclusively within this function to parse out the HTTP requests, call into the Wallet, and get
-          // the responses. Then send them back to the person who made the request over HTTP.
-          // Currently, all methods will probably return "user is not authenticated" errors, but that is expected.
-          // When the UI is finished, this will no longer be the case.
-
           // Listen for "http-request" events from the Rust backend.
           await listen('http-request', async (event) => {
             let response
@@ -113,7 +94,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      })
                     }
                   }
                   break
@@ -135,7 +118,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      })
                     }
                   }
                   break
@@ -157,7 +142,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -179,7 +166,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -201,7 +190,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -223,7 +214,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -245,7 +238,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -267,7 +262,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -289,7 +286,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -311,7 +310,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -333,7 +334,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -355,7 +358,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -377,7 +382,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -399,7 +406,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -421,7 +430,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -443,7 +454,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -465,7 +478,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -487,7 +502,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -509,7 +526,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -531,7 +550,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -553,7 +574,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -575,7 +598,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -595,7 +620,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -615,7 +642,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -635,7 +664,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -657,7 +688,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -677,7 +710,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
@@ -697,7 +732,9 @@ root.render(
                     response = {
                       request_id: req.request_id,
                       status: 400,
-                      body: JSON.stringify(error),
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      }),
                     }
                   }
                   break
