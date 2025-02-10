@@ -146,6 +146,18 @@ fn main() {
                                 let request_counter = request_counter.clone();
 
                                 async move {
+
+                                    // Intercept any OPTIONS requests
+                                    if req.method() == hyper::Method::OPTIONS {
+                                        let mut res = Response::new(Body::empty());
+                                        res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                        return Ok::<_, Infallible>(res);
+                                    }
+
                                     // Generate a unique request ID.
                                     let request_id = request_counter.fetch_add(1, Ordering::Relaxed);
 
@@ -180,6 +192,12 @@ fn main() {
                                             eprintln!("Failed to serialize HTTP event: {:?}", e);
                                             let mut res = Response::new(Body::from("Internal Server Error"));
                                             *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                            // Append CORS headers
+                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
                                             // Remove pending request since we cannot proceed.
                                             pending_requests.remove(&request_id);
                                             return Ok::<_, Infallible>(res);
@@ -192,6 +210,12 @@ fn main() {
                                         pending_requests.remove(&request_id);
                                         let mut res = Response::new(Body::from("Internal Server Error"));
                                         *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                        // Append CORS headers
+                                        res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                        res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
                                         return Ok::<_, Infallible>(res);
                                     }
 
@@ -201,12 +225,24 @@ fn main() {
                                             let mut res = Response::new(Body::from(ts_response.body));
                                             *res.status_mut() = StatusCode::from_u16(ts_response.status)
                                                 .unwrap_or(StatusCode::OK);
+                                            // Append CORS headers
+                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
                                             Ok::<_, Infallible>(res)
                                         }
                                         Err(err) => {
                                             eprintln!("Error awaiting frontend response for request {}: {:?}", request_id, err);
                                             let mut res = Response::new(Body::from("Gateway Timeout"));
                                             *res.status_mut() = StatusCode::GATEWAY_TIMEOUT;
+                                            // Append CORS headers
+                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
                                             Ok::<_, Infallible>(res)
                                         }
                                     }
