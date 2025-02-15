@@ -89,8 +89,7 @@ export const WalletContext = createContext<WalletContextValue>({
     isFocused: async () => false,
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
-    appVersion: '0.0.0',
-    appName: 'Example Desktop'
+    appVersion: '0.0.    appName: 'Example Desktop'
 });
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
