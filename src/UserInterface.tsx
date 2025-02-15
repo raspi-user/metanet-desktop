@@ -9,13 +9,13 @@ import {
     WalletSigner,
     WalletStorageManager,
     UMPTokenInteractor,
-    PermissionEventHandler,
+    PermissionEventHandler
 } from '@cwi/wallet-toolbox-client'
 import {
     KeyDeriver,
     PrivateKey,
     Utils,
-    WalletInterface,
+    WalletInterface
 } from '@bsv/sdk'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
@@ -37,9 +37,20 @@ import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
 
+/** Defaults from the original file */
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
 const STORAGE_URL = 'https://staging-dojo.babbage.systems'
 const CHAIN = 'test'
+
+/**
+ * We might choose to store the "in-memory" fallback interactor for the UMP token logic
+ * (if you want to skip on-chain logic in dev). Modify if needed.
+ */
+const inMemoryInteractor: UMPTokenInteractor = {
+    findByPresentationKeyHash: async () => undefined,
+    findByRecoveryKeyHash: async () => undefined,
+    buildAndSend: async () => 'abcd.0'
+};
 
 const queries = {
     xs: '(max-width: 500px)',
@@ -79,7 +90,7 @@ export const WalletContext = createContext<WalletContextValue>({
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
     appVersion: '0.0.0',
-    appName: 'Example Desktop',
+    appName: 'Example Desktop'
 });
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
@@ -94,7 +105,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
             value={{
                 managers,
                 updateManagers,
-                isFocused: async () => false,        // If you wanted a fallback...
+                isFocused: async () => false,
                 onFocusRequested: async () => { },
                 onFocusRelinquished: async () => { },
                 appVersion: '0.0.0',
@@ -117,6 +128,11 @@ interface UserInterfaceProps {
     relinquishFocus?: () => Promise<void>;
 }
 
+/**
+ * UI to let user select WAB server, pick an Auth Method, and choose network & storage.
+ * Once the user has also provided the password retriever & recovery key saver callbacks,
+ * we build the ExampleWalletManager and store it in context.
+ */
 export const UserInterface: React.FC<UserInterfaceProps> = ({
     onWalletReady,
     isFocused,
@@ -124,117 +140,180 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     relinquishFocus
 }) => {
     // Access the context so we can override it with the provided focus fns
-    const { managers, updateManagers } = useContext(WalletContext);
+    const { managers, updateManagers } = React.useContext(WalletContext);
 
+    // The original code sets up passwordRetriever, etc. for hooking into the manager:
     const [passwordRetriever, setPasswordRetriever] = useState<
         (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>
     >();
-
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<
         (key: number[]) => Promise<true>
     >();
-
     const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] =
         useState<PermissionEventHandler>(() => { });
-
     const [basketAccessCallback, setBasketAccessCallback] =
         useState<PermissionEventHandler>(() => { });
-
     const [protocolPermissionCallback, setProtocolPermissionCallback] =
         useState<PermissionEventHandler>(() => { });
-
     const [certificateAccessCallback, setCertificateAccessCallback] =
         useState<PermissionEventHandler>(() => { });
 
+    // --------------- New: WAB + network + storage config ---------------
+
+    // Minimal placeholders for a user to configure
+    const [wabUrl, setWabUrl] = useState<string>("https://my-wab.example.com");
+    const [wabInfo, setWabInfo] = useState<{
+        supportedAuthMethods: string[];
+        faucetEnabled: boolean;
+        faucetAmount: number;
+    } | null>(null);
+
+    const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("");
+    const [selectedNetwork, setSelectedNetwork] = useState<string>(CHAIN); // "test" or "main"
+    const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(STORAGE_URL);
+
+    const [configComplete, setConfigComplete] = useState<boolean>(false);
+
+    async function fetchWabInfo() {
+        try {
+            const res = await fetch(`${wabUrl}/info`);
+            if (!res.ok) {
+                throw new Error(`Failed to fetch info: ${res.status}`);
+            }
+            const info = await res.json();
+            setWabInfo(info);
+        } catch (error: any) {
+            console.error("Error fetching WAB info", error);
+            alert("Could not fetch WAB info: " + error.message);
+        }
+    }
+
+    function onSelectAuthMethod(method: string) {
+        setSelectedAuthMethod(method);
+    }
+
+    // Mark config as complete so the effect that builds the manager can proceed:
+    function finalizeConfig() {
+        if (!wabInfo || !selectedAuthMethod) {
+            alert("Please select an Auth Method from the WAB info first.");
+            return;
+        }
+        setConfigComplete(true);
+    }
+
+    // ------------------------------------------------------------------
+
+    /**
+     * Once we have all essential building blocks:
+     * - passwordRetriever
+     * - recoveryKeySaver
+     * - user config (WAB + AuthMethod + network + storage)
+     *
+     * we build an ExampleWalletManager. This is the "heart" of the original code,
+     * but updated to handle a dynamic WAB-based approach.
+     */
     useEffect(() => {
         if (
             passwordRetriever &&
             recoveryKeySaver &&
-            spendingAuthorizationCallback &&
-            basketAccessCallback &&
-            protocolPermissionCallback &&
-            certificateAccessCallback
+            configComplete && // user has chosen WAB, method, etc.
+            !managers.walletManager // only build once
         ) {
-            // Once we have all of these set, we build the wallet:
+            // Build the walletBuilder from user-chosen network + storage
             const walletBuilder = async (
                 primaryKey: number[],
                 privilegedKeyManager: PrivilegedKeyManager
             ): Promise<WalletInterface> => {
-                const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey))
-                const storageManager = new WalletStorageManager(keyDeriver.identityKey)
-                const signer = new WalletSigner(CHAIN, keyDeriver, storageManager)
-                const services = new Services(CHAIN)
-                const wallet = new Wallet(signer, services, undefined, privilegedKeyManager)
-                const settingsManager = wallet.settingsManager
+                // Example: use the user-chosen network
+                const chain = selectedNetwork;
 
-                const client = new StorageClient(wallet, STORAGE_URL)
-                await client.makeAvailable()
-                await storageManager.addWalletStorageProvider(client)
+                const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey));
+                const storageManager = new WalletStorageManager(keyDeriver.identityKey);
+                const signer = new WalletSigner(chain, keyDeriver, storageManager);
+                const services = new Services(chain);
+                const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
+                const settingsManager = wallet.settingsManager;
 
+                // Use user-chosen storage
+                const client = new StorageClient(wallet, selectedStorageUrl);
+                await client.makeAvailable();
+                await storageManager.addWalletStorageProvider(client);
+
+                // Setup permissions
                 const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
                     encryptWalletMetadata: false
-                })
-                permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback)
-                permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback)
-                permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback)
-                permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback)
+                });
+                permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback);
+                permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback);
+                permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback);
+                permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback);
 
-                    ; (window as any).permissionsManager = permissionsManager
+                (window as any).permissionsManager = permissionsManager;
 
                 updateManagers({
                     walletManager: exampleWalletManager,
                     permissionsManager,
                     settingsManager
-                })
+                });
 
-                return permissionsManager
-            }
+                return permissionsManager;
+            };
 
-            // Dummy in-memory interattor:
-            const inMemoryInterattor: UMPTokenInteractor = {
-                findByPresentationKeyHash: async () => undefined,
-                findByRecoveryKeyHash: async () => undefined,
-                buildAndSend: async () => 'abcd.0'
-            }
-
-            // Attempt to load a local snapshot
-            let snap: number[] | undefined
-            if (localStorage.snap) {
-                snap = Utils.toArray(localStorage.snap, 'base64')
-            }
-            // HARDCODE
-            snap = Utils.toArray('2dtzh6LfYexvC6//w7qW52td8EQjs0HM8oCxFjwm+vJtdDs0UuvvLw/dguCoTmum+zrAjn/ibZiZSo+PGbQ14Y+5oxyU7hd3b/I95b9yYgEBBKs0/ydffe0wwIxV4ah3T2mz5UIst5RmuLrMXP9jc+k3udmp4REdBAGHDBnbR8nRBXiB1BCXdPwGGHWekDe3KEzpm7HMD1L8cOs0s5z8F+IAU4J0oDbqjCPjCvN87yJiDCEYihEm2JP04/B00aFhDM3yE6hUH6QhNH0GaYrBAA4lWPtWkI8diHp2K1pzTuBV+IEUtiYhBTolWKXduZvzbe67/sfM+NuUQkxX8mZg6gqrgYOVrJhPk6jlsGTRj/gWy2+DYoiCs0FlREPiEQA2B78AFTRfxSQrAZW29wEsBcLAzmZiGSsbF63JH0+QhcoSJYq80pDu6lHtZk+clkBkFrrlqtCXwJNTBAP6e3ZMBuwiAWqeOmxKMWoe5jG6xR4EYSWRkPfVmm3+pwpjYWJ5uyFmyOl6Y9mwhED2mJxwBB69sooIibtNCu5Cqu7MJpwq/PRj14n4W5AcgrxOhXeS7Oc0ojFrILswaofFg/S+yw5pfSPTL/KMbVIHFdHX2i6SFt3YuKf59JA3KgR4vEYUMU0YbqRJG4zHPkDfP8kmjeiJG8WmcWNvkt/Mg/TWOpqDnZxFGYW1qL6isdCiUghUn1Of6nlzsT79C4qFzDcwEdHtDIjftYEBH8kCCQoTNbNJe31HjZ+R9ZrBOPnZoc8olRftr79A4SsHgwXRq+t+cymtSiNk4Ba4XiycwFzM/yTUArGRl5pjgVAsvCUVtgAPci4NOwrOjRDZLN4otGfAefDeJPyb7eHHtsxLqeuVF648bzgrthQKVQFONiDhX1HRMxZwnob+1YsNxdMS4LuBCeytDCKnNDg3iinF7ED0ZwaZt3kOP2OnrgM0XhoMGLqSf78KrG2a/1rsBR2bfOQdGSY+No0lwWqUdyVn0iYmyUxWzmLhJVffBDJmhoCUhz0aX84KyU9wdgWglk1mw3s2BRQyYXSOrzOBlSY1fEoYeoMQe4+Lf7AyEgi2/nQ0OoDArK+uGJyPEqIN8Up4JYMmp0WFPSL5Gndg5xpi7gPs3IIRQtiQwCtSmLVnspG4cXLF8rVQ', 'base64')
-
+            // Here, we'd construct your new manager that uses the WAB. In the original code,
+            // we still reference ExampleWalletManager, so let's preserve that naming for drop-in usage:
             const exampleWalletManager = new ExampleWalletManager(
                 'admin.com',
                 walletBuilder,
-                inMemoryInterattor,
+                inMemoryInteractor,
                 recoveryKeySaver,
                 passwordRetriever,
-                SECRET_SERVER_URL,
-                snap
-            )
+                wabUrl, // replaced SECRET_SERVER_URL with user-chosen WAB (some managers do need server URLs)
+                undefined // we can pass no snapshot for now; see below
+            );
 
-            onWalletReady(exampleWalletManager)
-            updateManagers({ walletManager: exampleWalletManager })
+            // Attempt to load a local snapshot
+            if (localStorage.snap) {
+                const snapArr = Utils.toArray(localStorage.snap, 'base64');
+                try {
+                    exampleWalletManager.loadSnapshot(snapArr).then(() => {
+                        console.log("Snapshot loaded successfully");
+                    }).catch((err) => {
+                        console.error("Failed to load snapshot from localStorage", err);
+                    });
+                }
+      }
+
+            // Fire the parent callback
+            onWalletReady(exampleWalletManager);
+
+            // Update the context with the new manager
+            updateManagers({ walletManager: exampleWalletManager });
         }
     }, [
         passwordRetriever,
         recoveryKeySaver,
-        spendingAuthorizationCallback,
-        basketAccessCallback,
+        configComplete,
+        managers.walletManager,
+        wabUrl,
+        selectedNetwork,
+        selectedStorageUrl,
+        selectedAuthMethod,
+        onWalletReady,
+        updateManagers,
         protocolPermissionCallback,
+        basketAccessCallback,
+        spendingAuthorizationCallback,
         certificateAccessCallback
-    ])
+    ]);
 
-    // Return your entire UI
-    // But override context to include the focus methods if provided:
+    // If the manager does not exist yet, we can show a minimal config form:
+    const noManagerYet = !managers.walletManager;
+
     return (
         <WalletContext.Provider
             value={{
                 managers,
                 updateManagers,
-                // if caller didn't supply, default to the existing context
                 isFocused: isFocused ? isFocused : async () => false,
                 onFocusRequested: requestFocus ? requestFocus : async () => { },
                 onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
@@ -247,6 +326,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                     <BreakpointProvider queries={queries}>
                         <Theme>
                             <ToastContainer position='top-center' />
+
+                            {/* The original MUI handlers that set up passwordRetriever, etc. */}
                             <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
                             <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
                             <SpendingAuthorizationHandler
@@ -262,7 +343,75 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                                 setCertificateAccessHandler={setCertificateAccessCallback}
                             />
 
-                            {/* Only render the routes after the manager exists */}
+                            {/* If we haven't created the manager yet, show a config form */}
+                            {noManagerYet && (
+                                <div style={{ padding: 20, maxWidth: 800, margin: '20px auto' }}>
+                                    <h2>Configure Your Wallet</h2>
+
+                                    <div style={{ margin: '10px 0' }}>
+                                        <label>WAB Server URL: </label>
+                                        <input
+                                            type="text"
+                                            value={wabUrl}
+                                            onChange={(e) => setWabUrl(e.target.value)}
+                                            style={{ width: "60%" }}
+                                        />
+                                        <button onClick={fetchWabInfo}>Fetch Info</button>
+                                        {wabInfo && (
+                                            <div style={{ marginTop: 10 }}>
+                                                <p>Supported Methods: {wabInfo.supportedAuthMethods.join(", ")}</p>
+                                                <p>Faucet: {wabInfo.faucetEnabled ? "Enabled" : "Disabled"} (Amount: {wabInfo.faucetAmount})</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {wabInfo && (
+                                        <div style={{ margin: '10px 0' }}>
+                                            <label>Choose Auth Method: </label>
+                                            <select
+                                                value={selectedAuthMethod}
+                                                onChange={(e) => onSelectAuthMethod(e.target.value)}
+                                            >
+                                                <option value="">(Select method)</option>
+                                                {wabInfo.supportedAuthMethods.map((m) => (
+                                                    <option key={m} value={m}>{m}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div style={{ margin: '10px 0' }}>
+                                        <label>Chain/Network: </label>
+                                        <select
+                                            value={selectedNetwork}
+                                            onChange={(e) => setSelectedNetwork(e.target.value)}
+                                        >
+                                            <option value="test">Testnet</option>
+                                            <option value="main">Mainnet</option>
+                                        </select>
+                                    </div>
+
+                                    <div style={{ margin: '10px 0' }}>
+                                        <label>Storage URL: </label>
+                                        <input
+                                            type="text"
+                                            value={selectedStorageUrl}
+                                            onChange={(e) => setSelectedStorageUrl(e.target.value)}
+                                            style={{ width: "60%" }}
+                                        />
+                                    </div>
+
+                                    <button onClick={finalizeConfig}>
+                                        Finalize Config & Create Manager
+                                    </button>
+                                    <hr />
+                                    <p>
+                                        Once your manager is created, you can proceed to the normal flow (Greeter, etc.).
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* If manager is created, we show the normal routes (like the original code) */}
                             {managers.walletManager && (
                                 <Switch>
                                     <Route exact path='/' component={Greeter} />

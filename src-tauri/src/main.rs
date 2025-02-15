@@ -68,7 +68,7 @@ fn request_focus(window: Window) {
 
 #[tauri::command]
 fn relinquish_focus(window: Window) {
-    if let Err(e) = window.minimize() {
+    if let Err(e) = window.hide() {
         eprintln!("Failed to minimize window: {}", e);
     }
 }

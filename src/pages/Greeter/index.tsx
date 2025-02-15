@@ -28,133 +28,156 @@ import { WalletContext } from '../../UserInterface'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
-// import KernelConfigurator from '../../components/KernelConfigurator.jsx'
 
 const useStyles = makeStyles(style as any, { name: 'Greeter' })
 
 const Greeter: React.FC<any> = ({ history }) => {
   const { appVersion, appName, managers } = useContext(WalletContext)
   const classes = useStyles()
+
+  // We keep the same Accordion steps: phone, code, password
   const [accordionView, setAccordionView] = useState('phone')
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [accountStatus, setAccountStatus] = useState(undefined)
+  const [accountStatus, setAccountStatus] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [pageLoaded, setPageLoaded] = useState(false)
+
   const phoneField = useRef(null)
   const codeField = useRef(null)
   const passwordField = useRef(null)
-  // const [electronVersion, setElectronVersion] = useState('0.0.0')
 
-  // Navigate to the dashboard if the user is already authenticated
+  // Access the manager:
+  const walletManager = managers.walletManager
+
   useEffect(() => {
     (async () => {
-      if (managers.walletManager!.authenticated) {
+      // If the user is already authenticated, skip to dashboard
+      if (walletManager?.authenticated) {
         history.push('/dashboard/apps')
       }
       setPageLoaded(true)
     })()
-  }, [history, managers])
+  }, [history, walletManager])
 
-  // Ensure the correct authentication mode
+  // Force the manager to use the "presentation-key-and-password" flow:
   useEffect(() => {
-    managers.walletManager!.authenticationMode = 'presentation-key-and-password'
-  }, [])
+    if (walletManager) {
+      walletManager.authenticationMode = 'presentation-key-and-password'
+    }
+  }, [walletManager])
 
-  const handleSubmitPhone = async e => {
+  // Step 1: The user enters a phone number, we call manager.startAuth(...)
+  // This replaces the old providePhoneNumber(...) approach:
+  const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!walletManager) {
+      toast.error("Wallet Manager not ready yet.")
+      return
+    }
     try {
       setLoading(true)
-      await managers.walletManager!.providePhoneNumber(phone)
+      // Typically we do manager.startAuth(...) with a Twilio payload
+      await walletManager.startAuth({ phoneNumber: phone })
       setAccordionView('code')
       toast.success('A code has been sent to your phone.')
+      // Move focus to code field
       if (codeField.current) {
-        codeField.current.children[1].children[0].focus()
+        // MUI sub-layers: codeField.current.children[1].children[0].focus()
+        (codeField.current as any).children[1].children[0].focus()
       }
-    } catch (e) {
-      console.error(e)
-      toast.error(e.message)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || "Failed to send code")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSubmitCode = async e => {
+  // Step 2: The user enters the OTP code, we call manager.completeAuth(...)
+  // This replaces the old provideCode(...) approach:
+  const handleSubmitCode = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!walletManager) {
+      toast.error("Wallet Manager not ready yet.")
+      return
+    }
     try {
       setLoading(true)
-      managers.walletManager?.provideCode(code)
-      if (managers.walletManager?.authenticationFlow === 'new-user') {
+      await walletManager.completeAuth({ phoneNumber: phone, otp: code })
+
+      // manager.completeAuth(...) should set manager.authenticationFlow to either
+      // 'existing-user' or 'new-user' after retrieving the presentationKey from the WAB
+      if (walletManager.authenticationFlow === 'new-user') {
         setAccountStatus('new-user')
+      } else {
+        setAccountStatus('existing-user')
       }
+
       setAccordionView('password')
       if (passwordField.current) {
-        passwordField.current.children[1].children[0].focus()
+        (passwordField.current as any).children[1].children[0].focus()
       }
-    } catch (e) {
-      console.error(e)
-      toast.error(e.message)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || "Failed to verify code")
     } finally {
       setLoading(false)
     }
   }
+
+  // Optional "resend code" that just calls startAuth again
   const handleResendCode = async () => {
+    if (!walletManager) return
     try {
       setLoading(true)
-      await managers.walletManager?.providePhoneNumber(phone)
+      await walletManager.startAuth({ phoneNumber: phone })
       toast.success('A new code has been sent to your phone.')
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
       toast.error(e.message)
     } finally {
-      // Prevent lots of re-send spam clicks
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // small delay to avoid spam
+      await new Promise(resolve => setTimeout(resolve, 2000))
       setLoading(false)
     }
   }
 
-  // TODO: Support auto-type again.
-  // useEffect(() => {
-  //   (async () => {
-  //     if (accountStatus === 'existing-user') {
-  //       try {
-  //         const result = await window.CWI.submitPassword(password, password, true)
-  //         if (result === true) {
-  //           await saveLocalSnapshot()
-  //           if (typeof window.CWI.getNinja === 'function') {
-  //             window.CWI.ninja = window.CWI.getNinja()
-  //           }
-  //           history.push('/dashboard/apps')
-  //         }
-  //       } catch (e) {
-  //       }
-  //     }
-  //   })()
-  // }, [password])
-
-  const handleSubmitPassword = async e => {
+  // Step 3: Provide a password for the final step.
+  const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!walletManager) {
+      toast.error("Wallet Manager not ready yet.")
+      return
+    }
+
+    // If new-user, confirm password match
+    if (accountStatus === 'new-user') {
+      if (password !== confirmPassword) {
+        toast.error("Passwords don't match.")
+        return
+      }
+    }
+
     setLoading(true)
     try {
-      await managers.walletManager!.providePassword(
-        password
-      )
-      if (managers.walletManager?.authenticated === true) {
-        localStorage.snap = Utils.toBase64(managers.walletManager?.saveSnapshot())
-        // if (accountStatus === 'new-user') {
-        // history.push('/welcome') // todo
-        // } else {
-        // }
+      // manager.providePassword(...) finalizes the creation or retrieval of the user’s primary key
+      await walletManager.providePassword(password)
+
+      if (walletManager.authenticated) {
+        // Save snapshot to local storage
+        localStorage.snap = Utils.toBase64(walletManager.saveSnapshot())
+        toast.success("Authenticated successfully!")
         history.push('/dashboard/apps')
       } else {
-        throw new Error('Not authenticated, maybe password was wrong?')
+        throw new Error('Authentication failed, maybe password is incorrect?')
       }
-    } catch (e) {
-      console.error(e)
-      toast.error(e.message)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -178,21 +201,16 @@ const Greeter: React.FC<any> = ({ history }) => {
           <Typography variant='h4' paragraph fontFamily='Helvetica'>
             Welcome!
           </Typography>
-          <Typography variant='p' paragraph>
+          <Typography variant='body1' paragraph>
             Please enter your phone number to login or sign up.
           </Typography>
           <Divider />
         </center>
-        <Accordion
-          expanded={accordionView === 'phone'}
-        >
-          <AccordionSummary
-            className={classes.panel_header}
-          >
+        {/* PHONE step */}
+        <Accordion expanded={accordionView === 'phone'}>
+          <AccordionSummary className={classes.panel_header}>
             <PhoneIcon className={classes.expansion_icon} />
-            <Typography
-              className={classes.panel_heading}
-            >
+            <Typography className={classes.panel_heading}>
               Phone Number
             </Typography>
             {(accordionView === 'code' || accordionView === 'password') && (
@@ -200,9 +218,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             )}
           </AccordionSummary>
           <form onSubmit={handleSubmitPhone}>
-            <AccordionDetails
-              className={classes.expansion_body}
-            >
+            <AccordionDetails className={classes.expansion_body}>
               <PhoneEntry
                 value={phone}
                 onChange={setPhone}
@@ -218,21 +234,17 @@ const Greeter: React.FC<any> = ({ history }) => {
                 type='submit'
                 disabled={loading}
               >
-                {!loading ? 'Send Code' : <CircularProgress />}
+                {!loading ? 'Send Code' : <CircularProgress size={20} />}
               </Button>
             </AccordionActions>
           </form>
         </Accordion>
-        <Accordion
-          expanded={accordionView === 'code'}
-        >
-          <AccordionSummary
-            className={classes.panel_header}
-          >
+
+        {/* CODE step */}
+        <Accordion expanded={accordionView === 'code'}>
+          <AccordionSummary className={classes.panel_header}>
             <SMSIcon className={classes.expansion_icon} />
-            <Typography
-              className={classes.panel_heading}
-            >
+            <Typography className={classes.panel_heading}>
               Enter code
             </Typography>
             {accordionView === 'password' && (
@@ -240,9 +252,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             )}
           </AccordionSummary>
           <form onSubmit={handleSubmitCode}>
-            <AccordionDetails
-              className={classes.expansion_body}
-            >
+            <AccordionDetails className={classes.expansion_body}>
               <TextField
                 onChange={e => setCode(e.target.value)}
                 label='Code'
@@ -257,7 +267,6 @@ const Greeter: React.FC<any> = ({ history }) => {
                 onClick={handleResendCode}
                 size='small'
                 disabled={loading}
-                align='left'
               >
                 Resend Code
               </Button>
@@ -276,28 +285,22 @@ const Greeter: React.FC<any> = ({ history }) => {
                 type='submit'
                 disabled={loading}
               >
-                {!loading ? 'Next' : <CircularProgress />}
+                {!loading ? 'Next' : <CircularProgress size={20} />}
               </Button>
             </AccordionActions>
           </form>
         </Accordion>
-        <Accordion
-          expanded={accordionView === 'password'}
-        >
-          <AccordionSummary
-            className={classes.panel_header}
-          >
+
+        {/* PASSWORD step */}
+        <Accordion expanded={accordionView === 'password'}>
+          <AccordionSummary className={classes.panel_header}>
             <LockIcon className={classes.expansion_icon} />
-            <Typography
-              className={classes.panel_heading}
-            >
+            <Typography className={classes.panel_heading}>
               Password
             </Typography>
           </AccordionSummary>
           <form onSubmit={handleSubmitPassword}>
-            <AccordionDetails
-              className={classes.expansion_body}
-            >
+            <AccordionDetails className={classes.expansion_body}>
               <div
                 className={
                   accountStatus === 'new-user'
@@ -365,24 +368,20 @@ const Greeter: React.FC<any> = ({ history }) => {
                 type='submit'
                 disabled={loading}
               >
-                {!loading
-                  ? (accountStatus === 'new-user'
-                    ? 'Create Account'
-                    : 'Log In'
-                  )
-                  : <CircularProgress />}
+                {loading ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  accountStatus === 'new-user' ? 'Create Account' : 'Log In'
+                )}
               </Button>
             </AccordionActions>
           </form>
         </Accordion>
-        {/* <KernelConfigurator /> */}
+
         <br />
         <br />
         <Link to='/recovery'>
-          <Button
-            color='secondary'
-            className={classes.recovery_link}
-          >
+          <Button color='secondary' className={classes.recovery_link}>
             Account Recovery?
           </Button>
         </Link>
@@ -398,8 +397,16 @@ const Greeter: React.FC<any> = ({ history }) => {
           color='textSecondary'
           className={classes.copyright_text}
         >
-          Copyright &copy; 2020-2023 Peer-to-peer Privacy Systems Research, LLC. All rights reserved. Redistribution of this software is strictly prohibited. Use of this software is subject to the{' '}
-          <a href='https://projectbabbage.com/desktop/license' target='_blank' rel='noopener noreferrer'>Babbage Software License Agreement</a>.
+          Copyright &copy; 2020-2023 Peer-to-peer Privacy Systems Research, LLC.
+          All rights reserved. Redistribution of this software is strictly prohibited.
+          Use of this software is subject to the{' '}
+          <a
+            href='https://projectbabbage.com/desktop/license'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            Babbage Software License Agreement
+          </a>.
         </Typography>
       </div>
     </div>
