@@ -107,6 +107,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
     try {
       setLoading(true)
+      debugger
       await walletManager.completeAuth({ phoneNumber: phone, otp: code })
 
       // manager.completeAuth(...) should set manager.authenticationFlow to either
@@ -165,6 +166,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     setLoading(true)
     try {
       // manager.providePassword(...) finalizes the creation or retrieval of the user’s primary key
+      debugger
       await walletManager.providePassword(password)
 
       if (walletManager.authenticated) {

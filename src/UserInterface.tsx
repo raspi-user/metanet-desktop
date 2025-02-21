@@ -9,7 +9,8 @@ import {
     WalletStorageManager,
     UMPTokenInteractor,
     PermissionEventHandler,
-    WalletAuthenticationManager
+    WalletAuthenticationManager,
+    OverlayUMPTokenInteractor
 } from '@cwi/wallet-toolbox-client'
 import {
     KeyDeriver,
@@ -37,13 +38,14 @@ import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
 import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
-import { WABClient } from '@cwi/wallet-toolbox-client/out/src/wab-client/WABClient'
-import { AuthMethodInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/AuthMethodInteractor'
-import { TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/TwilioPhoneInteractor'
+import { WABClient, TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client'
+import WalletConfig from './components/WalletConfig'
+// import { AuthMethodInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/AuthMethodInteractor'
+// import { TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/TwilioPhoneInteractor'
 
 /** Defaults from the original file */
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
-const STORAGE_URL = 'https://staging-dojo.babbage.systems'
+const STORAGE_URL = 'https://staging-storage.babbage.systems'
 const CHAIN = 'test'
 
 /**
@@ -349,74 +351,20 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                             <CertificateAccessHandler
                                 setCertificateAccessHandler={setCertificateAccessCallback}
                             />
-
-                            {/* If we haven't created the manager yet, show a config form */}
-                            {noManagerYet && (
-                                <div style={{ padding: 20, maxWidth: 800, margin: '20px auto' }}>
-                                    <h2>Configure Your Wallet</h2>
-
-                                    <div style={{ margin: '10px 0' }}>
-                                        <label>WAB Server URL: </label>
-                                        <input
-                                            type="text"
-                                            value={wabUrl}
-                                            onChange={(e) => setWabUrl(e.target.value)}
-                                            style={{ width: "60%" }}
-                                        />
-                                        <button onClick={fetchWabInfo}>Fetch Info</button>
-                                        {wabInfo && (
-                                            <div style={{ marginTop: 10 }}>
-                                                <p>Supported Methods: {wabInfo.supportedAuthMethods.join(", ")}</p>
-                                                <p>Faucet: {wabInfo.faucetEnabled ? "Enabled" : "Disabled"} (Amount: {wabInfo.faucetAmount})</p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {wabInfo && (
-                                        <div style={{ margin: '10px 0' }}>
-                                            <label>Choose Auth Method: </label>
-                                            <select
-                                                value={selectedAuthMethod}
-                                                onChange={(e) => onSelectAuthMethod(e.target.value)}
-                                            >
-                                                <option value="">(Select method)</option>
-                                                {wabInfo.supportedAuthMethods.map((m) => (
-                                                    <option key={m} value={m}>{m}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-
-                                    <div style={{ margin: '10px 0' }}>
-                                        <label>Chain/Network: </label>
-                                        <select
-                                            value={selectedNetwork}
-                                            onChange={(e) => setSelectedNetwork(e.target.value)}
-                                        >
-                                            <option value="test">Testnet</option>
-                                            <option value="main">Mainnet</option>
-                                        </select>
-                                    </div>
-
-                                    <div style={{ margin: '10px 0' }}>
-                                        <label>Storage URL: </label>
-                                        <input
-                                            type="text"
-                                            value={selectedStorageUrl}
-                                            onChange={(e) => setSelectedStorageUrl(e.target.value)}
-                                            style={{ width: "60%" }}
-                                        />
-                                    </div>
-
-                                    <button onClick={finalizeConfig}>
-                                        Finalize Config & Create Manager
-                                    </button>
-                                    <hr />
-                                    <p>
-                                        Once your manager is created, you can proceed to the normal flow (Greeter, etc.).
-                                    </p>
-                                </div>
-                            )}
+                            <WalletConfig
+                                noManagerYet
+                                wabUrl={wabUrl}
+                                setWabUrl={setWabUrl}
+                                fetchWabInfo={fetchWabInfo}
+                                wabInfo={wabInfo!}
+                                selectedAuthMethod={selectedAuthMethod}
+                                onSelectAuthMethod={onSelectAuthMethod}
+                                selectedNetwork={selectedNetwork}
+                                setSelectedNetwork={setSelectedNetwork}
+                                selectedStorageUrl={selectedStorageUrl}
+                                setSelectedStorageUrl={setSelectedStorageUrl}
+                                finalizeConfig={finalizeConfig}
+                            />
 
                             {/* If manager is created, we show the normal routes (like the original code) */}
                             {managers.walletManager && (
