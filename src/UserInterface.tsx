@@ -2,14 +2,14 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import {
     Wallet,
     WalletPermissionsManager,
-    ExampleWalletManager,
     PrivilegedKeyManager,
     Services,
     StorageClient,
     WalletSigner,
     WalletStorageManager,
     UMPTokenInteractor,
-    PermissionEventHandler
+    PermissionEventHandler,
+    WalletAuthenticationManager
 } from '@cwi/wallet-toolbox-client'
 import {
     KeyDeriver,
@@ -36,6 +36,10 @@ import Recovery from './pages/Recovery'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
+import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
+import { WABClient } from '@cwi/wallet-toolbox-client/out/src/wab-client/WABClient'
+import { AuthMethodInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/AuthMethodInteractor'
+import { TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/TwilioPhoneInteractor'
 
 /** Defaults from the original file */
 const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
@@ -47,7 +51,10 @@ const CHAIN = 'test'
  * (if you want to skip on-chain logic in dev). Modify if needed.
  */
 const inMemoryInteractor: UMPTokenInteractor = {
-    findByPresentationKeyHash: async () => undefined,
+    findByPresentationKeyHash: async (hash) => {
+        console.log('PRESENTATION_KEY (hash)', hash)
+        return undefined
+    },
     findByRecoveryKeyHash: async () => undefined,
     buildAndSend: async () => 'abcd.0'
 };
@@ -64,7 +71,7 @@ const queries = {
 // -----
 
 interface ManagerState {
-    walletManager?: ExampleWalletManager;
+    walletManager?: WalletAuthenticationManager;
     permissionsManager?: WalletPermissionsManager;
     settingsManager?: WalletSettingsManager;
 }
@@ -89,8 +96,9 @@ export const WalletContext = createContext<WalletContextValue>({
     isFocused: async () => false,
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
-    appVersion: '0.0.    appName: 'Example Desktop'
-});
+    appVersion: '0.0.0',
+    appName: 'Example Desktop'
+})
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     const [managers, setManagers] = useState<ManagerState>({});
@@ -160,7 +168,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     // --------------- New: WAB + network + storage config ---------------
 
     // Minimal placeholders for a user to configure
-    const [wabUrl, setWabUrl] = useState<string>("https://my-wab.example.com");
+    const [wabUrl, setWabUrl] = useState<string>("https://staging-wab.babbage.systems");
     const [wabInfo, setWabInfo] = useState<{
         supportedAuthMethods: string[];
         faucetEnabled: boolean;
@@ -180,6 +188,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 throw new Error(`Failed to fetch info: ${res.status}`);
             }
             const info = await res.json();
+            console.log(info)
             setWabInfo(info);
         } catch (error: any) {
             console.error("Error fetching WAB info", error);
@@ -201,7 +210,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     }
 
     // ------------------------------------------------------------------
-
+    // debugger
     /**
      * Once we have all essential building blocks:
      * - passwordRetriever
@@ -228,8 +237,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                 const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey));
                 const storageManager = new WalletStorageManager(keyDeriver.identityKey);
-                const signer = new WalletSigner(chain, keyDeriver, storageManager);
-                const services = new Services(chain);
+                const signer = new WalletSigner(chain as Chain, keyDeriver, storageManager);
+                const services = new Services(chain as Chain);
                 const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
                 const settingsManager = wallet.settingsManager;
 
@@ -260,27 +269,26 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
             // Here, we'd construct your new manager that uses the WAB. In the original code,
             // we still reference ExampleWalletManager, so let's preserve that naming for drop-in usage:
-            const exampleWalletManager = new ExampleWalletManager(
+            const exampleWalletManager = new WalletAuthenticationManager(
                 'admin.com',
                 walletBuilder,
                 inMemoryInteractor,
                 recoveryKeySaver,
                 passwordRetriever,
-                wabUrl, // replaced SECRET_SERVER_URL with user-chosen WAB (some managers do need server URLs)
-                undefined // we can pass no snapshot for now; see below
+                new WABClient(wabUrl),
+                new TwilioPhoneInteractor()
             );
+            (window as any).authManager = exampleWalletManager
 
             // Attempt to load a local snapshot
             if (localStorage.snap) {
                 const snapArr = Utils.toArray(localStorage.snap, 'base64');
-                try {
-                    exampleWalletManager.loadSnapshot(snapArr).then(() => {
-                        console.log("Snapshot loaded successfully");
-                    }).catch((err) => {
-                        console.error("Failed to load snapshot from localStorage", err);
-                    });
-                }
-      }
+                exampleWalletManager.loadSnapshot(snapArr).then(() => {
+                    console.log("Snapshot loaded successfully");
+                }).catch((err) => {
+                    console.error("Failed to load snapshot from localStorage", err);
+                });
+            }
 
             // Fire the parent callback
             onWalletReady(exampleWalletManager);
