@@ -61,16 +61,16 @@ fn is_focused(window: Window) -> bool {
 #[tauri::command]
 fn request_focus(window: Window) {
     // This attempts to bring the window to the foreground.
-    if let Err(e) = window.set_focus() {
-        eprintln!("Failed to set focus on window: {}", e);
-    }
+    // if let Err(e) = window.set_focus() {
+    //     eprintln!("Failed to set focus on window: {}", e);
+    // }
 }
 
 #[tauri::command]
 fn relinquish_focus(window: Window) {
-    if let Err(e) = window.hide() {
-        eprintln!("Failed to minimize window: {}", e);
-    }
+    // if let Err(e) = window.hide() {
+    //     eprintln!("Failed to minimize window: {}", e);
+    // }
 }
 
 fn main() {

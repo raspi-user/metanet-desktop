@@ -14,7 +14,9 @@ import {
 } from '@cwi/wallet-toolbox-client'
 import {
     KeyDeriver,
+    LookupResolver,
     PrivateKey,
+    SHIPBroadcaster,
     Utils,
     WalletInterface
 } from '@bsv/sdk'
@@ -251,7 +253,13 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                 // Setup permissions
                 const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
-                    encryptWalletMetadata: false
+                    encryptWalletMetadata: false,
+                    seekPermissionsForPublicKeyRevelation: false,
+                    seekProtocolPermissionsForSigning: false,
+                    seekProtocolPermissionsForEncrypting: false,
+                    seekProtocolPermissionsForHMAC: false,
+                    seekPermissionsForIdentityKeyRevelation: false,
+                    seekPermissionsForKeyLinkageRevelation: false
                 });
                 permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback);
                 permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback);
@@ -271,10 +279,26 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
             // Here, we'd construct your new manager that uses the WAB. In the original code,
             // we still reference ExampleWalletManager, so let's preserve that naming for drop-in usage:
+            const resolver = new LookupResolver({
+                hostOverrides: {
+                    'ls_users': ['https://backend.2efa4b8fe4c2bd42083636871b007e9e.projects.babbage.systems']
+                }
+            })
             const exampleWalletManager = new WalletAuthenticationManager(
                 'admin.com',
                 walletBuilder,
-                inMemoryInteractor,
+                new OverlayUMPTokenInteractor(
+                    new LookupResolver({
+                        hostOverrides: {
+                            'ls_users': ['https://backend.2efa4b8fe4c2bd42083636871b007e9e.projects.babbage.systems']
+                        }
+                    }),
+                    new SHIPBroadcaster(['tm_users'],
+                        {
+                            resolver
+                        }
+                    )
+                ),
                 recoveryKeySaver,
                 passwordRetriever,
                 new WABClient(wabUrl),
