@@ -352,7 +352,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                                 setCertificateAccessHandler={setCertificateAccessCallback}
                             />
                             <WalletConfig
-                                noManagerYet
+                                noManagerYet={noManagerYet}
                                 wabUrl={wabUrl}
                                 setWabUrl={setWabUrl}
                                 fetchWabInfo={fetchWabInfo}
