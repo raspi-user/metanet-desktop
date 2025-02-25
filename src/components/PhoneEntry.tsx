@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
   },
   country_dropdown: {
     width: '100%',
-    marginTop: theme.spacing(1)
+    marginTop: (theme as any).spacing(1)
   }
 }), { name: 'PhoneEntry' })
 const PhoneField = forwardRef((props, ref) => (
@@ -37,7 +37,7 @@ const PhoneEntry: React.FC<any> = props => {
       <CountryDropdown
         value={country}
         priorityOptions={['US', 'GB']}
-        labelType='long'
+        labelType='full'
         valueType='short'
         onChange={handleCountryChange}
         style={{ width: '100%', height: '40px', marginBottom: '15px', border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}

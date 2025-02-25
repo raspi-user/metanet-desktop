@@ -62,7 +62,7 @@ const Dashboard = () => {
     setMenuOpen(!menuOpen)
   }
   const getMargin = () => {
-    if (menuOpen && !breakpoints.sm) {
+    if (menuOpen && !(breakpoints as any).sm) {
       return '16em'
     }
     return '0em'
@@ -71,7 +71,7 @@ const Dashboard = () => {
   // History.push wrapper
   const navigation = {
     push: (path) => {
-      if (breakpoints.sm) {
+      if ((breakpoints as any).sm) {
         setMenuOpen(false)
       }
       history.push(path)
@@ -80,7 +80,7 @@ const Dashboard = () => {
 
   // First useEffect to handle breakpoint changes
   useEffect(() => {
-    if (!breakpoints.sm) {
+    if (!(breakpoints as any).sm) {
       setMenuOpen(true)
     } else {
       setMenuOpen(false)
@@ -124,7 +124,7 @@ const Dashboard = () => {
   return (
     <div className={classes.content_wrap} style={{ marginLeft: getMargin() }}>
       <div style={{ marginLeft: 0, width: menuOpen ? 'calc(100vw - 16em)' : '100vw', transition: 'margin .3s' }}>
-        {breakpoints.sm &&
+        {(breakpoints as any).sm &&
           <div style={{ padding: '0.5em 0 0 0.5em' }} ref={menuRef}>
             <Toolbar>
               <IconButton edge='start' onClick={handleDrawerToggle} aria-label='menu'>
@@ -231,7 +231,7 @@ const Dashboard = () => {
               <ListItemIcon>
                 <SchoolIcon />
               </ListItemIcon>
-              <ListItemText style={{ color: theme.palette.primary.secondary }}>
+              <ListItemText style={{ color: (theme as any).palette.primary.secondary }}>
                 Learn MetaNet Tech
               </ListItemText>
             </ListItemButton>
@@ -297,11 +297,9 @@ const Dashboard = () => {
             component={CertificateAccess}
           /> */}
           <Route
-            className={classes.full_width}
-            default
             component={() => {
               return (
-                <div style={{ padding: '1em' }}>
+                <div className={classes.full_width} style={{ padding: '1em' }}>
                   <br />
                   <br />
                   <Typography align='center' color='textPrimary'>Use the menu to select a page</Typography>

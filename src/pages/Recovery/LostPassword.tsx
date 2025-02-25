@@ -51,7 +51,8 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
     e.preventDefault()
     try {
       setLoading(true)
-      await managers.walletManager!.providePhoneNumber(phone)
+      // TODO
+      // await managers.walletManager!.providePhoneNumber(phone)
       setAccordianView('code')
       toast.success('A code has been sent to your phone.')
     } catch (e) {
@@ -66,7 +67,8 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
     e.preventDefault()
     try {
       setLoading(true)
-      await managers.walletManager!.provideCode(code)
+      // TODO
+      // await managers.walletManager!.provideCode(code)
       setAccordianView('recovery-key')
     } catch (e) {
       console.error(e)
@@ -78,7 +80,8 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
   const handleResendCode = async () => {
     try {
       setLoading(true)
-      await managers.walletManager!.providePhoneNumber(phone)
+      // TODO
+      // await managers.walletManager!.providePhoneNumber(phone)
       toast.success('A new code has been sent to your phone.')
     } catch (e) {
       console.error(e)

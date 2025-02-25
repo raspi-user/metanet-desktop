@@ -10,7 +10,9 @@ import {
     UMPTokenInteractor,
     PermissionEventHandler,
     WalletAuthenticationManager,
-    OverlayUMPTokenInteractor
+    OverlayUMPTokenInteractor,
+    WABClient,
+    TwilioPhoneInteractor
 } from '@cwi/wallet-toolbox-client'
 import {
     KeyDeriver,
@@ -20,48 +22,37 @@ import {
     Utils,
     WalletInterface
 } from '@bsv/sdk'
+import { Switch, Route, useHistory } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
+
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
 import CertificateAccessHandler from './components/CertificateAccessHandler'
+import BasketAccessHandler from './components/BasketAccessHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
-import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
-import { MemoryRouter as Router, Switch, Route } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import BasketAccessHandler from './components/BasketAccessHandler'
 import { BreakpointProvider } from './utils/useBreakpoints'
-
 import Greeter from './pages/Greeter'
 import Recovery from './pages/Recovery'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
-import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
-import { WABClient, TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client'
 import WalletConfig from './components/WalletConfig'
-// import { AuthMethodInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/AuthMethodInteractor'
-// import { TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client/out/src/wab-client/auth-method-interactors/TwilioPhoneInteractor'
+import { BrowserRouter as Router } from 'react-router-dom'
 
-/** Defaults from the original file */
-const SECRET_SERVER_URL = 'https://staging-secretserver.babbage.systems'
-const STORAGE_URL = 'https://staging-storage.babbage.systems'
-const CHAIN = 'test'
+const STORAGE_URL = 'https://storage.babbage.systems'
+const CHAIN = 'main'
 
-/**
- * We might choose to store the "in-memory" fallback interactor for the UMP token logic
- * (if you want to skip on-chain logic in dev). Modify if needed.
- */
 const inMemoryInteractor: UMPTokenInteractor = {
-    findByPresentationKeyHash: async (hash) => {
-        console.log('PRESENTATION_KEY (hash)', hash)
-        return undefined
-    },
+    findByPresentationKeyHash: async () => undefined,
     findByRecoveryKeyHash: async () => undefined,
     buildAndSend: async () => 'abcd.0'
-};
+}
 
 const queries = {
     xs: '(max-width: 500px)',
@@ -70,30 +61,22 @@ const queries = {
     or: '(orientation: portrait)'
 }
 
-// -----
-// Context Types
-// -----
-
 interface ManagerState {
-    walletManager?: WalletAuthenticationManager;
-    permissionsManager?: WalletPermissionsManager;
-    settingsManager?: WalletSettingsManager;
+    walletManager?: WalletAuthenticationManager
+    permissionsManager?: WalletPermissionsManager
+    settingsManager?: WalletSettingsManager
 }
 
-// We also define the shape of the focus-handling callbacks:
 export interface WalletContextValue {
-    managers: ManagerState;
-    updateManagers: (newManagers: ManagerState) => void;
-    // Focus APIs:
-    isFocused: () => Promise<boolean>;
-    onFocusRequested: () => Promise<void>;
-    onFocusRelinquished: () => Promise<void>;
-    //
-    appVersion: string;
-    appName: string;
+    managers: ManagerState
+    updateManagers: (newManagers: ManagerState) => void
+    isFocused: () => Promise<boolean>
+    onFocusRequested: () => Promise<void>
+    onFocusRelinquished: () => Promise<void>
+    appVersion: string
+    appName: string
 }
 
-// Provide default no-op or trivial implementations
 export const WalletContext = createContext<WalletContextValue>({
     managers: {},
     updateManagers: () => { },
@@ -105,11 +88,11 @@ export const WalletContext = createContext<WalletContextValue>({
 })
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
-    const [managers, setManagers] = useState<ManagerState>({});
+    const [managers, setManagers] = useState<ManagerState>({})
 
     const updateManagers = (newManagers: ManagerState) => {
-        setManagers(newManagers);
-    };
+        setManagers(newManagers)
+    }
 
     return (
         <WalletContext.Provider
@@ -125,203 +108,130 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
         >
             {children}
         </WalletContext.Provider>
-    );
-};
-
-// -----
-// Now define the props for the UserInterface component
-// -----
-interface UserInterfaceProps {
-    onWalletReady: (wallet: WalletInterface) => void;
-    // Our newly introduced focus-handling props:
-    isFocused?: () => Promise<boolean>;
-    requestFocus?: () => Promise<void>;
-    relinquishFocus?: () => Promise<void>;
+    )
 }
 
-/**
- * UI to let user select WAB server, pick an Auth Method, and choose network & storage.
- * Once the user has also provided the password retriever & recovery key saver callbacks,
- * we build the ExampleWalletManager and store it in context.
- */
-export const UserInterface: React.FC<UserInterfaceProps> = ({
+interface UserInterfaceProps {
+    onWalletReady: (wallet: WalletInterface) => void
+    isFocused?: () => Promise<boolean>
+    requestFocus?: () => Promise<void>
+    relinquishFocus?: () => Promise<void>
+}
+
+// Rendered inside the Router so useHistory is available.
+const UserInterfaceContent: React.FC<UserInterfaceProps> = ({
     onWalletReady,
     isFocused,
     requestFocus,
     relinquishFocus
 }) => {
-    // Access the context so we can override it with the provided focus fns
-    const { managers, updateManagers } = React.useContext(WalletContext);
+    const { managers, updateManagers } = useContext(WalletContext)
+    const history = useHistory()
 
-    // The original code sets up passwordRetriever, etc. for hooking into the manager:
     const [passwordRetriever, setPasswordRetriever] = useState<
-        (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>
-    >();
-    const [recoveryKeySaver, setRecoveryKeySaver] = useState<
-        (key: number[]) => Promise<true>
-    >();
-    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] =
-        useState<PermissionEventHandler>(() => { });
-    const [basketAccessCallback, setBasketAccessCallback] =
-        useState<PermissionEventHandler>(() => { });
-    const [protocolPermissionCallback, setProtocolPermissionCallback] =
-        useState<PermissionEventHandler>(() => { });
-    const [certificateAccessCallback, setCertificateAccessCallback] =
-        useState<PermissionEventHandler>(() => { });
+        (reason: string, test: (pw: string) => boolean) => Promise<string>
+    >()
+    const [recoveryKeySaver, setRecoveryKeySaver] = useState<(key: number[]) => Promise<true>>()
+    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] = useState<PermissionEventHandler>(() => { })
+    const [basketAccessCallback, setBasketAccessCallback] = useState<PermissionEventHandler>(() => { })
+    const [protocolPermissionCallback, setProtocolPermissionCallback] = useState<PermissionEventHandler>(() => { })
+    const [certificateAccessCallback, setCertificateAccessCallback] = useState<PermissionEventHandler>(() => { })
 
-    // --------------- New: WAB + network + storage config ---------------
-
-    // Minimal placeholders for a user to configure
-    const [wabUrl, setWabUrl] = useState<string>("https://staging-wab.babbage.systems");
+    const [wabUrl, setWabUrl] = useState('https://wab.babbage.systems')
     const [wabInfo, setWabInfo] = useState<{
-        supportedAuthMethods: string[];
-        faucetEnabled: boolean;
-        faucetAmount: number;
-    } | null>(null);
+        supportedAuthMethods: string[]
+        faucetEnabled: boolean
+        faucetAmount: number
+    } | null>(null)
+    const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>('')
+    const [selectedNetwork, setSelectedNetwork] = useState<string>(CHAIN)
+    const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(STORAGE_URL)
+    const [configComplete, setConfigComplete] = useState(false)
+    const [snapshotLoadFailed, setSnapshotLoadFailed] = useState(false)
 
-    const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("");
-    const [selectedNetwork, setSelectedNetwork] = useState<string>(CHAIN); // "test" or "main"
-    const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(STORAGE_URL);
+    const snapshotExists = !!localStorage.snap
 
-    const [configComplete, setConfigComplete] = useState<boolean>(false);
-
-    async function fetchWabInfo() {
-        try {
-            const res = await fetch(`${wabUrl}/info`);
-            if (!res.ok) {
-                throw new Error(`Failed to fetch info: ${res.status}`);
-            }
-            const info = await res.json();
-            console.log(info)
-            setWabInfo(info);
-        } catch (error: any) {
-            console.error("Error fetching WAB info", error);
-            alert("Could not fetch WAB info: " + error.message);
-        }
-    }
-
-    function onSelectAuthMethod(method: string) {
-        setSelectedAuthMethod(method);
-    }
-
-    // Mark config as complete so the effect that builds the manager can proceed:
-    function finalizeConfig() {
-        if (!wabInfo || !selectedAuthMethod) {
-            alert("Please select an Auth Method from the WAB info first.");
-            return;
-        }
-        setConfigComplete(true);
-    }
-
-    // ------------------------------------------------------------------
-    // debugger
-    /**
-     * Once we have all essential building blocks:
-     * - passwordRetriever
-     * - recoveryKeySaver
-     * - user config (WAB + AuthMethod + network + storage)
-     *
-     * we build an ExampleWalletManager. This is the "heart" of the original code,
-     * but updated to handle a dynamic WAB-based approach.
-     */
     useEffect(() => {
-        if (
-            passwordRetriever &&
-            recoveryKeySaver &&
-            configComplete && // user has chosen WAB, method, etc.
-            !managers.walletManager // only build once
-        ) {
-            // Build the walletBuilder from user-chosen network + storage
-            const walletBuilder = async (
-                primaryKey: number[],
-                privilegedKeyManager: PrivilegedKeyManager
-            ): Promise<WalletInterface> => {
-                // Example: use the user-chosen network
-                const chain = selectedNetwork;
+        if (snapshotExists) setConfigComplete(true)
+    }, [snapshotExists])
 
-                const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey));
-                const storageManager = new WalletStorageManager(keyDeriver.identityKey);
-                const signer = new WalletSigner(chain as Chain, keyDeriver, storageManager);
-                const services = new Services(chain as Chain);
-                const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
-                const settingsManager = wallet.settingsManager;
+    useEffect(() => {
+        if (!passwordRetriever || !recoveryKeySaver || managers.walletManager) return
 
-                // Use user-chosen storage
-                const client = new StorageClient(wallet, selectedStorageUrl);
-                await client.makeAvailable();
-                await storageManager.addWalletStorageProvider(client);
+        const walletBuilder = async (primaryKey: number[], privilegedKM: PrivilegedKeyManager): Promise<WalletInterface> => {
+            const chain = selectedNetwork
+            const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey))
+            const storageManager = new WalletStorageManager(keyDeriver.identityKey)
+            const signer = new WalletSigner(chain as Chain, keyDeriver, storageManager)
+            const services = new Services(chain as Chain)
+            const wallet = new Wallet(signer, services, undefined, privilegedKM)
+            const settingsManager = wallet.settingsManager
 
-                // Setup permissions
-                const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
-                    encryptWalletMetadata: false,
-                    seekPermissionsForPublicKeyRevelation: false,
-                    seekProtocolPermissionsForSigning: false,
-                    seekProtocolPermissionsForEncrypting: false,
-                    seekProtocolPermissionsForHMAC: false,
-                    seekPermissionsForIdentityKeyRevelation: false,
-                    seekPermissionsForKeyLinkageRevelation: false
-                });
-                permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback);
-                permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback);
-                permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback);
-                permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback);
+            const client = new StorageClient(wallet, selectedStorageUrl)
+            await client.makeAvailable()
+            await storageManager.addWalletStorageProvider(client)
 
-                (window as any).permissionsManager = permissionsManager;
-
-                updateManagers({
-                    walletManager: exampleWalletManager,
-                    permissionsManager,
-                    settingsManager
-                });
-
-                return permissionsManager;
-            };
-
-            // Here, we'd construct your new manager that uses the WAB. In the original code,
-            // we still reference ExampleWalletManager, so let's preserve that naming for drop-in usage:
-            const resolver = new LookupResolver({
-                hostOverrides: {
-                    'ls_users': ['https://backend.2efa4b8fe4c2bd42083636871b007e9e.projects.babbage.systems']
-                }
+            const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
+                encryptWalletMetadata: false,
+                seekPermissionsForPublicKeyRevelation: false,
+                seekProtocolPermissionsForSigning: false,
+                seekProtocolPermissionsForEncrypting: false,
+                seekProtocolPermissionsForHMAC: false,
+                seekPermissionsForIdentityKeyRevelation: false,
+                seekPermissionsForKeyLinkageRevelation: false
             })
-            const exampleWalletManager = new WalletAuthenticationManager(
-                'admin.com',
-                walletBuilder,
-                new OverlayUMPTokenInteractor(
-                    new LookupResolver({
-                        hostOverrides: {
-                            'ls_users': ['https://backend.2efa4b8fe4c2bd42083636871b007e9e.projects.babbage.systems']
-                        }
-                    }),
-                    new SHIPBroadcaster(['tm_users'],
-                        {
-                            resolver
-                        }
-                    )
-                ),
-                recoveryKeySaver,
-                passwordRetriever,
-                new WABClient(wabUrl),
-                new TwilioPhoneInteractor()
-            );
-            (window as any).authManager = exampleWalletManager
+            permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback)
+            permissionsManager.bindCallback('onBasketAccessRequested', basketAccessCallback)
+            permissionsManager.bindCallback('onSpendingAuthorizationRequested', spendingAuthorizationCallback)
+            permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback)
 
-            // Attempt to load a local snapshot
-            if (localStorage.snap) {
-                const snapArr = Utils.toArray(localStorage.snap, 'base64');
-                exampleWalletManager.loadSnapshot(snapArr).then(() => {
-                    console.log("Snapshot loaded successfully");
-                }).catch((err) => {
-                    console.error("Failed to load snapshot from localStorage", err);
-                });
-            }
+            updateManagers({
+                walletManager: exampleWalletManager,
+                permissionsManager,
+                settingsManager
+            })
 
-            // Fire the parent callback
-            onWalletReady(exampleWalletManager);
-
-            // Update the context with the new manager
-            updateManagers({ walletManager: exampleWalletManager });
+            return permissionsManager
         }
+
+        const resolver = new LookupResolver({
+            hostOverrides: { 'ls_ship': ['https://users.bapp.dev'], 'ls_users': ['https://users.bapp.dev'] },
+            slapTrackers: ['https://users.bapp.dev']
+        })
+
+        const exampleWalletManager = new WalletAuthenticationManager(
+            'admin.com',
+            walletBuilder,
+            new OverlayUMPTokenInteractor(
+                resolver,
+                new SHIPBroadcaster(['tm_users', 'tm_ship'], { resolver })
+            ),
+            recoveryKeySaver,
+            passwordRetriever,
+            new WABClient(wabUrl),
+            new TwilioPhoneInteractor()
+        )
+
+            ; (window as any).authManager = exampleWalletManager
+
+        if (snapshotExists && !snapshotLoadFailed) {
+            const snapArr = Utils.toArray(localStorage.snap, 'base64')
+            exampleWalletManager.loadSnapshot(snapArr)
+                .then(() => {
+                    if (exampleWalletManager.authenticated) {
+                        onWalletReady(exampleWalletManager)
+                        // walletBuilder is invoked during snapshot load, so updateManagers gets called with permissionsManager
+                        history.push('/dashboard')
+                    }
+                })
+                .catch(() => {
+                    setSnapshotLoadFailed(true)
+                    setConfigComplete(false)
+                })
+        }
+
+        // For new users (no snapshot), do not update managers immediately.
+        // Instead, let the authentication flow (triggered via PasswordHandler) call walletBuilder.
     }, [
         passwordRetriever,
         recoveryKeySaver,
@@ -330,57 +240,69 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         wabUrl,
         selectedNetwork,
         selectedStorageUrl,
-        selectedAuthMethod,
-        onWalletReady,
-        updateManagers,
+        snapshotExists,
+        snapshotLoadFailed,
         protocolPermissionCallback,
         basketAccessCallback,
         spendingAuthorizationCallback,
-        certificateAccessCallback
-    ]);
+        certificateAccessCallback,
+        onWalletReady,
+        updateManagers,
+        history
+    ])
 
-    // If the manager does not exist yet, we can show a minimal config form:
-    const noManagerYet = !managers.walletManager;
+    useEffect(() => {
+        if (managers.walletManager?.authenticated) {
+            history.push('/dashboard')
+        }
+    }, [managers.walletManager, history])
+
+    const fetchWabInfo = async () => {
+        try {
+            const res = await fetch(`${wabUrl}/info`)
+            if (!res.ok) throw new Error(`Failed to fetch info: ${res.status}`)
+            const info = await res.json()
+            setWabInfo(info)
+        } catch (err: any) {
+            alert('Could not fetch WAB info: ' + err.message)
+        }
+    }
+
+    const onSelectAuthMethod = (method: string) => {
+        setSelectedAuthMethod(method)
+    }
+
+    // When the user clicks "Finalize Config", ensure prerequisites are met.
+    // In this branch, we simply mark configComplete so that the PasswordHandler can continue the authentication flow.
+    const finalizeConfig = () => {
+        if (!wabInfo || !selectedAuthMethod) {
+            alert('Please fetch WAB info and select an Auth Method first.')
+            return
+        }
+        setConfigComplete(true)
+    }
+
+    const showConfig = !managers.walletManager || !managers.walletManager.authenticated
 
     return (
-        <WalletContext.Provider
-            value={{
-                managers,
-                updateManagers,
-                isFocused: isFocused ? isFocused : async () => false,
-                onFocusRequested: requestFocus ? requestFocus : async () => { },
-                onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
-                appVersion: '0.0.0',
-                appName: 'Example Desktop'
-            }}
-        >
-            <Router>
-                <ExchangeRateContextProvider>
-                    <BreakpointProvider queries={queries}>
-                        <Theme>
-                            <ToastContainer position='top-center' />
-
-                            {/* The original MUI handlers that set up passwordRetriever, etc. */}
-                            <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
-                            <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
-                            <SpendingAuthorizationHandler
-                                setSpendingAuthorizationCallback={setSpendingAuthorizationCallback}
-                            />
-                            <BasketAccessHandler
-                                setBasketAccessHandler={setBasketAccessCallback}
-                            />
-                            <ProtocolPermissionHandler
-                                setProtocolPermissionCallback={setProtocolPermissionCallback}
-                            />
-                            <CertificateAccessHandler
-                                setCertificateAccessHandler={setCertificateAccessCallback}
-                            />
+        <>
+            <ExchangeRateContextProvider>
+                <BreakpointProvider queries={queries}>
+                    <Theme>
+                        <ToastContainer position='top-center' />
+                        <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                        <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                        <SpendingAuthorizationHandler setSpendingAuthorizationCallback={setSpendingAuthorizationCallback} />
+                        <BasketAccessHandler setBasketAccessHandler={setBasketAccessCallback} />
+                        <ProtocolPermissionHandler setProtocolPermissionCallback={setProtocolPermissionCallback} />
+                        <CertificateAccessHandler setCertificateAccessHandler={setCertificateAccessCallback} />
+                        {showConfig && !managers.walletManager?.authenticated && (
                             <WalletConfig
-                                noManagerYet={noManagerYet}
+                                noManagerYet={!managers.walletManager}
                                 wabUrl={wabUrl}
                                 setWabUrl={setWabUrl}
                                 fetchWabInfo={fetchWabInfo}
-                                wabInfo={wabInfo!}
+                                wabInfo={wabInfo || undefined}
                                 selectedAuthMethod={selectedAuthMethod}
                                 onSelectAuthMethod={onSelectAuthMethod}
                                 selectedNetwork={selectedNetwork}
@@ -389,21 +311,29 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                                 setSelectedStorageUrl={setSelectedStorageUrl}
                                 finalizeConfig={finalizeConfig}
                             />
+                        )}
+                        {managers.walletManager && (
+                            <Switch>
+                                <Route exact path='/' component={Greeter} />
+                                <Route exact path='/recovery/lost-phone' component={LostPhone} />
+                                <Route exact path='/recovery/lost-password' component={LostPassword} />
+                                <Route exact path='/recovery' component={Recovery} />
+                                <Route path='/dashboard' component={Dashboard} />
+                            </Switch>
+                        )}
+                    </Theme>
+                </BreakpointProvider>
+            </ExchangeRateContextProvider>
+        </>
+    )
+}
 
-                            {/* If manager is created, we show the normal routes (like the original code) */}
-                            {managers.walletManager && (
-                                <Switch>
-                                    <Route exact path='/' component={Greeter} />
-                                    <Route exact path='/recovery/lost-phone' component={LostPhone} />
-                                    <Route exact path='/recovery/lost-password' component={LostPassword} />
-                                    <Route exact path='/recovery' component={Recovery} />
-                                    <Route path='/dashboard' component={Dashboard} />
-                                </Switch>
-                            )}
-                        </Theme>
-                    </BreakpointProvider>
-                </ExchangeRateContextProvider>
+export const UserInterface: React.FC<UserInterfaceProps> = (props) => {
+    return (
+        <WalletProvider>
+            <Router>
+                <UserInterfaceContent {...props} />
             </Router>
-        </WalletContext.Provider>
+        </WalletProvider>
     )
 }
