@@ -24,6 +24,7 @@ import {
 import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
+import Apps from './Apps'
 
 // pages
 
@@ -53,7 +54,6 @@ const Dashboard = () => {
   const { appName, appVersion, managers } = useContext(WalletContext)
   const [pageLoading, setPageLoading] = useState(true)
   const [myIdentityKey, setMyIdentityKey] = useState('self')
-
   const [menuOpen, setMenuOpen] = useState(true)
   const menuRef = useRef(null)
 
@@ -296,6 +296,10 @@ const Dashboard = () => {
             path='/dashboard/certificate/:certType'
             component={CertificateAccess}
           /> */}
+          <Route
+            path='/dashboard/apps'
+            component={Apps}
+          />
           <Route
             component={() => {
               return (

@@ -9,6 +9,8 @@ import isImageUrl from '../../../utils/isImageUrl'
 import Fuse from 'fuse.js'
 import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
+import { useContext } from 'react'
+import { WalletContext } from '../../../UserInterface'
 
 const useStyles = makeStyles(style, {
   name: 'Actions'
@@ -26,6 +28,7 @@ const Apps = () => {
       return []
     }
   }
+  const { managers } = useContext(WalletContext)
 
   // Initialize recentApps with value from localStorage or fallback to empty array
   const [recentApps, setRecentApps] = useState(loadRecentApps)
@@ -104,6 +107,7 @@ const Apps = () => {
   useEffect(() => {
     (async () => {
       // Obtain a list of all apps ordered alphabetically
+      debugger
       try {
         // Show cached recent apps first
         if (window.localStorage.getItem('recentApps')) {
@@ -124,7 +128,8 @@ const Apps = () => {
         } else {
           setLoading(true)
         }
-        const appDomains = await getApps({ sortBy: 'label' })
+
+        const appDomains = await getApps({ sortBy: 'label', walletManager: managers.walletManager })
         parsedAppData = await resolveAppDataFromDomain({ appDomains })
         parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
         // Store the current fetched apps in localStorage for a better UX

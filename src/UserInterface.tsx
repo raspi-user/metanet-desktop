@@ -136,7 +136,7 @@ const AuthRedirector: React.FC<{ snapshotLoaded: boolean }> = ({ snapshotLoaded 
             snapshotLoaded &&
             (managers.walletManager as any).authenticated
         ) {
-            history.push('/dashboard');
+            history.push('/dashboard/apps');
         }
     }, [managers.walletManager, snapshotLoaded, history]);
 
