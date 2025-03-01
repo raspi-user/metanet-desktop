@@ -27,7 +27,8 @@ const Profile = () => {
   const refreshBalance = async () => {
     try {
       setBalanceLoading(true)
-      const { outputs } = await managers.walletManager!.listOutputs({ basket: 'default' })
+      const { outputs } = await managers.permissionsManager.listOutputs({ basket: 'default' }, 'admin.com')
+      console.log('OUTPUTS', outputs)
       const total = outputs.reduce((a, e) => a + e.satoshis, 0)
       setAccountBalance(total)
       setBalanceLoading(false)
