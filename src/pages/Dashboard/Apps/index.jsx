@@ -107,7 +107,6 @@ const Apps = () => {
   useEffect(() => {
     (async () => {
       // Obtain a list of all apps ordered alphabetically
-      debugger
       try {
         // Show cached recent apps first
         if (window.localStorage.getItem('recentApps')) {

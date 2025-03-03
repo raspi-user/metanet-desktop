@@ -23,7 +23,6 @@ export const getApps = async ({
   walletManager
 }: GetAppsParams): Promise<string[]> => {
   try {
-    debugger
 
     // For this refactored implementation, we instantiate WalletClient directly:
     // const walletClient = new WalletClient('json-api', 'non-admin.com')
