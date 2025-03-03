@@ -27,9 +27,24 @@ const Profile = () => {
   const refreshBalance = async () => {
     try {
       setBalanceLoading(true)
-      const { outputs } = await managers.permissionsManager.listOutputs({ basket: 'default' }, 'admin.com')
-      console.log('OUTPUTS', outputs)
-      const total = outputs.reduce((a, e) => a + e.satoshis, 0)
+      const limit = 10000
+      let offset = 0
+      let allOutputs = []
+
+      // Fetch the first page
+      const firstPage = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, 'admin.com')
+      allOutputs = firstPage.outputs;
+      const totalOutputs = firstPage.totalOutputs;
+
+      // Fetch subsequent pages until we've retrieved all outputs
+      while (allOutputs.length < totalOutputs) {
+        offset += limit;
+        const { outputs } = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, 'admin.com');
+        allOutputs = allOutputs.concat(outputs);
+      }
+
+      console.log('OUTPUTS', allOutputs);
+      const total = allOutputs.reduce((acc, output) => acc + output.satoshis, 0)
       setAccountBalance(total)
       setBalanceLoading(false)
     } catch (e) {
