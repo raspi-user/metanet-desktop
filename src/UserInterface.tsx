@@ -39,7 +39,6 @@ import Recovery from './pages/Recovery'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
-import MyIdentity from './pages/Dashboard/MyIdentity'
 import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
 import { WABClient, TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client'
 import WalletConfig from './components/WalletConfig'
@@ -411,7 +410,6 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                                     <Route exact path='/recovery/lost-password' component={LostPassword} />
                                     <Route exact path='/recovery' component={Recovery} />
                                     <Route path='/dashboard' component={Dashboard} />
-                                    <Route path='/dashboard/identity' component={MyIdentity} />
                                 </Switch>
                             )}
                         </Theme>

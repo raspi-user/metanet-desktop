@@ -30,7 +30,7 @@ import Apps from './Apps'
 
 // import AppAccess from './AppAccess/index.jsx'
 // import Trust from './Trust/index.jsx'
-// import MyIdentity from './MyIdentity/index.jsx'
+import MyIdentity from './MyIdentity/index.js'
 // import Apps from './Apps/index.jsx'
 // import App from './App/Index.jsx'
 // import Settings from './Settings/index.jsx'
@@ -271,11 +271,12 @@ const Dashboard = () => {
             default
             path='/dashboard/apps'
             component={Apps}
-          />
+          />*/}
           <Route
             path='/dashboard/identity'
             component={MyIdentity}
           />
+          {/*
           <Route
             path='/dashboard/trust'
             component={Trust}
