@@ -43,7 +43,6 @@ const Profile = () => {
         allOutputs = allOutputs.concat(outputs);
       }
 
-      console.log('OUTPUTS', allOutputs);
       const total = allOutputs.reduce((acc, output) => acc + output.satoshis, 0)
       setAccountBalance(total)
       setBalanceLoading(false)
@@ -54,11 +53,13 @@ const Profile = () => {
 
   useEffect(() => {
     (async () => {
-      try {
-        refreshBalance()
-      } catch (e) { }
+      if (typeof adminOriginator === 'string') {
+        try {
+          refreshBalance()
+        } catch (e) { }
+      }
     })()
-  }, [])
+  }, [adminOriginator])
 
   return (
     <>

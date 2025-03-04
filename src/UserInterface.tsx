@@ -347,7 +347,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 onFocusRequested: requestFocus ? requestFocus : async () => { },
                 onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
                 appVersion: '0.0.0',
-                appName: 'Example Desktop'
+                appName: 'MetaNet Client',
+                adminOriginator: 'admin.com'
             }}
         >
             <Router>

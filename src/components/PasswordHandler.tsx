@@ -27,7 +27,6 @@ const PasswordHandler: React.FC<PasswordHandlerProps> = ({ setPasswordRetriever 
   useEffect(() => {
     setPasswordRetriever((): any => {
       return (reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
-        console.log(reason, test)
         return new Promise<string>(async (resolve, reject) => {
           setReason(() => { return reason })
           setTest(() => { return test })
