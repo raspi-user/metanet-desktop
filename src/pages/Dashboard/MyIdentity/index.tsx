@@ -38,65 +38,67 @@ const MyIdentity = () => {
   }
 
   useEffect(() => {
-    const cacheKey = 'provenCertificates'
+    if (typeof adminOriginator === 'string') {
+      const cacheKey = 'provenCertificates'
 
-    const getProvenCertificates = async () => {
-      // Attempt to load the proven certificates from cache
-      const cachedProvenCerts = window.localStorage.getItem(cacheKey)
-      if (cachedProvenCerts) {
-        setCertificates(JSON.parse(cachedProvenCerts))
-      }
+      const getProvenCertificates = async () => {
+        // Attempt to load the proven certificates from cache
+        const cachedProvenCerts = window.localStorage.getItem(cacheKey)
+        if (cachedProvenCerts) {
+          setCertificates(JSON.parse(cachedProvenCerts))
+        }
 
-      // Find and prove certificates if not in cache
-      const certs = await managers.permissionsManager.listCertificates({
-        certifiers: [],
-        types: [],
-        limit: 100
-      }, adminOriginator)
-      const provenCerts = []
-      if (certs && certs.certificates && certs.certificates.length > 0) {
-        for (const certificate of certs.certificates) {
-          try {
-            const fieldsToReveal = Object.keys(certificate.fields)
-            const proof = await managers.permissionsManager.proveCertificate({
-              certificate,
-              fieldsToReveal,
-              verifier: '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798' // anyone public key
-            }, adminOriginator)
-            const decrypted = await (new VerifiableCertificate(
-              certificate.type,
-              certificate.serialNumber,
-              certificate.subject,
-              certificate.certifier,
-              certificate.revocationOutpoint,
-              certificate.fields,
-              proof.keyringForVerifier,
-              certificate.signature
-            )).decryptFields(new ProtoWallet('anyone'))
-            provenCerts.push({
-              ...certificate,
-              decryptedFields: decrypted
-            })
-          } catch (e) {
-            console.error(e)
+        // Find and prove certificates if not in cache
+        const certs = await managers.permissionsManager.listCertificates({
+          certifiers: [],
+          types: [],
+          limit: 100
+        }, adminOriginator)
+        const provenCerts = []
+        if (certs && certs.certificates && certs.certificates.length > 0) {
+          for (const certificate of certs.certificates) {
+            try {
+              const fieldsToReveal = Object.keys(certificate.fields)
+              const proof = await managers.permissionsManager.proveCertificate({
+                certificate,
+                fieldsToReveal,
+                verifier: '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798' // anyone public key
+              }, adminOriginator)
+              const decrypted = await (new VerifiableCertificate(
+                certificate.type,
+                certificate.serialNumber,
+                certificate.subject,
+                certificate.certifier,
+                certificate.revocationOutpoint,
+                certificate.fields,
+                proof.keyringForVerifier,
+                certificate.signature
+              )).decryptFields(new ProtoWallet('anyone'))
+              provenCerts.push({
+                ...certificate,
+                decryptedFields: decrypted
+              })
+            } catch (e) {
+              console.error(e)
+            }
+          }
+          if (provenCerts.length > 0) {
+            setCertificates(provenCerts)
+            window.localStorage.setItem(cacheKey, JSON.stringify(provenCerts))
           }
         }
-        if (provenCerts.length > 0) {
-          setCertificates(provenCerts)
-          window.localStorage.setItem(cacheKey, JSON.stringify(provenCerts))
-        }
       }
+
+      getProvenCertificates()
+
+      // Set primary identity key
+      const setIdentityKey = async () => {
+        const { publicKey: identityKey } = await managers.permissionsManager.getPublicKey({ identityKey: true }, adminOriginator)
+        setPrimaryIdentityKey(identityKey)
+      }
+
+      setIdentityKey()
     }
-
-    getProvenCertificates()
-
-    // Set primary identity key
-    const setIdentityKey = async () => {
-      const { publicKey: identityKey } = await managers.permissionsManager.getPublicKey({ identityKey: true }, adminOriginator)
-      setPrimaryIdentityKey(identityKey)
-    }
-
-    setIdentityKey()
   }, [setCertificates, setPrimaryIdentityKey, adminOriginator])
 
   const handleRevealPrivilegedKey = async () => {
