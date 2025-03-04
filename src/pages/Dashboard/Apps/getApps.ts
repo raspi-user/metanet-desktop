@@ -1,37 +1,24 @@
-import { useContext } from 'react'
-import { WalletContext } from '../../../UserInterface'
+import { WalletInterface } from '@bsv/sdk'
 
 interface GetAppsParams {
   sortBy?: string
   limit?: number
-  walletManager: any
-}
-
-interface TransactionOutput {
-  tags?: string[]
-  // Additional properties can be defined here if needed.
-}
-
-interface Action {
-  labels?: string[]
-  // Additional properties can be defined here if needed.
+  permissionsManager: WalletInterface
+  adminOriginator: string
 }
 
 export const getApps = async ({
   sortBy = 'label',
   limit = 2000,
-  walletManager
+  permissionsManager,
+  adminOriginator
 }: GetAppsParams): Promise<string[]> => {
   try {
-
-    // For this refactored implementation, we instantiate WalletClient directly:
-    // const walletClient = new WalletClient('json-api', 'non-admin.com')
-
     // Fetch transaction outputs from the specified basket.
-    const { outputs } = await walletManager.listOutputs({
+    const { outputs } = await permissionsManager.listOutputs({
       basket: 'babbage-protocol-permission',
       include: 'locking scripts'
-    })
+    }, adminOriginator)
 
     // Collect unique originator names from the outputs.
     const originatorNames: Set<string> = new Set()
@@ -49,11 +36,11 @@ export const getApps = async ({
     })
 
     // Fetch actions that include labels.
-    const { actions } = await walletManager.listActions({
+    const { actions } = await permissionsManager.listActions({
       labels: ['action'],
       labelQueryMode: 'any',
       includeLabels: true
-    })
+    }, adminOriginator)
 
     // Extract app labels from actions by filtering for labels starting with "app_"
     const appLabels: Set<string> = new Set()

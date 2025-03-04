@@ -33,7 +33,7 @@ import Apps from './Apps'
 import MyIdentity from './MyIdentity/index.js'
 // import Apps from './Apps/index.jsx'
 // import App from './App/Index.jsx'
-// import Settings from './Settings/index.jsx'
+import Settings from './Settings/index'
 // import BasketAccess from './BasketAccess/index.jsx'
 // import CertificateAccess from './CertificateAccess/index.jsx'
 // import ProtocolAccess from './ProtocolAccess/index.jsx'
@@ -262,12 +262,12 @@ const Dashboard = () => {
           <Route
             path='/dashboard/app/:app'
             component={App}
-          />
+          />*/}
           <Route
             path='/dashboard/settings'
             component={Settings}
           />
-          <Route
+          {/*<Route
             default
             path='/dashboard/apps'
             component={Apps}

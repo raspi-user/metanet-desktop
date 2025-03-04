@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: any) => ({
 }), { name: 'Profile' })
 
 const Profile = () => {
-  const { managers } = useContext(WalletContext)
+  const { managers, adminOriginator } = useContext(WalletContext)
   const [accountBalance, setAccountBalance] = useState<any>(null)
   const [balanceLoading, setBalanceLoading] = useState(true)
   const classes = useStyles()
@@ -32,14 +32,14 @@ const Profile = () => {
       let allOutputs = []
 
       // Fetch the first page
-      const firstPage = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, 'admin.com')
+      const firstPage = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, adminOriginator)
       allOutputs = firstPage.outputs;
       const totalOutputs = firstPage.totalOutputs;
 
       // Fetch subsequent pages until we've retrieved all outputs
       while (allOutputs.length < totalOutputs) {
         offset += limit;
-        const { outputs } = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, 'admin.com');
+        const { outputs } = await managers.permissionsManager.listOutputs({ basket: 'default', limit, offset }, adminOriginator);
         allOutputs = allOutputs.concat(outputs);
       }
 

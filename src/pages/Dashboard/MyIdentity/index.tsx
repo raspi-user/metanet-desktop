@@ -19,7 +19,7 @@ const useStyles = makeStyles(style, {
 })
 
 const MyIdentity = () => {
-  const { managers } = useContext(WalletContext)
+  const { managers, adminOriginator } = useContext(WalletContext)
 
   const [search, setSearch] = useState('')
   const [addPopularSigniaCertifiersModalOpen, setAddPopularSigniaCertifiersModalOpen] = useState(false)
@@ -52,7 +52,7 @@ const MyIdentity = () => {
         certifiers: [],
         types: [],
         limit: 100
-      }, 'admin.com')
+      }, adminOriginator)
       const provenCerts = []
       if (certs && certs.certificates && certs.certificates.length > 0) {
         for (const certificate of certs.certificates) {
@@ -62,7 +62,7 @@ const MyIdentity = () => {
               certificate,
               fieldsToReveal,
               verifier: '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798' // anyone public key
-            }, 'admin.com')
+            }, adminOriginator)
             const decrypted = await (new VerifiableCertificate(
               certificate.type,
               certificate.serialNumber,
@@ -92,12 +92,12 @@ const MyIdentity = () => {
 
     // Set primary identity key
     const setIdentityKey = async () => {
-      const { publicKey: identityKey } = await managers.permissionsManager.getPublicKey({ identityKey: true }, 'admin.com')
+      const { publicKey: identityKey } = await managers.permissionsManager.getPublicKey({ identityKey: true }, adminOriginator)
       setPrimaryIdentityKey(identityKey)
     }
 
     setIdentityKey()
-  }, [setCertificates, setPrimaryIdentityKey])
+  }, [setCertificates, setPrimaryIdentityKey, adminOriginator])
 
   const handleRevealPrivilegedKey = async () => {
     try {

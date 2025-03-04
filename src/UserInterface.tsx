@@ -7,7 +7,6 @@ import {
     StorageClient,
     WalletSigner,
     WalletStorageManager,
-    UMPTokenInteractor,
     PermissionEventHandler,
     WalletAuthenticationManager,
     OverlayUMPTokenInteractor
@@ -44,21 +43,8 @@ import { WABClient, TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client'
 import WalletConfig from './components/WalletConfig'
 
 /** Defaults */
-const SECRET_SERVER_URL = 'https://secretserver.babbage.systems'
 const STORAGE_URL = 'https://storage.babbage.systems'
 const CHAIN = 'main'
-
-/**
- * Fallback interactor for UMP token logic.
- */
-const inMemoryInteractor: UMPTokenInteractor = {
-    findByPresentationKeyHash: async (hash) => {
-        console.log('PRESENTATION_KEY (hash)', hash)
-        return undefined
-    },
-    findByRecoveryKeyHash: async () => undefined,
-    buildAndSend: async () => 'abcd.0'
-};
 
 const queries = {
     xs: '(max-width: 500px)',
@@ -78,15 +64,17 @@ interface ManagerState {
 }
 
 export interface WalletContextValue {
+    // Managers:
     managers: ManagerState;
     updateManagers: (newManagers: ManagerState) => void;
     // Focus APIs:
     isFocused: () => Promise<boolean>;
     onFocusRequested: () => Promise<void>;
     onFocusRelinquished: () => Promise<void>;
-    //
+    // App configuration:
     appVersion: string;
     appName: string;
+    adminOriginator: string;
 }
 
 export const WalletContext = createContext<WalletContextValue>({
@@ -96,7 +84,8 @@ export const WalletContext = createContext<WalletContextValue>({
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
     appVersion: '0.0.0',
-    appName: 'Example Desktop'
+    appName: 'MetaNet Client',
+    adminOriginator: 'admin.com'
 })
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
@@ -115,7 +104,8 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
                 onFocusRequested: async () => { },
                 onFocusRelinquished: async () => { },
                 appVersion: '0.0.0',
-                appName: 'Example Desktop'
+                appName: 'MetaNet Client',
+                adminOriginator: 'admin.com'
             }}
         >
             {children}
@@ -166,7 +156,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     requestFocus,
     relinquishFocus
 }) => {
-    const { managers, updateManagers } = useContext(WalletContext);
+    const { managers, updateManagers, adminOriginator } = useContext(WalletContext);
 
     // ---- Callbacks for password/recovery/etc.
     const [passwordRetriever, setPasswordRetriever] = useState<
@@ -264,8 +254,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 await storageManager.addWalletStorageProvider(client);
 
                 // Setup permissions with provided callbacks.
-                const permissionsManager = new WalletPermissionsManager(wallet, 'admin.com', {
-                    encryptWalletMetadata: false,
+                const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
+                    // encryptWalletMetadata: false,
                     seekPermissionsForPublicKeyRevelation: false,
                     seekProtocolPermissionsForSigning: false,
                     seekProtocolPermissionsForEncrypting: false,
@@ -298,7 +288,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
             });
 
             const exampleWalletManager = new WalletAuthenticationManager(
-                'admin.com',
+                adminOriginator,
                 walletBuilder,
                 new OverlayUMPTokenInteractor(
                     resolver,

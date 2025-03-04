@@ -28,7 +28,7 @@ const Apps = () => {
       return []
     }
   }
-  const { managers } = useContext(WalletContext)
+  const { managers, adminOriginator } = useContext(WalletContext)
 
   // Initialize recentApps with value from localStorage or fallback to empty array
   const [recentApps, setRecentApps] = useState(loadRecentApps)
@@ -105,56 +105,58 @@ const Apps = () => {
   }
 
   useEffect(() => {
-    (async () => {
-      // Obtain a list of all apps ordered alphabetically
-      try {
-        // Show cached recent apps first
-        if (window.localStorage.getItem('recentApps')) {
-          setRecentApps(JSON.parse(window.localStorage.getItem('recentApps')))
-        } else {
-          setLoadingRecentApps(true)
+    if (typeof adminOriginator === 'string') {
+      (async () => {
+        // Obtain a list of all apps ordered alphabetically
+        try {
+          // Show cached recent apps first
+          if (window.localStorage.getItem('recentApps')) {
+            setRecentApps(JSON.parse(window.localStorage.getItem('recentApps')))
+          } else {
+            setLoadingRecentApps(true)
+          }
+
+          // Check if there is storage app data for this session
+          let parsedAppData = JSON.parse(window.localStorage.getItem(cachedAppsKey))
+
+          // Parse out the app data from the domains
+          if (parsedAppData) {
+            try {
+              setApps(parsedAppData)
+              setFilteredApps(parsedAppData)
+            } catch (e) { }
+          } else {
+            setLoading(true)
+          }
+
+          const appDomains = await getApps({ sortBy: 'label', permissionsManager: managers.permissionsManager, adminOriginator })
+          parsedAppData = await resolveAppDataFromDomain({ appDomains })
+          parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
+          // Store the current fetched apps in localStorage for a better UX
+          window.localStorage.setItem(cachedAppsKey, JSON.stringify(parsedAppData))
+
+          setApps(parsedAppData)
+          setFilteredApps(parsedAppData)
+
+          // Always fetch recent apps to keep it updated
+          const recentAppsFetched = await getApps({ limit: 4, sortBy: 'whenLastUsed', adminOriginator, permissionsManager: managers.permissionsManager })
+          const parsedRecentAppData = await resolveAppDataFromDomain({ appDomains: recentAppsFetched })
+          setRecentApps(parsedRecentAppData)
+
+          // Temp local storage for to remove render delay
+          window.localStorage.setItem('recentApps', JSON.stringify(parsedRecentAppData))
+
+          // Initialize fuse for filtering apps
+          const fuse = new Fuse(parsedAppData, options)
+          setFuseInstance(fuse)
+        } catch (error) {
+          console.error(error)
         }
-
-        // Check if there is storage app data for this session
-        let parsedAppData = JSON.parse(window.localStorage.getItem(cachedAppsKey))
-
-        // Parse out the app data from the domains
-        if (parsedAppData) {
-          try {
-            setApps(parsedAppData)
-            setFilteredApps(parsedAppData)
-          } catch (e) { }
-        } else {
-          setLoading(true)
-        }
-
-        const appDomains = await getApps({ sortBy: 'label', walletManager: managers.walletManager })
-        parsedAppData = await resolveAppDataFromDomain({ appDomains })
-        parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
-        // Store the current fetched apps in localStorage for a better UX
-        window.localStorage.setItem(cachedAppsKey, JSON.stringify(parsedAppData))
-
-        setApps(parsedAppData)
-        setFilteredApps(parsedAppData)
-
-        // Always fetch recent apps to keep it updated
-        const recentAppsFetched = await getApps({ limit: 4, sortBy: 'whenLastUsed' })
-        const parsedRecentAppData = await resolveAppDataFromDomain({ appDomains: recentAppsFetched })
-        setRecentApps(parsedRecentAppData)
-
-        // Temp local storage for to remove render delay
-        window.localStorage.setItem('recentApps', JSON.stringify(parsedRecentAppData))
-
-        // Initialize fuse for filtering apps
-        const fuse = new Fuse(parsedAppData, options)
-        setFuseInstance(fuse)
-      } catch (error) {
-        console.error(error)
-      }
-      setLoading(false)
-      setLoadingRecentApps(false)
-    })()
-  }, [])
+        setLoading(false)
+        setLoadingRecentApps(false)
+      })()
+    }
+  }, [adminOriginator])
 
   return (
     <div className={classes.apps_view}>

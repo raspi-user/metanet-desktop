@@ -59,7 +59,6 @@ const ProtocolPermissionHandler: React.FC<{
   useEffect(() => {
     setProtocolPermissionCallback(() => {
       return async (args: PermissionRequest & { requestID: string }): Promise<void> => {
-        console.log('proto', args)
         const {
           requestID,
           counterparty,
@@ -70,7 +69,6 @@ const ProtocolPermissionHandler: React.FC<{
         } = args
         const [protocolSecurityLevel, protocolNameString] = protocolID!
         setOpen(true)
-        console.log('we are open')
         const wasOriginallyFocused = await isFocused()
         if (!wasOriginallyFocused) {
           await onFocusRequested()
