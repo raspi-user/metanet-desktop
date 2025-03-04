@@ -88,31 +88,6 @@ export const WalletContext = createContext<WalletContextValue>({
     adminOriginator: 'admin.com'
 })
 
-export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
-    const [managers, setManagers] = useState<ManagerState>({});
-
-    const updateManagers = (newManagers: ManagerState) => {
-        setManagers(newManagers);
-    };
-
-    return (
-        <WalletContext.Provider
-            value={{
-                managers,
-                updateManagers,
-                isFocused: async () => false,
-                onFocusRequested: async () => { },
-                onFocusRelinquished: async () => { },
-                appVersion: '0.0.0',
-                appName: 'MetaNet Client',
-                adminOriginator: 'admin.com'
-            }}
-        >
-            {children}
-        </WalletContext.Provider>
-    );
-};
-
 // -----
 // AuthRedirector: Handles auto-login redirect when snapshot has loaded
 // -----
@@ -142,6 +117,9 @@ interface UserInterfaceProps {
     isFocused?: () => Promise<boolean>;
     requestFocus?: () => Promise<void>;
     relinquishFocus?: () => Promise<void>;
+    adminOriginator?: string;
+    appVersion?: string;
+    appName?: string;
 }
 
 /**
@@ -154,9 +132,12 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     onWalletReady,
     isFocused,
     requestFocus,
-    relinquishFocus
+    relinquishFocus,
+    adminOriginator = 'admin.com',
+    appVersion = '0.0.0',
+    appName = 'MetaNet Client'
 }) => {
-    const { managers, updateManagers, adminOriginator } = useContext(WalletContext);
+    const [managers, updateManagers] = useState<ManagerState>({});
 
     // ---- Callbacks for password/recovery/etc.
     const [passwordRetriever, setPasswordRetriever] = useState<
@@ -346,9 +327,9 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 isFocused: isFocused ? isFocused : async () => false,
                 onFocusRequested: requestFocus ? requestFocus : async () => { },
                 onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
-                appVersion: '0.0.0',
-                appName: 'MetaNet Client',
-                adminOriginator: 'admin.com'
+                appName,
+                appVersion,
+                adminOriginator
             }}
         >
             <Router>
