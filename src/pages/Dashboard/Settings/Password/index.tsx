@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import { useState, useContext } from 'react'
 import style from './style'
 import {
   Typography,
@@ -8,12 +8,12 @@ import {
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
-import UIContext from '../../../../UIContext'
+import { WalletContext } from '../../../../UserInterface'
 
 const useStyles = makeStyles(style, { name: 'PasswordSettings' })
 
 const PasswordSettings = ({ history }) => {
-  const { saveLocalSnapshot } = useContext(UIContext)
+  const { managers } = useContext(WalletContext)
   const classes = useStyles()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -23,13 +23,14 @@ const PasswordSettings = ({ history }) => {
     e.preventDefault()
     try {
       setLoading(true)
-      const result = await window.CWI.changePassword(password, confirmPassword)
-      if (result === true) {
-        await saveLocalSnapshot()
-        toast.dark('Password changed!')
-        setPassword('')
-        setConfirmPassword('')
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match.')
       }
+      await managers.walletManager.changePassword(password)
+      localStorage.snap = managers.walletManager.saveSnapshot()
+      toast.dark('Password changed!')
+      setPassword('')
+      setConfirmPassword('')
     } catch (e) {
       toast.error(e.message)
     } finally {
@@ -79,7 +80,7 @@ const PasswordSettings = ({ history }) => {
               >
                 Change
               </Button>
-              )}
+            )}
         </div>
       </form>
       <br />
