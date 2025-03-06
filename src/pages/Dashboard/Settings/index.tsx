@@ -7,7 +7,7 @@ import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import style from './style.js'
 import { WalletContext } from '../../../UserInterface.js'
-// import PasswordSettings from './Password/index.jsx'
+import PasswordSettings from './Password/index.jsx'
 // import PhoneSettings from './Phone/index.jsx'
 // import RecoveryKeySettings from './RecoveryKey/index.jsx'
 import About from './About/index.jsx'
@@ -127,23 +127,24 @@ const Settings = () => {
           </Select>
         </FormControl>
         {settingsLoading ? <LinearProgress style={{ marginTop: '1em' }} /> : null}
-        {/* </div > */}
-        {/* <PasswordSettings history={history} />
+      </div>
+      <PasswordSettings history={history} />
       <Divider />
       <br />
+      {/*
       <PhoneSettings />
       <Divider />
       <br />
       <RecoveryKeySettings />
       <Divider /> */}
-        <br />
-        <About />
-        <Divider />
-        <br />
-        {/* <KernelConfigurator /> */}
-        <br />
-        <br />
-        {/* {showAutoLaunch && <>
+      <br />
+      <About />
+      <Divider />
+      <br />
+      {/* <KernelConfigurator /> */}
+      <br />
+      <br />
+      {/* {showAutoLaunch && <>
         <FormControlLabel
           control={<Checkbox
             checked={autoLaunchEnabled}
@@ -154,8 +155,7 @@ const Settings = () => {
         <br />
         <br />
       </>} */}
-        <Logout history={history} />
-      </div>
+      <Logout history={history} />
     </>
   )
 }
