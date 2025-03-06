@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useBreakpoint } from '../../../utils/useBreakpoints'
 import {
   Typography, Divider, LinearProgress, FormControlLabel, Checkbox, FormControl, InputLabel, Select, MenuItem
@@ -6,12 +6,12 @@ import {
 import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import style from './style.js'
+import { WalletContext } from '../../../UserInterface.js'
 // import PasswordSettings from './Password/index.jsx'
 // import PhoneSettings from './Phone/index.jsx'
 // import RecoveryKeySettings from './RecoveryKey/index.jsx'
 import About from './About/index.jsx'
 import Logout from './Logout/index.jsx'
-// import { SettingsContext } from '../../../context/SettingsContext.js'
 // import KernelConfigurator from '../../../components/KernelConfigurator.jsx'
 
 const useStyles = makeStyles(style, {
@@ -19,10 +19,10 @@ const useStyles = makeStyles(style, {
 })
 
 const Settings = () => {
-  // const classes = useStyles()
-  // const breakpoints = useBreakpoint()
-  // const { settings, updateSettings } = useContext(SettingsContext)
-  // const [settingsLoading, setSettingsLoading] = useState(false)
+  const classes = useStyles()
+  const breakpoints = useBreakpoint()
+  const { settings, updateSettings } = useContext(WalletContext)
+  const [settingsLoading, setSettingsLoading] = useState(false)
   // const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(false)
 
   // const showAutoLaunch = typeof window.CWI.isAutoLaunchEnabled === 'function'
@@ -43,54 +43,62 @@ const Settings = () => {
   //   })
   // }
 
-  // const handleThemeChange = async (event) => {
-  //   const newTheme = event.target.value
+  const handleThemeChange = async (event) => {
+    const newTheme = event.target.value
 
-  //   try {
-  //     window.localStorage.setItem('theme', JSON.stringify({ theme: newTheme }))
-  //     setSettingsLoading(true)
-  //     await updateSettings({
-  //       theme: newTheme
-  //     })
-  //     toast.success('Settings saved!', 'center')
-  //   } catch (e) {
-  //     toast.error(e.message)
-  //   } finally {
-  //     setSettingsLoading(false)
-  //   }
-  // }
+    try {
+      window.localStorage.setItem('theme', JSON.stringify({ theme: newTheme }))
+      setSettingsLoading(true)
+      await updateSettings({
+        ...settings,
+        theme: {
+          mode: newTheme
+        }
+      })
+      toast.success('Settings saved!', {
+        position: 'top-center'
+      })
+    } catch (e) {
+      toast.error(e.message)
+    } finally {
+      setSettingsLoading(false)
+    }
+  }
 
-  // const handleCurrencyChange = async (event) => {
-  //   const newCurrency = event.target.value
+  const handleCurrencyChange = async (event) => {
+    const newCurrency = event.target.value
 
-  //   try {
-  //     window.localStorage.setItem('currency', JSON.stringify({ currency: newCurrency }))
-  //     setSettingsLoading(true)
-  //     await updateSettings({
-  //       currency: newCurrency
-  //     })
-  //     toast.success('Settings saved!', 'center')
-  //   } catch (e) {
-  //     toast.error(e.message)
-  //   } finally {
-  //     setSettingsLoading(false)
-  //   }
-  // }
+    try {
+      window.localStorage.setItem('currency', JSON.stringify({ currency: newCurrency }))
+      setSettingsLoading(true)
+      await updateSettings({
+        ...settings,
+        currency: newCurrency
+      })
+      toast.success('Settings saved!', {
+        position: 'top-center'
+      })
+    } catch (e) {
+      toast.error(e.message)
+    } finally {
+      setSettingsLoading(false)
+    }
+  }
 
   return (
     <>
-      {/* {(!breakpoints.sm && !breakpoints.xs) &&
+      {(!breakpoints.sm && !breakpoints.xs) &&
         <Typography variant='h1' color='textPrimary' paragraph>Settings</Typography>}
-      <div> */}
-      {/* TODO: Move the theming settings into it's own component */}
-      {/* <Typography variant='body' color='textSecondary'>Select the default color theme</Typography>
+      <div>
+        {/* TODO: Move the theming settings into it's own component */}
+        <Typography variant='body' color='textSecondary'>Select the default color theme</Typography>
         <br />
         <FormControl variant="outlined" style={{ margin: '1em 0 2em 0', width: '100%' }}>
           <InputLabel id="theme-select-label">Theme</InputLabel>
           <Select
             labelId="theme-select-label"
             id="theme"
-            value={settings.theme}
+            value={settings.theme.mode}
             onChange={handleThemeChange}
             label="Theme"
           >
@@ -118,9 +126,9 @@ const Settings = () => {
             <MenuItem value='GBP'>£7.86</MenuItem>
           </Select>
         </FormControl>
-        {settingsLoading ? <LinearProgress style={{ marginTop: '1em' }} /> : <></>} */}
-      {/* </div > */}
-      {/* <PasswordSettings history={history} />
+        {settingsLoading ? <LinearProgress style={{ marginTop: '1em' }} /> : null}
+        {/* </div > */}
+        {/* <PasswordSettings history={history} />
       <Divider />
       <br />
       <PhoneSettings />
@@ -128,14 +136,14 @@ const Settings = () => {
       <br />
       <RecoveryKeySettings />
       <Divider /> */}
-      < br />
-      <About />
-      <Divider />
-      <br />
-      {/* <KernelConfigurator /> */}
-      <br />
-      <br />
-      {/* {showAutoLaunch && <>
+        <br />
+        <About />
+        <Divider />
+        <br />
+        {/* <KernelConfigurator /> */}
+        <br />
+        <br />
+        {/* {showAutoLaunch && <>
         <FormControlLabel
           control={<Checkbox
             checked={autoLaunchEnabled}
@@ -146,7 +154,8 @@ const Settings = () => {
         <br />
         <br />
       </>} */}
-      <Logout history={history} />
+        <Logout history={history} />
+      </div>
     </>
   )
 }

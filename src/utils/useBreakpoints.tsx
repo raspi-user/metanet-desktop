@@ -1,23 +1,44 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
 
-const defaultValue = {}
-const BreakpointContext = createContext(defaultValue)
-const BreakpointProvider: React.FC<any> = ({ children, queries }) => {
-  const [queryMatch, setQueryMatch] = useState({})
+// Hard-code our known breakpoints:
+type Breakpoint = 'xs' | 'sm' | 'md' | 'or'
+type BreakpointMatches = Record<Breakpoint, boolean>
+
+// Provide a default value matching our hard-coded breakpoints:
+const defaultValue: BreakpointMatches = {
+  xs: false,
+  sm: false,
+  md: false,
+  or: false,
+}
+
+// Create a context with our specific type:
+const BreakpointContext = createContext<BreakpointMatches>(defaultValue)
+
+// Define the provider’s props to require a "queries" object that maps our breakpoints to strings:
+interface BreakpointProviderProps {
+  children: ReactNode
+  queries: Record<Breakpoint, string>
+}
+
+const BreakpointProvider: React.FC<BreakpointProviderProps> = ({ children, queries }) => {
+  const [queryMatch, setQueryMatch] = useState<BreakpointMatches>(defaultValue)
 
   useEffect(() => {
-    const mediaQueryLists: any = {}
-    const keys = Object.keys(queries)
+    // Type the media query lists using our Breakpoint keys:
+    const mediaQueryLists: Record<Breakpoint, MediaQueryList> = {} as any
+    // Cast the keys from Object.keys:
+    const keys = Object.keys(queries) as Breakpoint[]
     let isAttached = false
     const handleQueryListener = () => {
       const updatedMatches = keys.reduce((acc, media) => {
         acc[media] = !!(mediaQueryLists[media] && mediaQueryLists[media].matches)
         return acc
-      }, {} as any)
+      }, {} as BreakpointMatches)
       setQueryMatch(updatedMatches)
     }
     if (window && window.matchMedia) {
-      const matches: any = {}
+      const matches = {} as BreakpointMatches
       keys.forEach(media => {
         if (typeof queries[media] === 'string') {
           mediaQueryLists[media] = window.matchMedia(queries[media])
@@ -44,6 +65,7 @@ const BreakpointProvider: React.FC<any> = ({ children, queries }) => {
       }
     }
   }, [queries])
+
   return (
     <BreakpointContext.Provider value={queryMatch}>
       {children}
@@ -51,7 +73,7 @@ const BreakpointProvider: React.FC<any> = ({ children, queries }) => {
   )
 }
 
-const useBreakpoint = () => {
+const useBreakpoint = (): BreakpointMatches => {
   const context = useContext(BreakpointContext)
   return context
 }
