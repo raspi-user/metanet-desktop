@@ -33,9 +33,9 @@ const RecoveryKeySettings = ({ history }) => {
         return
       }
       setShowLoading(true)
-      // setRecoveryKey(
-      //   Utils.toBase64(await managers.walletManager.getRecoveryKey())
-      // )
+      setRecoveryKey(
+        Utils.toBase64(await managers.walletManager.getRecoveryKey())
+      )
     } finally {
       setShowLoading(false)
     }
