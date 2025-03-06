@@ -32,6 +32,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import BasketAccessHandler from './components/BasketAccessHandler'
 import { BreakpointProvider } from './utils/useBreakpoints'
+import UserTheme from './components/UserTheme'
 
 import Greeter from './pages/Greeter'
 import Recovery from './pages/Recovery'
@@ -357,62 +358,64 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 network: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
             }}
         >
-            <Router>
-                {/* This component handles redirecting once the snapshot is loaded and authentication is valid */}
-                <AuthRedirector snapshotLoaded={snapshotLoaded} />
-                <ExchangeRateContextProvider>
-                    <BreakpointProvider queries={queries}>
-                        <Theme>
-                            <ToastContainer position='top-center' />
+            <UserTheme>
+                <Router>
+                    {/* This component handles redirecting once the snapshot is loaded and authentication is valid */}
+                    <AuthRedirector snapshotLoaded={snapshotLoaded} />
+                    <ExchangeRateContextProvider>
+                        <BreakpointProvider queries={queries}>
+                            <Theme>
+                                <ToastContainer position='top-center' />
 
-                            {/* Setup core handlers */}
-                            <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
-                            <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
-                            <SpendingAuthorizationHandler
-                                setSpendingAuthorizationCallback={setSpendingAuthorizationCallback}
-                            />
-                            <BasketAccessHandler
-                                setBasketAccessHandler={setBasketAccessCallback}
-                            />
-                            <ProtocolPermissionHandler
-                                setProtocolPermissionCallback={setProtocolPermissionCallback}
-                            />
-                            <CertificateAccessHandler
-                                setCertificateAccessHandler={setCertificateAccessCallback}
-                            />
-
-                            {/* Render configuration UI only if no snapshot is present */}
-                            {(noManagerYet || !(managers.walletManager as any)?.authenticated) && !localStorage.snap && (
-                                <WalletConfig
-                                    noManagerYet={noManagerYet}
-                                    wabUrl={wabUrl}
-                                    setWabUrl={setWabUrl}
-                                    fetchWabInfo={fetchWabInfo}
-                                    wabInfo={wabInfo!}
-                                    selectedAuthMethod={selectedAuthMethod}
-                                    onSelectAuthMethod={onSelectAuthMethod}
-                                    selectedNetwork={selectedNetwork}
-                                    setSelectedNetwork={setSelectedNetwork}
-                                    selectedStorageUrl={selectedStorageUrl}
-                                    setSelectedStorageUrl={setSelectedStorageUrl}
-                                    finalizeConfig={finalizeConfig}
+                                {/* Setup core handlers */}
+                                <PasswordHandler setPasswordRetriever={setPasswordRetriever} />
+                                <RecoveryKeyHandler setRecoveryKeySaver={setRecoveryKeySaver} />
+                                <SpendingAuthorizationHandler
+                                    setSpendingAuthorizationCallback={setSpendingAuthorizationCallback}
                                 />
-                            )}
+                                <BasketAccessHandler
+                                    setBasketAccessHandler={setBasketAccessCallback}
+                                />
+                                <ProtocolPermissionHandler
+                                    setProtocolPermissionCallback={setProtocolPermissionCallback}
+                                />
+                                <CertificateAccessHandler
+                                    setCertificateAccessHandler={setCertificateAccessCallback}
+                                />
 
-                            {/* When a wallet manager exists, render the app routes */}
-                            {managers.walletManager && (
-                                <Switch>
-                                    <Route exact path='/' component={Greeter} />
-                                    <Route exact path='/recovery/lost-phone' component={LostPhone} />
-                                    <Route exact path='/recovery/lost-password' component={LostPassword} />
-                                    <Route exact path='/recovery' component={Recovery} />
-                                    <Route path='/dashboard' component={Dashboard} />
-                                </Switch>
-                            )}
-                        </Theme>
-                    </BreakpointProvider>
-                </ExchangeRateContextProvider>
-            </Router>
+                                {/* Render configuration UI only if no snapshot is present */}
+                                {(noManagerYet || !(managers.walletManager as any)?.authenticated) && !localStorage.snap && (
+                                    <WalletConfig
+                                        noManagerYet={noManagerYet}
+                                        wabUrl={wabUrl}
+                                        setWabUrl={setWabUrl}
+                                        fetchWabInfo={fetchWabInfo}
+                                        wabInfo={wabInfo!}
+                                        selectedAuthMethod={selectedAuthMethod}
+                                        onSelectAuthMethod={onSelectAuthMethod}
+                                        selectedNetwork={selectedNetwork}
+                                        setSelectedNetwork={setSelectedNetwork}
+                                        selectedStorageUrl={selectedStorageUrl}
+                                        setSelectedStorageUrl={setSelectedStorageUrl}
+                                        finalizeConfig={finalizeConfig}
+                                    />
+                                )}
+
+                                {/* When a wallet manager exists, render the app routes */}
+                                {managers.walletManager && (
+                                    <Switch>
+                                        <Route exact path='/' component={Greeter} />
+                                        <Route exact path='/recovery/lost-phone' component={LostPhone} />
+                                        <Route exact path='/recovery/lost-password' component={LostPassword} />
+                                        <Route exact path='/recovery' component={Recovery} />
+                                        <Route path='/dashboard' component={Dashboard} />
+                                    </Switch>
+                                )}
+                            </Theme>
+                        </BreakpointProvider>
+                    </ExchangeRateContextProvider>
+                </Router>
+            </UserTheme>
         </WalletContext.Provider>
     )
 }
