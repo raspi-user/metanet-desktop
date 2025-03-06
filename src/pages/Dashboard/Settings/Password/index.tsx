@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../../../UserInterface'
+import { Utils } from '@bsv/sdk'
 
 const useStyles = makeStyles(style, { name: 'PasswordSettings' })
 
@@ -27,7 +28,7 @@ const PasswordSettings = ({ history }) => {
         throw new Error('Passwords do not match.')
       }
       await managers.walletManager.changePassword(password)
-      localStorage.snap = managers.walletManager.saveSnapshot()
+      localStorage.snap = Utils.toBase64(managers.walletManager.saveSnapshot())
       toast.dark('Password changed!')
       setPassword('')
       setConfirmPassword('')

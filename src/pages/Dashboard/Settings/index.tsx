@@ -9,7 +9,7 @@ import style from './style.js'
 import { WalletContext } from '../../../UserInterface.js'
 import PasswordSettings from './Password/index.jsx'
 // import PhoneSettings from './Phone/index.jsx'
-// import RecoveryKeySettings from './RecoveryKey/index.jsx'
+import RecoveryKeySettings from './RecoveryKey/index.jsx'
 import About from './About/index.jsx'
 import Logout from './Logout/index.jsx'
 // import KernelConfigurator from '../../../components/KernelConfigurator.jsx'
@@ -134,9 +134,9 @@ const Settings = () => {
       {/*
       <PhoneSettings />
       <Divider />
-      <br />
+      <br />*/}
       <RecoveryKeySettings />
-      <Divider /> */}
+      <Divider />
       <br />
       <About />
       <Divider />

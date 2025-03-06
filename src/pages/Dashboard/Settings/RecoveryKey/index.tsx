@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react'
+import { useState, useContext } from 'react'
 import {
   Typography, Button, CircularProgress
 } from '@mui/material'
 import { toast } from 'react-toastify'
 import { makeStyles } from '@mui/styles'
-import UIContext from '../../../../UIContext'
+import { WalletContext } from '../../../../UserInterface'
+import { Utils } from '@bsv/sdk'
 
 const useStyles = makeStyles(theme => ({
   key: {
@@ -19,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 }), { name: 'RecoveryKey' })
 
 const RecoveryKeySettings = ({ history }) => {
-  const { saveLocalSnapshot } = useContext(UIContext)
+  const { managers } = useContext(WalletContext)
   const [recoveryKey, setRecoveryKey] = useState('')
   const [showLoading, setShowLoading] = useState(false)
   const [changeLoading, setChangeLoading] = useState(false)
@@ -32,9 +33,9 @@ const RecoveryKeySettings = ({ history }) => {
         return
       }
       setShowLoading(true)
-      setRecoveryKey(
-        await window.CWI.getRecoveryKey()
-      )
+      // setRecoveryKey(
+      //   Utils.toBase64(await managers.walletManager.getRecoveryKey())
+      // )
     } finally {
       setShowLoading(false)
     }
@@ -43,12 +44,10 @@ const RecoveryKeySettings = ({ history }) => {
   const handleChangeKey = async () => {
     try {
       setChangeLoading(true)
-      const success = await window.CWI.changeRecoveryKey()
-      if (success === true) {
-        setRecoveryKey('')
-        await saveLocalSnapshot()
-        toast.dark('Recovery key changed!')
-      }
+      await managers.walletManager.changeRecoveryKey()
+      setRecoveryKey('')
+      localStorage.snap = Utils.toBase64(managers.walletManager.saveSnapshot())
+      toast.dark('Recovery key changed!')
     } catch (e) {
       toast.error(e.message)
     } finally {
@@ -77,7 +76,7 @@ const RecoveryKeySettings = ({ history }) => {
             >
               {recoveryKey ? 'Hide' : 'View'}
             </Button>
-            )}
+          )}
         <div />
         {changeLoading
           ? <CircularProgress />
@@ -89,7 +88,7 @@ const RecoveryKeySettings = ({ history }) => {
             >
               Change
             </Button>
-            )}
+          )}
       </div>
       <br />
       <br />
