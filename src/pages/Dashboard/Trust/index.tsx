@@ -74,13 +74,18 @@ const Trust = ({ history }) => {
       if (!saveModalOpen) {
         toast.promise(
           (async () => {
-            await updateSettings(JSON.parse(JSON.stringify({
-              ...settings,
-              trustSettings: {
-                trustLevel,
-                trustedCertifiers: trustedEntities
-              }
-            })))
+            try {
+              await updateSettings(JSON.parse(JSON.stringify({
+                ...settings,
+                trustSettings: {
+                  trustLevel,
+                  trustedCertifiers: trustedEntities
+                }
+              })))
+            } catch (e) {
+              console.error(e)
+              throw e
+            }
           })(),
           {
             pending: 'Saving settings...',

@@ -196,7 +196,6 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 throw new Error(`Failed to fetch info: ${res.status}`);
             }
             const info = await res.json();
-            console.log(info)
             setWabInfo(info);
         } catch (error: any) {
             console.error("Error fetching WAB info", error);

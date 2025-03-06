@@ -110,7 +110,6 @@ const Dashboard = () => {
   useEffect(() => {
     (async () => {
       if (managers.walletManager!.authenticated) {
-        console.log('loaded dashboard')
         setPageLoading(false)
         const { publicKey } = await managers.walletManager!.getPublicKey({ identityKey: true })
         setMyIdentityKey(publicKey)

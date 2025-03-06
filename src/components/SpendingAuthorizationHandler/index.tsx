@@ -106,7 +106,6 @@ const SpendingAuthorizationHandler: React.FC<{
   useEffect(() => {
     setSpendingAuthorizationCallback(() => {
       return async (args: PermissionRequest & { requestID: string }): Promise<void> => {
-        console.log(args)
         const {
           requestID,
           originator,

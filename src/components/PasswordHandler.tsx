@@ -45,8 +45,6 @@ const PasswordHandler: React.FC<PasswordHandlerProps> = ({ setPasswordRetriever 
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
-    console.log('password', password)
-    console.log(test)
     const success = test(password)
     if (success) {
       resolve(password)
