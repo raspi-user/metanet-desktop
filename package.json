@@ -10,8 +10,8 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@bsv/sdk": "^1.3.28",
-    "@cwi/wallet-toolbox-client": "^1.3.7",
+    "@bsv/sdk": "^1.3.30",
+    "@cwi/wallet-toolbox-client": "^1.3.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.3",
