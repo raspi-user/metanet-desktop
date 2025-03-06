@@ -3,7 +3,9 @@ import React, { useState } from 'react'
 import { Typography, Button, Slider, DialogContent, DialogContentText, DialogActions, Hidden, IconButton } from '@mui/material'
 import Delete from '@mui/icons-material/Close'
 import CustomDialog from '../../../components/CustomDialog'
-const TrustedEntity = ({ entity, setTrustedEntities, classes, history }) => {
+import { Certifier } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+
+const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { history: any, classes: any, setTrustedEntities: Function, entity: Certifier, trustedEntities: Certifier[] }) => {
   const [trust, setTrust] = useState(entity.trust)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -30,12 +32,12 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }) => {
       <div
         className={classes.clickable_entity_icon_name_grid}
         role='button'
-        onClick={() => history.push(`/dashboard/counterparty/${entity.publicKey}`)}
+        onClick={() => history.push(`/dashboard/counterparty/${entity.identityKey}`)}
       >
-        <img src={entity.icon} className={classes.entity_icon} />
+        <img src={entity.iconUrl} className={classes.entity_icon} />
         <div>
           <Typography><b>{entity.name}</b></Typography>
-          <Typography variant='caption' color='textSecondary'>{entity.note}</Typography>
+          <Typography variant='caption' color='textSecondary'>{entity.description}</Typography>
         </div>
       </div>
       <div className={classes.slider_label_delete_grid}>
@@ -51,10 +53,10 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }) => {
         <DialogContent>
           <DialogContentText>Do you want to delete this trust relationship?</DialogContentText>
           <div className={classes.entity_icon_name_grid}>
-            <img src={entity.icon} className={classes.entity_icon} />
+            <img src={entity.iconUrl} className={classes.entity_icon} />
             <div>
               <Typography><b>{entity.name}</b></Typography>
-              <Typography variant='caption' color='textSecondary'>{entity.note}</Typography>
+              <Typography variant='caption' color='textSecondary'>{entity.description}</Typography>
             </div>
           </div>
         </DialogContent>
@@ -66,4 +68,5 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }) => {
     </>
   )
 }
+
 export default TrustedEntity

@@ -1,58 +1,30 @@
 /* eslint-disable indent */
 /* eslint-disable react/prop-types */
-import React, { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { Prompt } from 'react-router-dom'
 import { Typography, Button, Slider, TextField, InputAdornment, Hidden, LinearProgress, Snackbar } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import style from './style.js'
-import { DEFAULT_APP_ICON } from '../../../constants/popularApps'
-import { SettingsContext } from '../../../context/SettingsContext'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import { toast } from 'react-toastify'
-import UIContext from '../../../UIContext.js'
+import { WalletContext } from '../../../UserInterface'
 
-import TrustedEntity from './TrustedEntity.jsx'
+import TrustedEntity from './TrustedEntity.js'
 import arraysOfObjectsAreEqual from '../../../utils/arraysOfObjectsAreEqual.js'
-import AddEntityModal from './AddEntityModal.jsx'
-import NavigationConfirmModal from './NavigationConfirmModal.jsx'
+import AddEntityModal from './AddEntityModal.js'
+import NavigationConfirmModal from './NavigationConfirmModal.js'
 
 const useStyles = makeStyles(style, {
   name: 'Trust'
 })
 
 const Trust = ({ history }) => {
-  const { env } = useContext(UIContext)
-  const { settings, updateSettings } = useContext(SettingsContext)
+  const { network, settings, updateSettings } = useContext(WalletContext)
 
   // These are some hard-coded defaults, if the user doesn't have any in Settings.
-  const [trustThreshold, setTrustThreshold] = useState(settings.trustThreshold || 2)
-  const [trustedEntities, setTrustedEntities] = useState(settings.trustedEntities
-    ? JSON.parse(JSON.stringify(settings.trustedEntities))
-    : [
-      {
-        name: 'IdentiCert',
-        note: 'Certifies legal first and last name, and photos',
-        trust: 5,
-        icon: env === 'prod' ? 'https://identicert.me/favicon.ico' : 'https://staging.identicert.me/favicon.ico',
-        publicKey: env === 'prod' ? '0295bf1c7842d14babf60daf2c733956c331f9dcb2c79e41f85fd1dda6a3fa4549' : '036dc48522aba1705afbb43df3c04dbd1da373b6154341a875bceaa2a3e7f21528'
-      },
-      {
-        name: 'SocialCert',
-        note: 'Certifies social media handles, phone numbers and emails',
-        trust: 3,
-        icon: env === 'prod' ? 'https://socialcert.net/favicon.ico' : 'https://staging-socialcert.net/favicon.ico',
-        publicKey: env === 'prod' ? '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2' : '02cf6cdf466951d8dfc9e7c9367511d0007ed6fba35ed42d425cc412fd6cfd4a17'
-      },
-      {
-        name: 'Babbage Trust Services',
-        note: 'Resolves identity information for Babbage-run APIs and Bitcoin infrastructure.',
-        trust: 4,
-        icon: DEFAULT_APP_ICON,
-        publicKey: env === 'prod' ? '028703956178067ea7ca405111f1ca698290a0112a3d7cf3d843e195bf58a7cfa6' : '03d0b36b5c98b000ec9ffed9a2cf005e279244edf6a19cf90545cdebe873162761'
-      }
-    ])
-
+  const [trustLevel, setTrustLevel] = useState(settings.trustSettings.trustLevel || 2)
+  const [trustedEntities, setTrustedEntities] = useState(JSON.parse(JSON.stringify(settings.trustSettings.trustedCertifiers)))
   const [search, setSearch] = useState('')
   const [addEntityModalOpen, setAddEntityModalOpen] = useState(false)
   const [checkboxChecked, setCheckboxChecked] = useState(window.localStorage.getItem('showDialog') === 'false')
@@ -64,14 +36,14 @@ const Trust = ({ history }) => {
   const totalTrustPoints = trustedEntities.reduce((a, e) => a + e.trust, 0)
 
   useEffect(() => {
-    if (trustThreshold > totalTrustPoints) {
-      setTrustThreshold(totalTrustPoints)
+    if (trustLevel > totalTrustPoints) {
+      setTrustLevel(totalTrustPoints)
     }
   }, [totalTrustPoints])
 
   useEffect(() => {
-    setSettingsNeedsUpdate((settings.trustThreshold !== trustThreshold) || (!arraysOfObjectsAreEqual(settings.trustedEntities, trustedEntities)))
-  }, [trustedEntities, totalTrustPoints, trustThreshold])
+    setSettingsNeedsUpdate((settings.trustSettings.trustLevel !== trustLevel) || (!arraysOfObjectsAreEqual(settings.trustSettings.trustedCertifiers, trustedEntities)))
+  }, [trustedEntities, totalTrustPoints, trustLevel, settings])
 
   useEffect(() => {
     const unblock = history.block((location) => {
@@ -92,7 +64,7 @@ const Trust = ({ history }) => {
     if (!search) {
       return true
     }
-    return x.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || x.note.toLowerCase().indexOf(search.toLowerCase()) !== -1
+    return x.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || x.description.toLowerCase().indexOf(search.toLowerCase()) !== -1
   })
 
   const handleSave = async () => {
@@ -103,8 +75,11 @@ const Trust = ({ history }) => {
         toast.promise(
           (async () => {
             await updateSettings(JSON.parse(JSON.stringify({
-              trustThreshold,
-              trustedEntities
+              ...settings,
+              trustSettings: {
+                trustLevel,
+                trustedCertifiers: trustedEntities
+              }
             })))
           })(),
           {
@@ -118,8 +93,11 @@ const Trust = ({ history }) => {
         )
       } else {
         await updateSettings(JSON.parse(JSON.stringify({
-          trustThreshold,
-          trustedEntities
+          ...settings,
+          trustSettings: {
+            trustLevel,
+            trustedCertifiers: trustedEntities
+          }
         })))
         toast.success('Trust relationships updated!')
       }
@@ -167,8 +145,8 @@ const Trust = ({ history }) => {
       </Typography>
       <center className={classes.trust_threshold}>
         <div className={classes.slider_label_grid}>
-          <Typography><b>{trustThreshold}</b> / {totalTrustPoints}</Typography>
-          <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustThreshold(v)} value={trustThreshold} />
+          <Typography><b>{trustLevel}</b> / {totalTrustPoints}</Typography>
+          <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustLevel(v)} value={trustLevel} />
         </div>
       </center>
       <Prompt
@@ -229,8 +207,9 @@ const Trust = ({ history }) => {
         </Hidden>
         {shownTrustedEntities.map((entity, i) => <TrustedEntity
           entity={entity}
+          trustedEntities={trustedEntities}
           setTrustedEntities={setTrustedEntities}
-          key={`${entity.name}.${entity.note}.${entity.publicKey}`}
+          key={`${entity.name}.${entity.description}.${entity.identityKey}`}
           classes={classes}
           history={history}
         />)}

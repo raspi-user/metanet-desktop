@@ -19,7 +19,7 @@ const useStyles = makeStyles(style, {
 })
 
 const MyIdentity = () => {
-  const { managers, adminOriginator } = useContext(WalletContext)
+  const { managers, adminOriginator, network } = useContext(WalletContext)
 
   const [search, setSearch] = useState('')
   const [addPopularSigniaCertifiersModalOpen, setAddPopularSigniaCertifiersModalOpen] = useState(false)
@@ -123,7 +123,7 @@ const MyIdentity = () => {
 
   return (
     <div className={classes.content_wrap}>
-      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>Identity</Typography>
+      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>{network === 'testnet' ? 'Testnet Identity' : 'Identity'}</Typography>
       <Typography variant='body' color='textSecondary'>
         <b>Everyday Identity Key:</b> {primaryIdentityKey}
         <IconButton size='small' onClick={() => handleCopy(primaryIdentityKey, 'id')} disabled={copied.id}>

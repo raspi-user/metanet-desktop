@@ -26,7 +26,7 @@ import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
 import CertificateAccessHandler from './components/CertificateAccessHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
-import { WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
 import { MemoryRouter as Router, Switch, Route, useHistory } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -75,6 +75,10 @@ export interface WalletContextValue {
     appVersion: string;
     appName: string;
     adminOriginator: string;
+    // Settings
+    settings: WalletSettings;
+    updateSettings: (newSettings: WalletSettings) => void;
+    network: 'mainnet' | 'testnet';
 }
 
 export const WalletContext = createContext<WalletContextValue>({
@@ -85,7 +89,10 @@ export const WalletContext = createContext<WalletContextValue>({
     onFocusRelinquished: async () => { },
     appVersion: '0.0.0',
     appName: 'MetaNet Client',
-    adminOriginator: 'admin.com'
+    adminOriginator: 'admin.com',
+    settings: DEFAULT_SETTINGS,
+    updateSettings: () => { },
+    network: 'mainnet'
 })
 
 // -----
@@ -138,6 +145,15 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     appName = 'MetaNet Client'
 }) => {
     const [managers, updateManagers] = useState<ManagerState>({});
+    const [settings, setLocalSettings] = useState(DEFAULT_SETTINGS);
+
+    const updateSettings = async (newSettings: WalletSettings) => {
+        if (!managers.settingsManager) {
+            throw new Error('The user must be logged in to update settings!')
+        }
+        await managers.settingsManager.set(newSettings);
+        setLocalSettings(newSettings);
+    }
 
     // ---- Callbacks for password/recovery/etc.
     const [passwordRetriever, setPasswordRetriever] = useState<
@@ -164,21 +180,14 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     } | null>(null);
 
     const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("");
-    const [selectedNetwork, setSelectedNetwork] = useState<string>(CHAIN); // "test" or "main"
+    const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>(CHAIN); // "test" or "main"
     const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(STORAGE_URL);
 
     // Flag that indicates configuration is complete. For returning users,
     // if a snapshot exists we auto-mark configComplete.
-    const [configComplete, setConfigComplete] = useState<boolean>(false);
+    const [configComplete, setConfigComplete] = useState<boolean>(!!localStorage.snap);
     // Used to trigger a re-render after snapshot load completes.
     const [snapshotLoaded, setSnapshotLoaded] = useState<boolean>(false);
-
-    // Check for a snapshot on initial load and auto-complete config if one exists.
-    useEffect(() => {
-        if (localStorage.snap) {
-            setConfigComplete(true);
-        }
-    }, []);
 
     async function fetchWabInfo() {
         try {
@@ -236,7 +245,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                 // Setup permissions with provided callbacks.
                 const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
-                    // encryptWalletMetadata: false,
+                    // TODO: Re-enable permissions once they are fully working.
                     seekPermissionsForPublicKeyRevelation: false,
                     seekProtocolPermissionsForSigning: false,
                     seekProtocolPermissionsForEncrypting: false,
@@ -273,7 +282,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 walletBuilder,
                 new OverlayUMPTokenInteractor(
                     resolver,
-                    new SHIPBroadcaster(['tm_users', 'tm_ship'], { resolver })
+                    new SHIPBroadcaster(['tm_users'], { resolver })
                 ),
                 recoveryKeySaver,
                 passwordRetriever,
@@ -316,6 +325,20 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         certificateAccessCallback
     ]);
 
+    // When Settings manager becomes available, populate the user's settings
+    useEffect(() => {
+        (async () => {
+            if (managers.settingsManager) {
+                try {
+                    const settings = await managers.settingsManager.get();
+                    setLocalSettings(settings);
+                } catch (e) {
+                    // Unable to load settings, defaaults are already loaded.
+                }
+            }
+        })();
+    }, [managers])
+
     // For new users, show the WalletConfig if no snapshot exists.
     const noManagerYet = !managers.walletManager;
 
@@ -329,7 +352,10 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
                 appName,
                 appVersion,
-                adminOriginator
+                adminOriginator,
+                settings,
+                updateSettings,
+                network: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
             }}
         >
             <Router>

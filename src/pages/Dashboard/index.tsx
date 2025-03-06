@@ -29,7 +29,7 @@ import Apps from './Apps'
 // pages
 
 // import AppAccess from './AppAccess/index.jsx'
-// import Trust from './Trust/index.jsx'
+import Trust from './Trust/index.js'
 import MyIdentity from './MyIdentity/index.js'
 // import Apps from './Apps/index.jsx'
 // import App from './App/Index.jsx'
@@ -276,11 +276,11 @@ const Dashboard = () => {
             path='/dashboard/identity'
             component={MyIdentity}
           />
-          {/*
           <Route
             path='/dashboard/trust'
             component={Trust}
           />
+          {/*
           <Route
             path='/dashboard/basket/:basketId'
             component={BasketAccess}

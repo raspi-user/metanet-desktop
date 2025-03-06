@@ -1,4 +1,3 @@
-import React from 'react'
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material'
 
 const NavigationConfirmModal = ({ open, onConfirm, onCancel, children, loading }) => {
