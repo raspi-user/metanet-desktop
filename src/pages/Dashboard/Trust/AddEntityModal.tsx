@@ -19,9 +19,9 @@ const AddEntityModal = ({
   const [domain, setDomain] = useState('')
   const [advanced, setAdvanced] = useState(false)
   const [name, setName] = useState('')
-  const [note, setNote] = useState('')
+  const [description, setDescription] = useState('')
   const [icon, setIcon] = useState('')
-  const [publicKey, setPublicKey] = useState('')
+  const [identityKey, setIdentityKey] = useState('')
   const [fieldsValid, setFieldsValid] = useState(false)
   const [loading, setLoading] = useState(false)
   const [domainError, setDomainError] = useState(null)
@@ -49,9 +49,9 @@ const AddEntityModal = ({
       }
       await validateTrust(json.babbage.trust)
       setName(json.babbage.trust.name)
-      setNote(json.babbage.trust.note)
+      setDescription(json.babbage.trust.description)
       setIcon(json.babbage.trust.icon)
-      setPublicKey(json.babbage.trust.publicKey)
+      setIdentityKey(json.babbage.trust.identityKey)
       setFieldsValid(true)
     } catch (e) {
       setFieldsValid(false)
@@ -75,9 +75,9 @@ const AddEntityModal = ({
       await validateTrust({
         name,
         icon,
-        publicKey
+        identityKey
       }, { skipNote: true })
-      setNote(name)
+      setDescription(name)
       setFieldsValid(true)
     } catch (e) {
       setFieldsValid(false)
@@ -99,18 +99,18 @@ const AddEntityModal = ({
 
   const handleTrust = async () => {
     setTrustedEntities(t => {
-      if (t.some(x => x.publicKey === publicKey)) {
+      if (t.some(x => x.identityKey === identityKey)) {
         toast.error('An entity with this public key is already in the list!')
         return t
       }
       setDomain('')
       setName('')
-      setNote('')
-      setPublicKey('')
+      setDescription('')
+      setIdentityKey('')
       setFieldsValid(false)
       setOpen(false)
       return [
-        { name, icon, note, publicKey, trust: 5 },
+        { name, icon, description, identityKey, trust: 5 },
         ...t
       ]
     })
@@ -219,9 +219,9 @@ const AddEntityModal = ({
             <TextField
               label='Entity Public Key'
               placeholder='0295bf1c7842d14babf60daf2c733956c331f9dcb2c79e41f85fd1dda6a3fa4549'
-              value={publicKey}
+              value={identityKey}
               onChange={e => {
-                setPublicKey(e.target.value)
+                setIdentityKey(e.target.value)
                 setPublicKeyError(null)
                 setFieldsValid(false)
               }}
@@ -267,17 +267,17 @@ const AddEntityModal = ({
               <img src={icon} className={classes.entity_icon} />
               <div>
                 <Typography><b>{name}</b></Typography>
-                <Typography variant='caption' color='textSecondary'>{publicKey}</Typography>
+                <Typography variant='caption' color='textSecondary'>{identityKey}</Typography>
               </div>
             </div>
             <br />
             <TextField
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              label='Note'
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              label='description'
               fullWidth
-              error={note.length < 5 || note.length > 50}
-              helperText={note.length < 5 || note.length > 50 ? 'Note must be between 5 and 50 characters' : null}
+              error={description.length < 5 || description.length > 50}
+              helperText={description.length < 5 || description.length > 50 ? 'description must be between 5 and 50 characters' : null}
             />
           </div>
         )}
