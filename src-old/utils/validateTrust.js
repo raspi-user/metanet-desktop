@@ -26,7 +26,7 @@ const validateTrust = async (trust, { skipNote = false } = {}) => {
     e.field = 'icon'
     throw e
   }
-  if (/^(02|03)[a-f0-9]{64}$/.test(trust.publicKey) !== true) {
+  if (/^(02|03)[a-f0-9]{64}$/.test(trust.identityKey) !== true) {
     const e = new Error('Trust validation failed, public key is invalid')
     e.field = 'publicKey'
     throw e

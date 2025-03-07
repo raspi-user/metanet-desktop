@@ -51,7 +51,7 @@ const AddEntityModal = ({
       setName(json.babbage.trust.name)
       setNote(json.babbage.trust.note)
       setIcon(json.babbage.trust.icon)
-      setPublicKey(json.babbage.trust.publicKey)
+      setPublicKey(json.babbage.trust.identityKey)
       setFieldsValid(true)
     } catch (e) {
       setFieldsValid(false)
