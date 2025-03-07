@@ -35,6 +35,7 @@ import { BreakpointProvider } from './utils/useBreakpoints'
 import UserTheme from './components/UserTheme'
 
 import Greeter from './pages/Greeter'
+import Welcome from './pages/Welcome'
 import Recovery from './pages/Recovery'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
@@ -408,6 +409,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                                         <Route exact path='/recovery/lost-phone' component={LostPhone} />
                                         <Route exact path='/recovery/lost-password' component={LostPassword} />
                                         <Route exact path='/recovery' component={Recovery} />
+                                        <Route path='/welcome' component={Welcome} />
                                         <Route path='/dashboard' component={Dashboard} />
                                     </Switch>
                                 )}

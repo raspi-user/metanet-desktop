@@ -171,7 +171,7 @@ const Greeter: React.FC<any> = ({ history }) => {
         // Save snapshot to local storage
         localStorage.snap = Utils.toBase64(walletManager.saveSnapshot())
         toast.success("Authenticated successfully!")
-        history.push('/dashboard/apps')
+        history.push(accountStatus === 'new-user' ? '/welcome' : '/dashboard/apps')
       } else {
         throw new Error('Authentication failed, maybe password is incorrect?')
       }
