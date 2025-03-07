@@ -12,6 +12,7 @@ import { ProtoWallet, VerifiableCertificate } from '@bsv/sdk'
 // import { decryptCertificateFields } from 'authrite-utils'
 // import AddPopularSigniaCertifiersModal from './AddPopularSigniaCertifiersModal.jsx'
 import EyeCon from '@mui/icons-material/Visibility'
+import CertificateChip from '../../../components/CertificateChip/index.js'
 // import CertificatesGrid from './CertificatesGrid.jsx'
 
 const useStyles = makeStyles(style, {
@@ -172,7 +173,7 @@ const MyIdentity = () => {
         }}
       /> */}
 
-      {/* <div className={classes.master_grid}>
+      <div className={classes.master_grid}>
         {shownCertificates.map((cert, i) => <div key={i}>
           <CertificateChip
             certType={cert.type}
@@ -180,7 +181,7 @@ const MyIdentity = () => {
             fieldsToDisplay={cert.decryptedFields}
           />
         </div>)}
-      </div> */}
+      </div>
       {/* <CertificatesGrid certificates={shownCertificates} />
 
       {shownCertificates.length === 0 && (
