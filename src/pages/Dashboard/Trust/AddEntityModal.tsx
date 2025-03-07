@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react'
+import React, { SetStateAction, useState } from 'react'
 import { Typography, Button, TextField, InputAdornment, DialogContent, DialogContentText, DialogActions, LinearProgress } from '@mui/material'
 import DomainIcon from '@mui/icons-material/Public'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -12,10 +12,11 @@ import PublicKeyIcon from '@mui/icons-material/Key'
 import CustomDialog from '../../../components/CustomDialog'
 import { toast } from 'react-toastify'
 import validateTrust from '../../../utils/validateTrust'
+import { Certifier } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
 
 const AddEntityModal = ({
-  open, setOpen, trustedEntities, setTrustedEntities, classes
-}) => {
+  open, setOpen, setTrustedEntities, classes
+}: { open: boolean, classes: any, setTrustedEntities: Function }) => {
   const [domain, setDomain] = useState('')
   const [advanced, setAdvanced] = useState(false)
   const [name, setName] = useState('')
@@ -110,7 +111,7 @@ const AddEntityModal = ({
       setFieldsValid(false)
       setOpen(false)
       return [
-        { name, icon, description, identityKey, trust: 5 },
+        { name, icon, description, identityKey, trust: 5 } as Certifier,
         ...t
       ]
     })
