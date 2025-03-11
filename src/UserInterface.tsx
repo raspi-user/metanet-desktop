@@ -10,7 +10,7 @@ import {
     PermissionEventHandler,
     WalletAuthenticationManager,
     OverlayUMPTokenInteractor
-} from '@cwi/wallet-toolbox-client'
+} from '@bsv/wallet-toolbox-client'
 import {
     KeyDeriver,
     LookupResolver,
@@ -26,7 +26,7 @@ import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
 import CertificateAccessHandler from './components/CertificateAccessHandler'
 import Theme from './components/Theme'
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
-import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 import { MemoryRouter as Router, Switch, Route, useHistory } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -40,8 +40,8 @@ import Recovery from './pages/Recovery'
 import LostPhone from './pages/Recovery/LostPhone'
 import LostPassword from './pages/Recovery/LostPassword'
 import Dashboard from './pages/Dashboard'
-import { Chain } from '@cwi/wallet-toolbox-client/out/src/sdk'
-import { WABClient, TwilioPhoneInteractor } from '@cwi/wallet-toolbox-client'
+import { Chain } from '@bsv/wallet-toolbox-client/out/src/sdk'
+import { WABClient, TwilioPhoneInteractor } from '@bsv/wallet-toolbox-client'
 import WalletConfig from './components/WalletConfig'
 
 /** Defaults */

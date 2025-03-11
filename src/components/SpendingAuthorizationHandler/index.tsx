@@ -19,7 +19,7 @@ import { Send, Cancel } from '@mui/icons-material'
 import CustomDialog from '../CustomDialog/index.js'
 import { WalletContext } from '../../UserInterface.js'
 import AppChip from '../AppChip/index.js'
-import { PermissionEventHandler, PermissionRequest, Services } from '@cwi/wallet-toolbox-client'
+import { PermissionEventHandler, PermissionRequest, Services } from '@bsv/wallet-toolbox-client'
 
 const services = new Services('main')
 

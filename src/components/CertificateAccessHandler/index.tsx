@@ -5,7 +5,7 @@ import CustomDialog from '../CustomDialog/index.jsx'
 import { WalletContext } from '../../UserInterface.js'
 import AppChip from '../AppChip'
 import CertificateChip from '../CertificateChip/index'
-import { PermissionEventHandler, PermissionRequest } from '@cwi/wallet-toolbox-client'
+import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
 
 type CertificateAccessRequest = {
   requestID: string

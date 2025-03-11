@@ -12,7 +12,7 @@ import PublicKeyIcon from '@mui/icons-material/Key'
 import CustomDialog from '../../../components/CustomDialog'
 import { toast } from 'react-toastify'
 import validateTrust from '../../../utils/validateTrust'
-import { Certifier } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import { Certifier } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 
 const AddEntityModal = ({
   open, setOpen, setTrustedEntities, classes

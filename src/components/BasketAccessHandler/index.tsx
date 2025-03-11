@@ -4,7 +4,7 @@ import CustomDialog from '../CustomDialog'
 import { WalletContext, WalletContextValue } from '../../UserInterface'
 import AppChip from '../AppChip/index'
 import BasketChip from '../BasketChip/index'
-import { PermissionEventHandler, PermissionRequest } from '@cwi/wallet-toolbox-client'
+import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
 
 type BasketAccessRequest = {
     requestID: string

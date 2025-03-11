@@ -4,7 +4,7 @@ import CustomDialog from '../CustomDialog/index'
 import { WalletContext } from '../../UserInterface'
 import AppChip from '../AppChip/index'
 import ProtoChip from '../ProtoChip/index.tsx'
-import { PermissionEventHandler, PermissionRequest } from '@cwi/wallet-toolbox-client'
+import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
 
 const ProtocolPermissionHandler: React.FC<{
   setProtocolPermissionCallback: Dispatch<SetStateAction<PermissionEventHandler>>

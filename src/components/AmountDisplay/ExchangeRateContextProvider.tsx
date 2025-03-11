@@ -1,5 +1,5 @@
 import { ReactNode, createContext, useEffect, useState } from 'react'
-import { Services } from '@cwi/wallet-toolbox-client'
+import { Services } from '@bsv/wallet-toolbox-client'
 
 const services = new Services('main')
 

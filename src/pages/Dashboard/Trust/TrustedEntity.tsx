@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Typography, Button, Slider, DialogContent, DialogContentText, DialogActions, Hidden, IconButton } from '@mui/material'
 import Delete from '@mui/icons-material/Close'
 import CustomDialog from '../../../components/CustomDialog'
-import { Certifier } from '@cwi/wallet-toolbox-client/out/src/WalletSettingsManager'
+import { Certifier } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 
 const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { history: any, classes: any, setTrustedEntities: Function, entity: Certifier, trustedEntities: Certifier[] }) => {
   const [trust, setTrust] = useState(entity.trust)
