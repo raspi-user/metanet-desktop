@@ -270,12 +270,9 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 return permissionsManager;
             };
 
+            debugger
             const resolver = new LookupResolver({
-                hostOverrides: {
-                    'ls_ship': ['https://users.bapp.dev'],
-                    'ls_users': ['https://users.bapp.dev']
-                },
-                slapTrackers: ['https://users.bapp.dev']
+                networkPreset: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
             });
 
             const exampleWalletManager = new WalletAuthenticationManager(
@@ -283,7 +280,9 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 walletBuilder,
                 new OverlayUMPTokenInteractor(
                     resolver,
-                    new SHIPBroadcaster(['tm_users'], { resolver })
+                    new SHIPBroadcaster(['tm_users'], {
+                        networkPreset: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
+                    })
                 ),
                 recoveryKeySaver,
                 passwordRetriever,
