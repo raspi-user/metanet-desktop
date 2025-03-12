@@ -73,15 +73,15 @@ const SpendingAuthorizationHandler: React.FC<{
 
   const handleCancel = () => {
     managers.permissionsManager!.denyPermission(perms[0].requestID)
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
@@ -91,15 +91,15 @@ const SpendingAuthorizationHandler: React.FC<{
       ephemeral: singular,
       amount
     })
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)  // copy all but the first element
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
@@ -135,7 +135,7 @@ const SpendingAuthorizationHandler: React.FC<{
           setWasOriginallyFocused(wasOriginallyFocused)
         }
         setPerms(p => {
-          p.push({
+          const newItem = {
             requestID,
             originator,
             description: reason,
@@ -145,8 +145,8 @@ const SpendingAuthorizationHandler: React.FC<{
             authorizationAmount: satoshis,
             renewal,
             lineItems
-          })
-          return [...p]
+          }
+          return [...p, newItem]
         })
         const rate = await services.getBsvExchangeRate()
         setUsdPerBSV(rate)

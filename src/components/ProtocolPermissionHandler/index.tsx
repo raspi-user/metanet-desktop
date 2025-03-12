@@ -30,29 +30,29 @@ const ProtocolPermissionHandler: React.FC<{
 
   const handleCancel = () => {
     managers.permissionsManager!.denyPermission(perms[0].requestID)
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
   const handleGrant = () => {
     managers.permissionsManager!.grantPermission({ requestID: perms[0].requestID })
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
@@ -77,7 +77,7 @@ const ProtocolPermissionHandler: React.FC<{
           setWasOriginallyFocused(wasOriginallyFocused)
         }
         setPerms(p => {
-          p.push({
+          const newItem = {
             requestID,
             protocolSecurityLevel,
             protocolID: protocolNameString,
@@ -85,8 +85,8 @@ const ProtocolPermissionHandler: React.FC<{
             originator,
             description: reason,
             renewal
-          })
-          return [...p]
+          }
+          return [...p, newItem]
         })
       }
     })

@@ -54,29 +54,29 @@ const CertificateAccessHandler: FC<{
     managers.permissionsManager!.grantPermission({
       requestID: perms[0].requestID
     })
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
   const handleDeny = async () => {
     managers.permissionsManager!.denyPermission(perms[0].requestID)
-    setPerms(p => {
-      p.shift()
-      if (p.length === 0) {
+    setPerms(prev => {
+      const newPerms = prev.slice(1)
+      if (newPerms.length === 0) {
         setOpen(false)
         if (!wasOriginallyFocused) {
           onFocusRelinquished()
         }
       }
-      return [...p]
+      return newPerms
     })
   }
 
@@ -117,7 +117,7 @@ const CertificateAccessHandler: FC<{
           setWasOriginallyFocused(wasOriginallyFocused)
         }
         setPerms(p => {
-          p.push({
+          const newItem = {
             originator,
             verifierPublicKey: verifier,
             certificateType: certType,
@@ -125,8 +125,8 @@ const CertificateAccessHandler: FC<{
             renewal,
             requestID,
             description: reason
-          })
-          return [...p]
+          }
+          return [...p, newItem]
         })
       }
     })
