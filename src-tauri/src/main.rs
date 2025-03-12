@@ -60,17 +60,70 @@ fn is_focused(window: Window) -> bool {
 
 #[tauri::command]
 fn request_focus(window: Window) {
-    // This attempts to bring the window to the foreground.
-    // if let Err(e) = window.set_focus() {
-    //     eprintln!("Failed to set focus on window: {}", e);
-    // }
+    #[cfg(target_os = "macos")]
+    {
+        // 1. "Unminimize" if necessary.
+        if let Err(e) = window.unminimize() {
+            eprintln!("(macOS) unminimize error: {}", e);
+        }
+        // 2. Request user attention (bounces Dock icon).
+        if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Critical)) {
+            eprintln!("(macOS) request_user_attention error: {}", e);
+        }
+        // 3. Attempt to focus the window.
+        if let Err(e) = window.set_focus() {
+            eprintln!("(macOS) set_focus error: {}", e);
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // 1. Attempt to focus the window directly.
+        if let Err(e) = window.set_focus() {
+            eprintln!("(Windows) set_focus error: {}", e);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // 1. Attempt to focus.
+        if let Err(e) = window.set_focus() {
+            eprintln!("(Linux) set_focus error: {}", e);
+        }
+        // 2. Possibly unminimize as fallback.
+        if let Err(e) = window.unminimize() {
+            eprintln!("(Linux) unminimize error: {}", e);
+        }
+    }
 }
 
+/// Attempt to move the window out of the user's way so they can resume
+/// other tasks. The exact behavior (minimize/hide) differs per platform.
 #[tauri::command]
 fn relinquish_focus(window: Window) {
-    // if let Err(e) = window.hide() {
-    //     eprintln!("Failed to minimize window: {}", e);
-    // }
+    #[cfg(target_os = "macos")]
+    {
+        // Hide (removes from screen, user’s focus returns to previous app).
+        if let Err(e) = window.minimize() {
+            eprintln!("(macOS) hide error: {}", e);
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // Minimizing is the typical approach on Windows.
+        if let Err(e) = window.minimize() {
+            eprintln!("(Windows) minimize error: {}", e);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Minimizing is also typical on Linux WMs.
+        if let Err(e) = window.minimize() {
+            eprintln!("(Linux) minimize error: {}", e);
+        }
+    }
 }
 
 fn main() {
@@ -259,6 +312,23 @@ fn main() {
                     }
                 });
             });
+
+            #[cfg(target_os = "macos")]
+                       {
+                           let app_handle = app.handle().clone();
+                           app.listen_any("tauri://reopen", move |_event| {
+                               if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_NAME) {
+                                   // Show the hidden window again
+                                   if let Err(e) = window.show() {
+                                       eprintln!("(macOS) show error: {}", e);
+                                   }
+                                   // Optionally, also focus it:
+                                   if let Err(e) = window.set_focus() {
+                                       eprintln!("(macOS) set_focus error: {}", e);
+                                   }
+                               }
+                           });
+                       }
 
             Ok(())
         })
