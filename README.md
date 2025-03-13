@@ -1,4 +1,4 @@
-# Example Desktop Wallet
+# Metanet Desktop
 
 BRC100 Wallet Desktop Application Example
 
