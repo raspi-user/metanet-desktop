@@ -27,7 +27,7 @@ interface WalletConfigProps {
   selectedAuthMethod: string
   onSelectAuthMethod: (method: string) => void
   selectedNetwork: string
-  setSelectedNetwork: (network: string) => void
+  setSelectedNetwork: (network: 'main' | 'test') => void
   selectedStorageUrl: string
   setSelectedStorageUrl: (url: string) => void
   finalizeConfig: () => void
@@ -117,7 +117,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
                 <Select
                   labelId='network-label'
                   value={selectedNetwork}
-                  onChange={e => setSelectedNetwork(e.target.value)}
+                  onChange={e => setSelectedNetwork(e.target.value as ('main' | 'test'))}
                   label='Chain/Network'
                 >
                   <MenuItem value='test'>Testnet</MenuItem>

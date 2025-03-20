@@ -125,13 +125,13 @@ const MyIdentity = () => {
   return (
     <div className={classes.content_wrap}>
       <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>{network === 'testnet' ? 'Testnet Identity' : 'Identity'}</Typography>
-      <Typography variant='body' color='textSecondary'>
+      <Typography variant='body1' color='textSecondary'>
         <b>Everyday Identity Key:</b> {primaryIdentityKey}
         <IconButton size='small' onClick={() => handleCopy(primaryIdentityKey, 'id')} disabled={copied.id}>
           {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
         </IconButton>
       </Typography>
-      <Typography variant='body' color='textSecondary'>
+      <Typography variant='body1' color='textSecondary'>
         <b>Secure Identity Key:</b> {privilegedIdentityKey === '...' ? <IconButton onClick={handleRevealPrivilegedKey}><EyeCon /></IconButton> : privilegedIdentityKey}
         {privilegedIdentityKey !== '...' && <IconButton size='small' onClick={() => handleCopy(privilegedIdentityKey, 'id')} disabled={copied.id}>
           {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
@@ -140,7 +140,7 @@ const MyIdentity = () => {
       <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Certificates</Typography>
       <Typography
         paragraph
-        variant='body'
+        variant='body1'
         color='textSecondary'
         style={{
           wordWrap: 'break-word',

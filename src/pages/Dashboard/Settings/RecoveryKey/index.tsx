@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
   button_grid: {
     display: 'grid',
     gridTemplateColumns: 'auto 1fr auto',
-    gridGap: theme.spacing(2)
+    gridGap: (theme as any).spacing(2)
   }
 }), { name: 'RecoveryKey' })
 
@@ -58,7 +58,7 @@ const RecoveryKeySettings = ({ history }) => {
   return (
     <>
       <Typography variant='h2' color='textPrimary' paragraph>Recovery Key</Typography>
-      <Typography variant='body' color='textSecondary'>
+      <Typography variant='body1' color='textSecondary'>
         You will need your recovery key if you ever forget your password or lose your phone.
       </Typography>
       <Typography>

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react"
-import { ThemeProvider, createTheme } from "@mui/material/styles"
+import { PaletteOptions, ThemeProvider, createTheme } from "@mui/material/styles"
 import { WalletContext } from "../UserInterface"
 import { CssBaseline } from "@mui/material"
 
@@ -107,7 +107,7 @@ const UserTheme = ({ children }) => {
       theme={(theme) => {
         return createTheme({
           ...theme,
-          palette: selectedPalette,
+          palette: selectedPalette as PaletteOptions,
         })
       }}
     >

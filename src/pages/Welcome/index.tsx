@@ -114,7 +114,7 @@ const Welcome = ({ history }) => {
                 <Typography variant='h5' paddingTop='1em' paddingBottom='0.5em'>
                   Default Currency
                 </Typography>
-                <Typography variant='body'>
+                <Typography variant='body1'>
                   How would you like to see your account balance?
                 </Typography>
               </Grid>

@@ -136,22 +136,22 @@ const Trust = ({ history }) => {
         {settingsLoading
           ? <div>
             <Typography>Saving settings...</Typography>
-            <LinearProgress paddingTop='1em' />
+            <LinearProgress style={{ paddingTop: '1em' }} />
           </div>
           : 'You have unsaved changes. Do you want to save them before leaving?'}
       </NavigationConfirmModal>
       <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>Manage Your Trust Network</Typography>
-      <Typography variant='body' color='textSecondary'>
+      <Typography variant='body1' color='textSecondary'>
         People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
       </Typography>
       <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Trust Level</Typography>
-      <Typography paragraph variant='body' color='textSecondary'>
+      <Typography paragraph variant='body1' color='textSecondary'>
         You’ve given out a total of <b>{totalTrustPoints} {totalTrustPoints === 1 ? 'point' : 'points'}</b>. Raise the Trust Level to only see people verified by your most trusted certifiers.
       </Typography>
       <center className={classes.trust_threshold}>
         <div className={classes.slider_label_grid}>
           <Typography><b>{trustLevel}</b> / {totalTrustPoints}</Typography>
-          <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustLevel(v)} value={trustLevel} />
+          <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustLevel(v as number)} value={trustLevel} />
         </div>
       </center>
       <Prompt
@@ -160,7 +160,7 @@ const Trust = ({ history }) => {
       />
       <div>
         <Typography variant='h2' color='textPrimary' padding='0em 0em 0.5em 0em'>Trusted Certifiers</Typography>
-        <Typography paragraph variant='body' color='textSecondary'>Give points to show which certifiers you trust the most to confirm someone&apos;s identity. More points mean a higher priority.</Typography>
+        <Typography paragraph variant='body1' color='textSecondary'>Give points to show which certifiers you trust the most to confirm someone&apos;s identity. More points mean a higher priority.</Typography>
       </div>
       <div className={classes.master_grid}>
         <Hidden mdDown>

@@ -16,6 +16,7 @@ const useStyles = makeStyles(style, { name: 'CustomDialog' });
 interface CustomDialogProps extends DialogProps {
   title: string;
   children: ReactNode;
+  minWidth?: string
 }
 
 const CustomDialog: React.FC<CustomDialogProps> = ({ title, children, ...props }) => {

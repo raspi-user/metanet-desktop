@@ -1,6 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { UserInterface, WalletProvider } from './UserInterface'
+import { UserInterface } from './UserInterface'
 import {
   WalletInterface,
   CreateActionArgs,

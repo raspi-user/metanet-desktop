@@ -43,7 +43,7 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
       <div className={classes.slider_label_delete_grid}>
         <Typography><b>{trust}</b> / 10</Typography>
         <Slider onChange={handleTrustChange} min={0} max={10} step={1} value={trust} />
-        <IconButton onClick={() => setDeleteOpen(true)}><Delete fontSize='small' color='textSecondary' /></IconButton>
+        <IconButton onClick={() => setDeleteOpen(true)}><Delete fontSize='small' color='secondary' /></IconButton>
       </div>
       <Hidden mdUp>
         <div style={{ minHeight: '0.1em' }} />

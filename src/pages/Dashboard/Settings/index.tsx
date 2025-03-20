@@ -91,7 +91,7 @@ const Settings = () => {
         <Typography variant='h1' color='textPrimary' paragraph>Settings</Typography>}
       <div>
         {/* TODO: Move the theming settings into it's own component */}
-        <Typography variant='body' color='textSecondary'>Select the default color theme</Typography>
+        <Typography variant='body1' color='textSecondary'>Select the default color theme</Typography>
         <br />
         <FormControl variant="outlined" style={{ margin: '1em 0 2em 0', width: '100%' }}>
           <InputLabel id="theme-select-label">Theme</InputLabel>
@@ -108,7 +108,7 @@ const Settings = () => {
           </Select>
         </FormControl>
         <br />
-        <Typography variant='body' color='textSecondary'>Select the default currency</Typography>
+        <Typography variant='body1' color='textSecondary'>Select the default currency</Typography>
         <br />
         <FormControl variant="outlined" style={{ margin: '1em 0 2em 0', width: '100%' }}>
           <InputLabel id="currency-select-label">Currency</InputLabel>
@@ -135,7 +135,7 @@ const Settings = () => {
       <PhoneSettings />
       <Divider />
       <br />*/}
-      <RecoveryKeySettings />
+      <RecoveryKeySettings history={history} />
       <Divider />
       <br />
       <About />

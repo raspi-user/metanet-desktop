@@ -15,8 +15,8 @@ import validateTrust from '../../../utils/validateTrust'
 import { Certifier } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 
 const AddEntityModal = ({
-  open, setOpen, setTrustedEntities, classes
-}: { open: boolean, classes: any, setTrustedEntities: Function }) => {
+  open, setOpen, trustedEntities, setTrustedEntities, classes
+}: { open: boolean, setOpen: Function, trustedEntities: any, setTrustedEntities: Function, classes: any }) => {
   const [domain, setDomain] = useState('')
   const [advanced, setAdvanced] = useState(false)
   const [name, setName] = useState('')
@@ -122,7 +122,7 @@ const AddEntityModal = ({
       title='Add Provider'
       open={open}
       onClose={() => setOpen(false)}
-      minWidth='lg'
+      style={{ minWidth: 'lg' }}
     >
       <DialogContent>
         <br />
