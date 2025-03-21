@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Chip, Badge, Tooltip, Avatar } from '@mui/material'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 import boomerang from 'boomerang-http'
 import isImageUrl from '../../utils/isImageUrl'
 import { useTheme } from '@mui/styles'
@@ -16,7 +16,18 @@ const useStyles = makeStyles(style, {
   name: 'AppChip'
 })
 
-const AppChip: React.FC<any> = ({
+interface AppChipProps extends RouteComponentProps {
+  label: string
+  showDomain?: boolean
+  clickable?: boolean
+  size?: number
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  backgroundColor?: string
+  expires?: string
+  onCloseClick?: () => void
+}
+
+const AppChip: React.FC<AppChipProps> = ({
   label,
   showDomain = false,
   history,

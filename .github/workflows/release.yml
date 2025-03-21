@@ -13,9 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # for Universal macOS builds (arm64 and x86_64)
           - platform: 'macos-latest'
-            args: '--target universal-apple-darwin'
+            args: '--target aarch64-apple-darwin'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -29,7 +28,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+        targets: aarch64-apple-darwin
 
       - name: install frontend dependencies
         run: npm install # change this to npm, pnpm or bun depending on which one you use.

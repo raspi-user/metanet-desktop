@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Avatar, Badge, Grid, Chip, Tooltip } from '@mui/material'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { CertMap } from 'certmap'
 // import { Img } from 'uhrp-react'
 import { useTheme, makeStyles } from '@mui/styles'
@@ -18,7 +18,26 @@ const useStyles = makeStyles(style, {
   name: 'CertificateChip'
 })
 
-const CertificateChip: React.FC<any> = ({
+interface CertificateChipProps extends RouteComponentProps {
+  certType: string
+  lastAccessed?: string
+  issuer?: string
+  onIssuerClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  verifier?: string
+  onVerifierClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  fieldsToDisplay?: string[]
+  clickable?: boolean
+  size?: number
+  backgroundColor?: string
+  expires?: string
+  onCloseClick?: () => void
+  canRevoke?: boolean
+  description?: string
+  iconURL?: string
+}
+
+const CertificateChip: React.FC<CertificateChipProps> = ({
   certType,
   lastAccessed,
   issuer,
@@ -30,10 +49,12 @@ const CertificateChip: React.FC<any> = ({
   history,
   clickable = true,
   size = 1.3,
-  // onCounterpartyClick,
+  backgroundColor = 'transparent',
   expires,
-  onCloseClick = () => { },
-  canRevoke = false
+  onCloseClick,
+  canRevoke = false,
+  description,
+  iconURL
 }) => {
   if (typeof certType !== 'string') {
     throw new Error('The certType prop in CertificateChip is not a string')
@@ -48,14 +69,14 @@ const CertificateChip: React.FC<any> = ({
   const [certName,
     // setCertName
   ] = useState('Unknown Cert')
-  const [iconURL,
+  const [iconURLState,
     // setIconUR
   ] = useState(
-    DEFAULT_APP_ICON
+    iconURL || DEFAULT_APP_ICON
   )
-  const [description,
+  const [descriptionState,
     // setDescription
-  ] = useState(`${certType.substr(0, 12)}...`)
+  ] = useState(description || `${certType.substr(0, 12)}...`)
   // const [documentationURL, setDocumentationURL] = useState('unknown')
   const [fields,
     // setFields
@@ -120,7 +141,7 @@ const CertificateChip: React.FC<any> = ({
             </span>
             <br />
             <span style={(theme as any).templates.chipLabelSubtitle}>
-              {lastAccessed || description}
+              {lastAccessed || descriptionState}
             </span>
             <span>
               {Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0
@@ -236,7 +257,7 @@ const CertificateChip: React.FC<any> = ({
               }}
             >
               <img // TODO: UHRP
-                src={iconURL}
+                src={iconURLState}
                 style={{ width: '75%', height: '75%' }}
                 className={classes.table_picture}
               // confederacyHost={confederacyHost()}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Grid, Chip, Badge, Avatar, Tooltip } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { ProtoMap } from 'babbage-protomap'
 // import { Img } from 'uhrp-react'
 import makeStyles from '@mui/styles/makeStyles'
@@ -17,7 +17,24 @@ const useStyles = makeStyles(style as any, {
   name: 'ProtoChip'
 })
 
-const ProtoChip: React.FC<any> = ({
+interface ProtoChipProps extends RouteComponentProps {
+  securityLevel: string
+  protocolID: string
+  counterparty?: string
+  lastAccessed?: string
+  originator?: string
+  clickable?: boolean
+  size?: number
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  expires?: string
+  onCloseClick?: () => void
+  canRevoke?: boolean
+  description?: string
+  iconURL?: string
+  backgroundColor?: string
+}
+
+const ProtoChip: React.FC<ProtoChipProps> = ({
   securityLevel,
   protocolID,
   counterparty,
@@ -27,11 +44,12 @@ const ProtoChip: React.FC<any> = ({
   clickable = false,
   size = 1.3,
   onClick,
-  // onCounterpartyClick,
   expires,
-  backgroundColor = 'transparent',
+  onCloseClick = () => { },
   canRevoke = true,
-  onCloseClick = () => { }
+  description,
+  iconURL,
+  backgroundColor = 'transparent'
 }) => {
   if (typeof protocolID !== 'string') {
     throw new Error('ProtoChip requires protocolID to be a string')
@@ -47,15 +65,15 @@ const ProtoChip: React.FC<any> = ({
   const [protocolName,
     // setProtocolName
   ] = useState(protocolID)
-  const [iconURL,
+  const [iconURLState,
     // setIconURL
   ] = useState(
-    DEFAULT_APP_ICON
+    iconURL || DEFAULT_APP_ICON
   )
-  const [description,
+  const [descriptionState,
     // setDescription
   ] = useState(
-    'Protocol description not found.'
+    description || 'Protocol description not found.'
   )
   const [documentationURL,
     // setDocumentationURL
@@ -128,7 +146,7 @@ const ProtoChip: React.FC<any> = ({
             </span>
             <br />
             <span style={theme.templates.chipLabelSubtitle}>
-              {lastAccessed || description}
+              {lastAccessed || descriptionState}
             </span>
             <span>
               {counterparty && counterparty !== 'self'
@@ -198,7 +216,7 @@ const ProtoChip: React.FC<any> = ({
               }}
             >
               <img // TODO (UHRP)
-                src={iconURL}
+                src={iconURLState}
                 style={{ width: '75%', height: '75%' }}
                 className={classes.table_picture}
               // confederacyHost={confederacyHost()}
@@ -225,12 +243,12 @@ const ProtoChip: React.FC<any> = ({
                 pathname: `/dashboard/protocol/${encodeURIComponent(`${securityLevel}-${protocolID}`)}`,
                 state: {
                   protocolName,
-                  iconURL,
+                  iconURL: iconURLState,
                   securityLevel,
                   protocolID,
                   counterparty,
                   lastAccessed,
-                  description,
+                  description: descriptionState,
                   documentationURL,
                   originator
                 }

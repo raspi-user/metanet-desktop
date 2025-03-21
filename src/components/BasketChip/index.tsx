@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Chip, Badge, Avatar, Tooltip } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { BasketMap } from 'basketmap'
 // import { Img } from 'uhrp-react'
 import makeStyles from '@mui/styles/makeStyles'
@@ -17,7 +17,19 @@ const useStyles = makeStyles(style as any, {
   name: 'BasketChip'
 })
 
-const BasketChip: React.FC<any> = ({
+interface BasketChipProps extends RouteComponentProps {
+  basketId: string
+  lastAccessed?: string
+  domain?: string
+  clickable?: boolean
+  size?: number
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  expires?: string
+  onCloseClick?: () => void
+  canRevoke?: boolean
+}
+
+const BasketChip: React.FC<BasketChipProps> = ({
   basketId,
   lastAccessed,
   domain,
@@ -192,7 +204,7 @@ const BasketChip: React.FC<any> = ({
             </Avatar>
           </Badge>
         }
-        onClick={e => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           if (clickable) {
             if (typeof onClick === 'function') {
               onClick(e)
@@ -203,11 +215,9 @@ const BasketChip: React.FC<any> = ({
                 state: {
                   id: basketId,
                   name: basketName,
-                  // registryOperator: basketRegistryOperator,
                   description,
                   iconURL,
                   documentationURL,
-                  domain
                 }
               })
             }
