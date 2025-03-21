@@ -7,7 +7,7 @@ import { DEFAULT_APP_ICON } from '../constants/popularApps'
 // import confederacyHost from '../utils/confederacyHost'
 // import { Img } from 'uhrp-react'
 
-interface MetaNetAppProps extends RouteComponentProps {
+interface MetanetAppProps extends RouteComponentProps {
   iconImageUrl?: string
   domain: string
   appName?: string
@@ -15,7 +15,7 @@ interface MetaNetAppProps extends RouteComponentProps {
   clickable?: boolean
 }
 
-const MetaNetApp: React.FC<MetaNetAppProps> = ({
+const MetanetApp: React.FC<MetanetAppProps> = ({
   iconImageUrl = DEFAULT_APP_ICON,
   domain,
   appName,
@@ -27,7 +27,7 @@ const MetaNetApp: React.FC<MetaNetAppProps> = ({
 
   // Although TypeScript enforces the domain type, this runtime check preserves original logic.
   if (typeof domain !== 'string') {
-    throw new Error('Error in MetaNetApp Component: domain prop must be a string!')
+    throw new Error('Error in MetanetApp Component: domain prop must be a string!')
   }
 
   // Fallback to domain if appName is not provided.
@@ -94,4 +94,4 @@ const MetaNetApp: React.FC<MetaNetAppProps> = ({
   )
 }
 
-export default withRouter(MetaNetApp)
+export default withRouter(MetanetApp)

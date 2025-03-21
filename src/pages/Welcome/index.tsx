@@ -78,7 +78,7 @@ const Welcome = ({ history }) => {
           <Grid container direction='column' alignItems='center' spacing={2} padding='0.5em' style={{ color: selectedTheme === 'light' ? 'Black' : 'White' }}>
             <Grid item xs={12}>
               <Typography variant='h1' paragraph style={{ color: selectedTheme === 'light' ? 'Black' : 'White' }}>
-                Your portal to the MetaNet — And beyond!
+                Your portal to the Metanet — And beyond!
               </Typography>
               <Typography variant='h4'>
                 Let's start by setting your preferences.

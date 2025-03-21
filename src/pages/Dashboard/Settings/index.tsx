@@ -150,7 +150,7 @@ const Settings = () => {
             checked={autoLaunchEnabled}
             onChange={handleAutoLaunchChange}
           />}
-          label={<span>Auto-launch MetaNet Client when you log in</span>}
+          label={<span>Auto-launch Metanet Client when you log in</span>}
         />
         <br />
         <br />

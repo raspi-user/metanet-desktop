@@ -198,10 +198,10 @@ const MyIdentity = () => {
         <div style={{ paddingBottom: '3em' }}>
           {certificates.length === 0
             ? <Typography variant='h3' align='center' color='textPrimary' className={classes.oracle_open_title}>
-              Please register your identity to start using the MetaNet Client.
+              Please register your identity to start using the Metanet Client.
             </Typography>
             : <Typography variant='h3' align='center' color='textPrimary' className={classes.oracle_open_title}>
-              Register with more Identity Certifiers on the MetaNet.
+              Register with more Identity Certifiers on the Metanet.
             </Typography>
           }
           <br />

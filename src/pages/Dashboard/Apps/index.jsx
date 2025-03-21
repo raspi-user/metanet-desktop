@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { Typography, Grid, Container, TextField, LinearProgress } from '@mui/material'
 import { makeStyles, useTheme } from '@mui/styles'
 import style from './style'
-import MetaNetApp from '../../../components/MetaNetApp'
+import MetanetApp from '../../../components/MetanetApp'
 import SearchIcon from '@mui/icons-material/Search'
 import parseAppManifest from '../../../utils/parseAppManifest'
 import isImageUrl from '../../../utils/isImageUrl'
@@ -200,7 +200,7 @@ const Apps = () => {
               key={index}
               className={classes.gridItem}
             >
-              <MetaNetApp
+              <MetanetApp
                 appName={app.appName}
                 iconImageUrl={app.appIconImageUrl}
                 domain={app.domain}
@@ -222,7 +222,7 @@ const Apps = () => {
       <Grid container spacing={2} alignItems='center' justifyContent='left' className={classes.apps_view}>
         {filteredApps.map((app, index) => (
           <Grid item key={index} xs={6} sm={6} md={3} lg={3} className={classes.gridItem}>
-            <MetaNetApp
+            <MetanetApp
               appName={app.appName}
               iconImageUrl={app.appIconImageUrl}
               domain={app.domain}
@@ -241,7 +241,7 @@ const Apps = () => {
               xs={6} sm={6} md={3} lg={3}
               key={index} className={classes.gridItem}
             >
-              <MetaNetApp
+              <MetanetApp
                 appName={app.appName}
                 iconImageUrl={app.appIconImageUrl}
                 domain={app.domain}

@@ -73,10 +73,10 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
       setSatoshis(newSatoshis)
       // Figure out the correctly formatted amount, prefix, and color
       const satoshisToDisplay = formatSatoshis(newSatoshis, showPlus, abbreviate, satsFormat, settingsCurrency)
-      if (description === 'Return to your MetaNet Balance') {
+      if (description === 'Return to your Metanet Balance') {
         setFormattedSatoshis(`+${satoshisToDisplay}`)
         setColor('green')
-      } else if (description === 'Spend from your MetaNet Balance') {
+      } else if (description === 'Spend from your Metanet Balance') {
         setFormattedSatoshis(`-${satoshisToDisplay}`)
         setColor(theme.palette.secondary.main)
       } else if (satoshisToDisplay.toString()[0] === '+') {

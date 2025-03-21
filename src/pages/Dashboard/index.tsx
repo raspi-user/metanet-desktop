@@ -231,7 +231,7 @@ const Dashboard = () => {
                 <SchoolIcon />
               </ListItemIcon>
               <ListItemText style={{ color: (theme as any).palette.primary.secondary }}>
-                Learn MetaNet Tech
+                Learn Metanet Tech
               </ListItemText>
             </ListItemButton>
 

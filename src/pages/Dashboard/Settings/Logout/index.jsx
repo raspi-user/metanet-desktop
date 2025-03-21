@@ -41,7 +41,7 @@ const Logout = () => {
         onClick={handleButtonClick}
         disabled={loading}
       >
-        Exit This MetaNet Portal
+        Exit This Metanet Portal
       </Button>
       <Dialog
         open={openDialog}
@@ -52,7 +52,7 @@ const Logout = () => {
         <DialogTitle id="logout-dialog-title">Confirm Exit</DialogTitle>
         <DialogContent>
           <DialogContentText id="logout-dialog-description">
-            Are you absolutely sure you want to exit this MetaNet portal?
+            Are you absolutely sure you want to exit this Metanet portal?
             <br />
             <br />
             You will also be logged out of all apps and systems that use this portal.

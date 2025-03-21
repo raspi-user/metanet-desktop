@@ -46,10 +46,10 @@ const RecoveryKeyHandler: FC<RecoverKeyHandlerProps> = ({ setRecoveryKeySaver })
   }
 
   const handleDownload = async (): Promise<void> => {
-    const recoveryKeyData = `MetaNet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
+    const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
     exportDataToFile({
       data: recoveryKeyData,
-      filename: 'MetaNet Recovery Key.txt',
+      filename: 'Metanet Recovery Key.txt',
       type: 'text/plain'
     })
   }
@@ -57,11 +57,11 @@ const RecoveryKeyHandler: FC<RecoverKeyHandlerProps> = ({ setRecoveryKeySaver })
   return (
     <CustomDialog
       open={open}
-      title='Save Your MetaNet Recovery Key'
+      title='Save Your Metanet Recovery Key'
     >
       <DialogContent>
         <DialogContentText>
-          The security of your MetaNet identity depends on saving your recovery key in case you lose your phone or password:
+          The security of your Metanet identity depends on saving your recovery key in case you lose your phone or password:
         </DialogContentText>
         <br />
         <DialogContentText>
@@ -91,7 +91,7 @@ const RecoveryKeyHandler: FC<RecoverKeyHandlerProps> = ({ setRecoveryKeySaver })
           </Button>
         </center>
         <DialogContentText>
-          You need <b>at least two</b> of your phone, password and recovery key to log into your MetaNet identity. No one can help you if you lose access.
+          You need <b>at least two</b> of your phone, password and recovery key to log into your Metanet identity. No one can help you if you lose access.
         </DialogContentText>
         <FormControlLabel
           control={<Checkbox
