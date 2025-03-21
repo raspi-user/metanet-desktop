@@ -52,7 +52,7 @@ jobs:
       - name: verify certificate
         id: verify_certificate
         run: |
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "BSV")
           echo "CERT_INFO=$CERT_INFO"
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
           echo "cert_id=$CERT_ID" >> $GITHUB_OUTPUT
