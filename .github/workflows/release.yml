@@ -5,9 +5,6 @@ on:
     branches:
       - master
 
-# This is the example for publishing a Universal macOS app with a signing certificate.
-# On each push to the `master` branch it will create or update a GitHub release, build your app, and upload the artifacts to the release.
-
 jobs:
   publish-tauri:
     permissions:
@@ -38,7 +35,6 @@ jobs:
         run: yarn install # change this to npm, pnpm or bun depending on which one you use.
 
       - name: import Apple Developer Certificate
-        # Prevents keychain from locking automatically for 3600 seconds.
         env:
           APPLE_CERTIFICATE: ${{ secrets.METANET_APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.METANET_APPLE_CERTIFICATE_PASSWORD }}
@@ -54,10 +50,12 @@ jobs:
           security find-identity -v -p codesigning build.keychain
 
       - name: verify certificate
+        id: verify_certificate
         run: |
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
+          echo "CERT_INFO=$CERT_INFO"
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
-          echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
+          echo "cert_id=$CERT_ID" >> $GITHUB_OUTPUT
           echo "Certificate imported."
 
       - name: build and publish
@@ -69,10 +67,9 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.METANET_APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.METANET_APPLE_TEAM_ID }}
           APPLE_CERTIFICATE: ${{ secrets.METANET_APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.METANET_APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
+          APPLE_SIGNING_IDENTITY: ${{ steps.verify_certificate.outputs.cert_id }}
         with:
-          tagName: metanet-desktop-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          tagName: metanet-desktop-v__VERSION__ # the action automatically replaces __VERSION__ with the app version.
           releaseName: "Metanet Desktop v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
