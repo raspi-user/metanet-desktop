@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react'
 import { Avatar, Badge, Chip, Icon, Tooltip } from '@mui/material'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { Signia } from 'babbage-signia'
 // import { Img } from 'uhrp-react'
 import makeStyles from '@mui/styles/makeStyles'
@@ -16,7 +16,17 @@ const useStyles = makeStyles(style, {
   name: 'CounterpartyChip'
 })
 
-const CounterpartyChip: React.FC<any> = ({
+interface CounterpartyChipProps extends RouteComponentProps {
+  counterparty: string
+  clickable?: boolean
+  size?: number
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  expires?: string
+  onCloseClick?: () => void
+  canRevoke?: boolean
+}
+
+const CounterpartyChip: React.FC<CounterpartyChipProps> = ({
   counterparty,
   history,
   clickable = false,
