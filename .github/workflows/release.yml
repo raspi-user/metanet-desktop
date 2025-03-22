@@ -146,25 +146,25 @@ jobs:
             SHA256SUMS
             SHA256SUMS.asc
 
-      # === Windows EV Signing ===
-      - name: Write Windows EV Certificate to file
-        if: matrix.platform == 'windows-latest'
-        run: |
-          echo $env:WINDOWS_EV_CERTIFICATE > windows_cert.pfx
-        env:
-          WINDOWS_EV_CERTIFICATE: ${{ secrets.WINDOWS_EV_CERTIFICATE }}
+      # # === Windows EV Signing ===
+      # - name: Write Windows EV Certificate to file
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     echo $env:WINDOWS_EV_CERTIFICATE > windows_cert.pfx
+      #   env:
+      #     WINDOWS_EV_CERTIFICATE: ${{ secrets.WINDOWS_EV_CERTIFICATE }}
 
-      - name: Sign Windows Binary with EV Certificate
-        if: matrix.platform == 'windows-latest'
-        run: |
-          signtool sign /f windows_cert.pfx /p %WINDOWS_EV_CERTIFICATE_PASSWORD% /tr http://timestamp.digicert.com /td sha256 /fd sha256 path\to\metanet-desktop-setup.exe
-        env:
-          WINDOWS_EV_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_EV_CERTIFICATE_PASSWORD }}
+      # - name: Sign Windows Binary with EV Certificate
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     signtool sign /f windows_cert.pfx /p %WINDOWS_EV_CERTIFICATE_PASSWORD% /tr http://timestamp.digicert.com /td sha256 /fd sha256 path\to\metanet-desktop-setup.exe
+      #   env:
+      #     WINDOWS_EV_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_EV_CERTIFICATE_PASSWORD }}
 
-      - name: Verify Windows Signature
-        if: matrix.platform == 'windows-latest'
-        run: |
-          signtool verify /pa /v path\to\metanet-desktop-setup.exe
+      # - name: Verify Windows Signature
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     signtool verify /pa /v path\to\metanet-desktop-setup.exe
 
       - name: Upload Windows Artifact
         if: matrix.platform == 'windows-latest'
