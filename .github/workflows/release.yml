@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    # uncomment after first official release.
+    # tags:
+    #   - 'v*.*.*'
 
 jobs:
   publish-tauri:
@@ -13,12 +16,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
+          - platform: 'macos-latest' # for Arm based macs (M1 and above).
             args: '--target aarch64-apple-darwin'
-
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: setup node
         uses: actions/setup-node@v4
@@ -28,12 +42,18 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        run: npm install # change this to npm, pnpm or bun depending on which one you use.
+        run: npm install
 
       - name: import Apple Developer Certificate
+        if: matrix.platform == 'macos-latest'
         env:
           APPLE_CERTIFICATE: ${{ secrets.METANET_APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.METANET_APPLE_CERTIFICATE_PASSWORD }}
@@ -49,6 +69,7 @@ jobs:
           security find-identity -v -p codesigning build.keychain
 
       - name: verify certificate
+        if: matrix.platform == 'macos-latest'
         id: verify_certificate
         run: |
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "BSV")
@@ -68,9 +89,86 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.METANET_APPLE_CERTIFICATE }}
           APPLE_SIGNING_IDENTITY: ${{ steps.verify_certificate.outputs.cert_id }}
         with:
-          tagName: metanet-desktop-v__VERSION__ # the action automatically replaces __VERSION__ with the app version.
+          tagName: metanet-desktop-v__VERSION__
           releaseName: "Metanet Desktop v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      # === Linux AppImage Packaging and Signing ===
+      - name: Prepare AppDir for AppImage
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          mkdir -p AppDir/usr/bin
+          cp target/release/metanet-desktop AppDir/usr/bin/
+          # Optionally copy additional resources into AppDir
+
+      - name: Download linuxdeploy AppImage
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Create AppImage
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+          # Rename the output to use metanet-desktop as the name.
+          mv metanet-desktop-x86_64.AppImage metanet-desktop-x86_64.AppImage
+
+      - name: Import GPG Key for Linux Signing
+        if: matrix.platform == 'ubuntu-22.04'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.METANET_GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --import
+
+      - name: Sign AppImage with GPG
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          gpg --detach-sign --armor metanet-desktop-x86_64.AppImage
+
+      - name: Create and Sign SHA256SUMS
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sha256sum metanet-desktop-x86_64.AppImage > SHA256SUMS
+          gpg --detach-sign --armor SHA256SUMS
+
+      - name: Upload Linux Artifacts
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-artifacts
+          path: |
+            metanet-desktop-x86_64.AppImage
+            metanet-desktop-x86_64.AppImage.asc
+            SHA256SUMS
+            SHA256SUMS.asc
+
+      # # === Windows EV Signing ===
+      # - name: Write Windows EV Certificate to file
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     echo $env:WINDOWS_EV_CERTIFICATE > windows_cert.pfx
+      #   env:
+      #     WINDOWS_EV_CERTIFICATE: ${{ secrets.WINDOWS_EV_CERTIFICATE }}
+
+      # - name: Sign Windows Binary with EV Certificate
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     signtool sign /f windows_cert.pfx /p %WINDOWS_EV_CERTIFICATE_PASSWORD% /tr http://timestamp.digicert.com /td sha256 /fd sha256 path\to\metanet-desktop-setup.exe
+      #   env:
+      #     WINDOWS_EV_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_EV_CERTIFICATE_PASSWORD }}
+
+      # - name: Verify Windows Signature
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     signtool verify /pa /v path\to\metanet-desktop-setup.exe
+
+      - name: Upload Windows Artifact
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifact
+          path: path\to\metanet-desktop-setup.exe
