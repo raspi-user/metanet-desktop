@@ -120,7 +120,7 @@ jobs:
       - name: Import GPG Key for Linux Signing
         if: matrix.platform == 'ubuntu-22.04'
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.METANET_GPG_PRIVATE_KEY }}
         run: |
           echo "$GPG_PRIVATE_KEY" | gpg --import
 
