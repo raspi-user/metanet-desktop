@@ -1,206 +1,196 @@
-import React from 'react';
+import { ReactNode, useMemo } from 'react';
 import {
-  createTheme,
   ThemeProvider,
-  StyledEngineProvider,
-  adaptV4Theme,
-  Theme
-} from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
-// import { ExchangeRateContextProvider } from './AmountDisplay/ExchangeRateContextProvider';
+  createTheme,
+  CssBaseline,
+  useMediaQuery
+} from '@mui/material';
 
-const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-
-if (prefersDarkScheme.matches) {
-  console.log('User prefers a dark theme');
-} else {
-  console.log('User prefers a light theme');
+// Define custom theme types
+declare module '@mui/material/styles' {
+  interface Theme {
+    templates: {
+      page_wrap: {
+        maxWidth: string;
+        margin: string;
+        boxSizing: string;
+        padding: string | number;
+      };
+      subheading: {
+        textTransform: string;
+        letterSpacing: string;
+        fontWeight: string;
+      };
+      boxOfChips: {
+        display: string;
+        justifyContent: string;
+        flexWrap: string;
+        gap: string | number;
+      };
+    }
+  }
+  interface ThemeOptions {
+    templates?: {
+      page_wrap?: {
+        maxWidth?: string;
+        margin?: string;
+        boxSizing?: string;
+        padding?: string | number;
+      };
+      subheading?: {
+        textTransform?: string;
+        letterSpacing?: string;
+        fontWeight?: string;
+      };
+      boxOfChips?: {
+        display?: string;
+        justifyContent?: string;
+        flexWrap?: string;
+        gap?: string | number;
+      };
+    }
+  }
 }
 
-const baseTheme = createTheme(
-  adaptV4Theme({
-    spacing: 8,
-    // maxContentWidth: '1440px',
-    typography: {
-      h1: {
-        fontWeight: 'bold',
-        fontSize: '2.5em'
-      },
-      h2: {
-        fontWeight: 'bold',
-        fontSize: '1.7em'
-      },
-      h3: {
-        fontSize: '1.4em'
-      },
-      h4: {
-        fontSize: '1.25em'
-      },
-      h5: {
-        fontSize: '1.1em'
-      },
-      h6: {
-        fontSize: '1em'
-      }
-    },
-    palette: {
-      primary: {
-        main: '#424242'
-      },
-      secondary: {
-        main: '#FC433F'
-      }
-    },
-    overrides: {}
-  })
-);
+const backgroundImage = "https://images.pexels.com/photos/18857526/pexels-photo-18857526/free-photo-of-larch-heaven.jpeg";
 
-const extendedTheme = (theme: Theme) => ({
-  ...theme,
-  typography: {
-    ...theme.typography,
-    h1: {
-      ...theme.typography.h1,
-      [theme.breakpoints.down('md')]: {
-        fontSize: '1.8em'
-      }
-    },
-    h2: {
-      ...theme.typography.h2,
-      [theme.breakpoints.down('md')]: {
-        fontSize: '1.6em'
-      }
-    }
-  },
-  templates: {
-    page_wrap: {
-      maxWidth: `min(${(theme as any).maxContentWidth || '1440px'}, 100vw)`,
-      margin: 'auto',
-      boxSizing: 'border-box',
-      padding: theme.spacing(7),
-      [theme.breakpoints.down('lg')]: {
-        padding: theme.spacing(5)
-      }
-    },
-    subheading: {
-      textTransform: 'uppercase',
-      letterSpacing: '6px',
-      fontWeight: '700'
-    },
-    boxOfChips: {
-      display: 'flex',
-      justifyContent: 'left',
-      flexWrap: 'wrap'
-    },
-    chipContainer: {
-      fontSize: '0.95em',
-      display: 'flex',
-      flexDirection: 'column',
-      alignContent: 'center',
-      alignItems: 'center',
-      '&:hover $expiryHoverText': {
-        visibility: 'visible',
-        opacity: 1
+interface ThemeProps {
+  children: ReactNode;
+}
+
+export function AppThemeProvider({ children }: ThemeProps) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  const theme = useMemo(() => {
+    const mode = prefersDarkMode ? 'dark' : 'light';
+    
+    return createTheme({
+      palette: {
+        mode,
+        ...(mode === 'light' ? {
+          primary: {
+            main: '#1B365D', // Navy
+          },
+          secondary: {
+            main: '#2C5282', // Teal
+          },
+          background: {
+            default: '#FFFFFF',
+            paper: '#F6F6F6',
+          },
+          text: {
+            primary: '#4A4A4A', // Dark Gray
+            secondary: '#4A5568', // Gray
+          }
+        } : {
+          primary: {
+            main: '#FFFFFF',
+          },
+          secondary: {
+            main: '#2C5282', // Keep teal for dark mode accents
+          },
+          background: {
+            default: '#1D2125',
+            paper: '#1D2125',
+          },
+          text: {
+            primary: '#FFFFFF',
+            secondary: '#4A5568', // Gray
+          }
+        })
       },
-      marginLeft: '0.4em'
-    },
-    expiryHoverText: {
-      fontSize: '0.95em',
-      color: theme.palette.text.primary,
-      textAlign: 'center',
-      visibility: 'hidden',
-      opacity: 0,
-      transition: 'all 0.3301s'
-    },
-    chip: (
-      { size = 1, backgroundColor }: { size?: number; backgroundColor?: string } = {}
-    ) => {
-      const base = {
-        height: '100%',
-        width: '100%',
-        paddingTop: `${8 * size}px`,
-        paddingBottom: `${8 * size}px`,
-        paddingLeft: `${3 * size}px`,
-        paddingRight: `${3 * size}px`
-      };
-      if (typeof backgroundColor === 'string') {
-        (base as any).backgroundColor = backgroundColor;
-      }
-      return base;
-    },
-    chipLabel: {
-      maxWidth: '40em',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textAlign: 'left'
-    },
-    chipLabelTitle: ({ size = 1 }: { size?: number } = {}) => ({
-      fontSize: `${size}em`,
-      maxWidth: '49em',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap'
-    }),
-    chipLabelSubtitle: {
-      fontSize: '0.9em',
-      maxWidth: '49em',
-      wordWrap: 'break-word',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textAlign: 'left'
-    }
-  }
-});
+      typography: {
+        fontFamily: '"Helvetica", "Arial", sans-serif',
+        h1: {
+          fontWeight: 700,
+          fontSize: '2.5rem',
+          '@media (max-width:900px)': {
+            fontSize: '1.8rem',
+          },
+        },
+        h2: {
+          fontWeight: 700,
+          fontSize: '1.7rem',
+          '@media (max-width:900px)': {
+            fontSize: '1.6rem',
+          },
+        },
+        h3: {
+          fontSize: '1.4rem',
+        },
+        h4: {
+          fontSize: '1.25rem',
+        },
+        h5: {
+          fontSize: '1.1rem',
+        },
+        h6: {
+          fontSize: '1rem',
+        },
+      },
+      components: {
+        MuiCssBaseline: {
+          styleOverrides: {
+            body: {
+              backgroundImage: mode === 'light' 
+                ? `linear-gradient(to bottom, #FFFFFF, #2C5282, #4A5568), url(${backgroundImage})`
+                : `linear-gradient(to bottom, #1D2125, #2C5282, #4A5568), url(${backgroundImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed',
+              backgroundBlendMode: 'soft-light',
+            },
+          },
+        },
+        MuiButton: {
+          styleOverrides: {
+            root: {
+              '&.MuiButton-contained': {
+                backgroundColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
+                color: mode === 'light' ? '#FFFFFF' : '#4A4A4A',
+                '&:hover': {
+                  backgroundColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
+                }
+              },
+              '&.MuiButton-outlined': {
+                borderColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
+                color: mode === 'light' ? '#4A4A4A' : '#FFFFFF',
+                '&:hover': {
+                  borderColor: '#2C5282',
+                  color: '#2C5282',
+                }
+              }
+            }
+          }
+        }
+      },
+      spacing: 8,
+      templates: {
+        page_wrap: {
+          maxWidth: 'min(1440px, 100vw)',
+          margin: 'auto',
+          boxSizing: 'border-box',
+          padding: '56px',
+        },
+        subheading: {
+          textTransform: 'uppercase',
+          letterSpacing: '6px',
+          fontWeight: '700',
+        },
+        boxOfChips: {
+          display: 'flex',
+          justifyContent: 'left',
+          flexWrap: 'wrap',
+          gap: '8px',
+        },
+      },
+    });
+  }, [prefersDarkMode]);
 
-// Define the props for our global styles component
-// interface GlobalStylesProps {
-//   children?: React.ReactNode;
-// }
-
-const GlobalStyles = withStyles({
-  '@global html': {
-    padding: '0px',
-    margin: '0px'
-  },
-  '@global body': {
-    padding: '0px',
-    margin: '0px',
-    fontFamily: 'helvetica'
-  },
-  '@global a': {
-    textDecoration: 'none',
-    color: '#424242'
-  },
-  '@global h1': {
-    fontWeight: 'bold',
-    fontSize: '2.5em'
-  },
-  '@global h2': {
-    fontWeight: 'bold',
-    fontSize: '1.7em'
-  },
-  '@global h3': {
-    fontSize: '1.4em'
-  },
-  '@global h4': {
-    fontSize: '1.25em'
-  },
-  '@global h5': {
-    fontSize: '1.1em'
-  },
-  '@global h6': {
-    fontSize: '1em'
-  }
-})(({ children }: { children?: React.ReactNode }) => (
-  <StyledEngineProvider injectFirst>
-    <ThemeProvider theme={baseTheme}>
-      <ThemeProvider theme={extendedTheme(baseTheme)}>
-        {children}
-      </ThemeProvider>
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {children}
     </ThemeProvider>
-  </StyledEngineProvider>
-));
-
-export default GlobalStyles;
+  );
+}

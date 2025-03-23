@@ -1,18 +1,39 @@
 import { Theme } from '@mui/material/styles';
 
 export default (theme: Theme) => ({
-  title_bg: {
-    backgroundColor: '#FFFFFF', //theme.palette.background.default,
-    marginBottom: theme.spacing(1),
-    display: 'grid',
-    gridTemplateColumns: '1fr auto',
-    gridColumnGap: theme.spacing(2),
-    alignItems: 'center',
+  root: {
+    '& .MuiDialog-paper': {
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+      borderRadius: theme.shape.borderRadius,
+      [theme.breakpoints.up('sm')]: {
+        minWidth: '400px'
+      }
+    }
   },
   title: {
-    color: theme.palette.primary.main,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2),
+    backgroundColor: theme.palette.mode === 'light' ? '#1B365D' : theme.palette.background.default,
+    color: theme.palette.mode === 'light' ? '#FFFFFF' : theme.palette.text.primary,
+    '& img': {
+      width: '32px',
+      height: '32px'
+    }
   },
-  iconButton: {
-    color: theme.palette.text.secondary,
+  content: {
+    padding: theme.spacing(3),
+    '& .MuiDialogContent-root': {
+      padding: 0
+    }
   },
+  actions: {
+    padding: theme.spacing(2),
+    gap: theme.spacing(1),
+    '& .MuiButton-root': {
+      minWidth: '100px'
+    }
+  }
 });

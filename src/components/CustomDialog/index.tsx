@@ -4,22 +4,31 @@ import {
   DialogTitle,
   Typography,
   useMediaQuery,
-  DialogProps
+  DialogProps,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import Logo from '../Logo';
-import style from './style'
+import style from './style';
 
 const useStyles = makeStyles(style, { name: 'CustomDialog' });
 
 interface CustomDialogProps extends DialogProps {
   title: string;
   children: ReactNode;
-  minWidth?: string
+  actions?: ReactNode;
+  minWidth?: string;
 }
 
-const CustomDialog: React.FC<CustomDialogProps> = ({ title, children, ...props }) => {
+const CustomDialog: React.FC<CustomDialogProps> = ({ 
+  title, 
+  children, 
+  actions,
+  className = '',
+  ...props 
+}) => {
   const classes = useStyles();
   const theme = useTheme();
   const isFullscreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -29,15 +38,23 @@ const CustomDialog: React.FC<CustomDialogProps> = ({ title, children, ...props }
       maxWidth={isFullscreen ? undefined : 'sm'}
       fullWidth={!isFullscreen}
       fullScreen={isFullscreen}
+      className={`${classes.root} ${className}`}
       {...props}
     >
-      <DialogTitle className={classes.title_bg}>
-        <Typography className={classes.title} variant="h4">
-          {title}
-        </Typography>
-        <Logo rotate color="white" size="2em" />
+      <DialogTitle component="div" className={classes.title}>
+        <Logo />
+        <Typography variant="h6">{title}</Typography>
       </DialogTitle>
-      {children}
+      
+      <DialogContent className={classes.content}>
+        {children}
+      </DialogContent>
+
+      {actions && (
+        <DialogActions className={classes.actions}>
+          {actions}
+        </DialogActions>
+      )}
     </Dialog>
   );
 };
