@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload Linux Artifacts
         if: matrix.platform == 'ubuntu-22.04'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-artifacts
           path: |
@@ -166,9 +166,9 @@ jobs:
       #   run: |
       #     signtool verify /pa /v path\to\metanet-desktop-setup.exe
 
-      - name: Upload Windows Artifact
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-artifact
-          path: path\to\metanet-desktop-setup.exe
+      # - name: Upload Windows Artifact
+      #   if: matrix.platform == 'windows-latest'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: windows-artifact
+      #     path: path\to\metanet-desktop-setup.exe
