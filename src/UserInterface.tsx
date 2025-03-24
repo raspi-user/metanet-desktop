@@ -88,8 +88,8 @@ export const WalletContext = createContext<WalletContextValue>({
     isFocused: async () => false,
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
-    appVersion: '0.0.0',
-    appName: 'Metanet Client',
+    appVersion: '0.2.0',
+    appName: 'Metanet Desktop',
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
     updateSettings: () => { },
@@ -143,7 +143,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     relinquishFocus,
     adminOriginator = 'admin.com',
     appVersion = '0.0.0',
-    appName = 'Metanet Client'
+    appName = 'Metanet Desktop'
 }) => {
     const [managers, updateManagers] = useState<ManagerState>({});
     const [settings, setLocalSettings] = useState(DEFAULT_SETTINGS);
