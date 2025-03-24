@@ -7,7 +7,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import parseAppManifest from '../../../utils/parseAppManifest'
 import isImageUrl from '../../../utils/isImageUrl'
 import Fuse from 'fuse.js'
-import POPULAR_APPS from '../../../constants/popularApps'
+// import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
 import { useContext } from 'react'
 import { WalletContext } from '../../../UserInterface'
@@ -230,7 +230,7 @@ const Apps = () => {
           </Grid>
         ))}
       </Grid>
-      {(search === '') && <>
+      {/* {(search === '') && <>
         <Typography variant='h3' color='textPrimary' gutterBottom style={{ paddingBottom: '0.2em' }}>
           Popular Apps
         </Typography>
@@ -250,7 +250,7 @@ const Apps = () => {
           ))}
         </Grid>
       </>
-      }
+      } */}
     </div>
   )
 }

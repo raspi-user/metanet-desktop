@@ -27,6 +27,14 @@ declare module '@mui/material/styles' {
         flexWrap: string;
         gap: string | number;
       };
+      chip: (props: { size: number; backgroundColor: string }) => {
+        height: string | number;
+        minHeight: string | number;
+        backgroundColor: string;
+        borderRadius: string;
+        padding: string | number;
+        margin: string | number;
+      };
     }
   }
   interface ThemeOptions {
@@ -47,6 +55,14 @@ declare module '@mui/material/styles' {
         justifyContent?: string;
         flexWrap?: string;
         gap?: string | number;
+      };
+      chip?: (props: { size: number; backgroundColor: string }) => {
+        height?: string | number;
+        minHeight?: string | number;
+        backgroundColor?: string;
+        borderRadius?: string;
+        padding?: string | number;
+        margin?: string | number;
       };
     }
   }
@@ -132,39 +148,74 @@ export function AppThemeProvider({ children }: ThemeProps) {
         MuiCssBaseline: {
           styleOverrides: {
             body: {
+              backgroundColor: mode === 'light' ? '#FFFFFF' : '#1D2125',
               backgroundImage: mode === 'light' 
-                ? `linear-gradient(to bottom, #FFFFFF, #2C5282, #4A5568), url(${backgroundImage})`
-                : `linear-gradient(to bottom, #1D2125, #2C5282, #4A5568), url(${backgroundImage})`,
+                ? `linear-gradient(45deg, rgba(27, 54, 93, 0.05), rgba(44, 82, 130, 0.05))`
+                : `linear-gradient(45deg, rgba(27, 54, 93, 0.1), rgba(44, 82, 130, 0.1))`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundAttachment: 'fixed',
-              backgroundBlendMode: 'soft-light',
             },
           },
         },
         MuiButton: {
           styleOverrides: {
             root: {
+              textTransform: 'none',
+              borderRadius: 8,
               '&.MuiButton-contained': {
                 backgroundColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
-                color: mode === 'light' ? '#FFFFFF' : '#4A4A4A',
+                color: mode === 'light' ? '#FFFFFF' : '#1B365D',
                 '&:hover': {
                   backgroundColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
                 }
               },
               '&.MuiButton-outlined': {
                 borderColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
-                color: mode === 'light' ? '#4A4A4A' : '#FFFFFF',
+                color: mode === 'light' ? '#1B365D' : '#FFFFFF',
                 '&:hover': {
-                  borderColor: '#2C5282',
-                  color: '#2C5282',
+                  backgroundColor: mode === 'light' ? 'rgba(27, 54, 93, 0.04)' : 'rgba(255, 255, 255, 0.08)',
+                  borderColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
                 }
               }
             }
           }
+        },
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              backgroundImage: 'none',
+              backgroundColor: mode === 'light' ? '#FFFFFF' : '#1D2125',
+            }
+          }
+        },
+        MuiAppBar: {
+          styleOverrides: {
+            root: {
+              backgroundColor: mode === 'light' ? '#1B365D' : '#1D2125',
+              color: mode === 'light' ? '#FFFFFF' : '#FFFFFF',
+            }
+          }
+        },
+        MuiCard: {
+          styleOverrides: {
+            root: {
+              borderRadius: 12,
+              border: `1px solid ${mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)'}`,
+            }
+          }
+        },
+        MuiChip: {
+          styleOverrides: {
+            root: {
+              borderRadius: 8,
+            }
+          }
         }
       },
-      spacing: 8,
+      shape: {
+        borderRadius: 8
+      },
       templates: {
         page_wrap: {
           maxWidth: 'min(1440px, 100vw)',
@@ -183,7 +234,16 @@ export function AppThemeProvider({ children }: ThemeProps) {
           flexWrap: 'wrap',
           gap: '8px',
         },
+        chip: ({ size, backgroundColor }) => ({
+          height: `${size * 32}px`,
+          minHeight: `${size * 32}px`,
+          backgroundColor: backgroundColor || 'transparent',
+          borderRadius: '16px',
+          padding: '8px',
+          margin: '4px'
+        })
       },
+      spacing: 8,
     });
   }, [prefersDarkMode]);
 

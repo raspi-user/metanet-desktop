@@ -5,6 +5,7 @@ import { WalletContext } from '../../UserInterface'
 import AppChip from '../AppChip/index'
 import ProtoChip from '../ProtoChip/index.tsx'
 import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
+import { useTheme } from '@mui/material/styles'
 
 const ProtocolPermissionHandler: React.FC<{
   setProtocolPermissionCallback: Dispatch<SetStateAction<PermissionEventHandler>>
@@ -18,15 +19,17 @@ const ProtocolPermissionHandler: React.FC<{
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const [perms, setPerms] = useState<Array<any>>([
-    // requestID
-    // originator
-    // protocolID
-    // protocolSecurityLevel
-    // counterparty
-    // description
-    // renewal
-  ])
+  const [perms, setPerms] = useState<Array<any>>([{
+    requestID: 'i88787',
+    originator: 'goose',
+    protocolID: 'things',
+    protocolSecurityLevel: 2,
+    counterparty: 'self',
+    description: 'things I do',
+    renewal: false
+  }])
+
+  const theme = useTheme()
 
   const handleCancel = () => {
     managers.permissionsManager!.denyPermission(perms[0].requestID)
@@ -68,101 +71,130 @@ const ProtocolPermissionHandler: React.FC<{
           protocolID
         } = args
         const [protocolSecurityLevel, protocolNameString] = protocolID!
-        setOpen(true)
+        
+        // First check if we're already focused
         const wasOriginallyFocused = await isFocused()
-        if (!wasOriginallyFocused) {
-          await onFocusRequested()
+        
+        // Create the new permission request
+        const newItem = {
+          requestID,
+          protocolSecurityLevel,
+          protocolID: protocolNameString,
+          counterparty,
+          originator,
+          description: reason,
+          renewal
         }
-        if (perms.length === 0) {
-          setWasOriginallyFocused(wasOriginallyFocused)
-        }
-        setPerms(p => {
-          const newItem = {
-            requestID,
-            protocolSecurityLevel,
-            protocolID: protocolNameString,
-            counterparty,
-            originator,
-            description: reason,
-            renewal
-          }
-          return [...p, newItem]
-        })
+        
+        // Update state in a single batch
+        await Promise.all([
+          // Request focus if needed
+          !wasOriginallyFocused ? onFocusRequested() : Promise.resolve(),
+          // Set the original focus state
+          new Promise<void>(resolve => {
+            setWasOriginallyFocused(wasOriginallyFocused)
+            resolve()
+          }),
+          // Add the new permission request
+          new Promise<void>(resolve => {
+            setPerms(p => [...p, newItem])
+            resolve()
+          })
+        ])
+        
+        // Finally, open the dialog
+        setOpen(true)
       }
     })
   }, [])
 
-  if (typeof perms[0] === 'undefined') {
+  // Only render if we have both dialog open and permissions to show
+  if (!open || perms.length === 0) {
+    return null
+  }
+
+  // Get the current permission request
+  const currentPerm = perms[0]
+  if (!currentPerm) {
     return null
   }
 
   return (
     <CustomDialog
       open={open}
-      // onClose={handleCancel}
-      title={perms[0].protocolID === 'identity resolution' ? 'Trusted Entities Access Request' : (!perms[0].renewal ? 'Protocol Access Request' : 'Protocol Access Renewal')}
+      title={currentPerm.protocolID === 'identity resolution' ? 'Trusted Entities Access Request' : (!currentPerm.renewal ? 'Protocol Access Request' : 'Protocol Access Renewal')}
     >
-      <DialogContent style={{
-        textAlign: 'center',
-        padding: '1em',
-        flex: 'none'
-      }}
-      >
-
-        <DialogContentText>
-          <br />
-          {perms[0].protocolID === 'identity resolution' ? 'An app is requesting access to lookup identity information using the entities you trust.' : 'An app is requesting to talk in a specific language (protocol) using your information.'}
+      <DialogContent>
+        <DialogContentText style={{ marginBottom: theme.spacing(3) }}>
+          {currentPerm.protocolID === 'identity resolution' 
+            ? 'An app is requesting access to lookup identity information using the entities you trust.' 
+            : 'An app is requesting to talk in a specific language (protocol) using your information.'}
         </DialogContentText>
-        <br />
-        <center>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', width: 'min-content', gridGap: '2em' }}>
-            <span>app:</span>
-            {perms[0].originator && <div>
+
+        <div style={{ 
+          display: 'grid', 
+          gap: theme.spacing(3),
+          maxWidth: '100%'
+        }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'auto 1fr', 
+            alignItems: 'center', 
+            gap: theme.spacing(2) 
+          }}>
+            <span>App:</span>
+            {currentPerm.originator && 
               <AppChip
                 size={2.5}
                 showDomain
-                label={perms[0].originator}
+                label={currentPerm.originator}
                 clickable={false}
               />
-            </div>}
+            }
           </div>
-          <br />
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', width: 'min-content', gridGap: '2em' }}>
-            <span>protocol:</span>
-            <div>
-              <ProtoChip
-                securityLevel={perms[0].protocolSecurityLevel}
-                protocolID={perms[0].protocolID}
-                counterparty={perms[0].counterparty}
-              />
-            </div>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'auto 1fr', 
+            alignItems: 'center', 
+            gap: theme.spacing(2)
+          }}>
+            <span>Protocol:</span>
+            <ProtoChip
+              securityLevel={currentPerm.protocolSecurityLevel}
+              protocolID={currentPerm.protocolID}
+              counterparty={currentPerm.counterparty}
+            />
           </div>
-          <br />
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gridGap: '2em', margin: '0px 1.5em' }}>
-            <span>reason:</span>
-            <DialogContentText>
-              {perms[0].description}
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'auto 1fr', 
+            alignItems: 'start', 
+            gap: theme.spacing(2)
+          }}>
+            <span>Reason:</span>
+            <DialogContentText style={{ margin: 0 }}>
+              {currentPerm.description}
             </DialogContentText>
           </div>
-        </center>
+        </div>
       </DialogContent>
-      <DialogActions style={{
-        justifyContent: 'space-around',
-        padding: '1em',
-        flex: 'none'
-      }}
-      >
-        <Button
+
+      <DialogActions>
+        <Button 
           onClick={handleCancel}
-          color='primary'
+          variant="outlined"
+          color="inherit"
         >
           Deny
         </Button>
-        <Button
-          color='primary'
+        <Button 
           onClick={handleGrant}
+          variant="contained"
+          color="primary"
         >
-          Grant
+          Grant Access
         </Button>
       </DialogActions>
     </CustomDialog>

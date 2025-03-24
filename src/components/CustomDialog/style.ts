@@ -5,7 +5,7 @@ export default (theme: Theme) => ({
     '& .MuiDialog-paper': {
       backgroundColor: theme.palette.background.paper,
       color: theme.palette.text.primary,
-      borderRadius: theme.shape.borderRadius,
+      borderRadius: theme.shape.borderRadius * 2,
       [theme.breakpoints.up('sm')]: {
         minWidth: '400px'
       }
@@ -16,22 +16,23 @@ export default (theme: Theme) => ({
     alignItems: 'center',
     gap: theme.spacing(2),
     padding: theme.spacing(2),
-    backgroundColor: theme.palette.mode === 'light' ? '#1B365D' : theme.palette.background.default,
-    color: theme.palette.mode === 'light' ? '#FFFFFF' : theme.palette.text.primary,
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    borderBottom: `1px solid ${theme.palette.divider}`,
     '& img': {
       width: '32px',
       height: '32px'
     }
   },
   content: {
-    padding: theme.spacing(3),
     '& .MuiDialogContent-root': {
-      padding: 0
+      padding: theme.spacing(3)
     }
   },
   actions: {
     padding: theme.spacing(2),
     gap: theme.spacing(1),
+    borderTop: `1px solid ${theme.palette.divider}`,
     '& .MuiButton-root': {
       minWidth: '100px'
     }

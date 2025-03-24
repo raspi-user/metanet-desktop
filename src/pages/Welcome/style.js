@@ -5,11 +5,12 @@ export default theme => ({
     left: 0,
     right: 0,
     position: 'fixed',
-    display: 'grid',
-    placeItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: theme.palette.background.default,
     color: theme.palette.text.primary,
-    backgroundBlendMode: 'soft-light'
   },
   content: {
     margin: 'auto',
@@ -34,29 +35,34 @@ export default theme => ({
   themeButton: {
     width: 120,
     height: 120,
-    borderRadius: 10,
-    transition: theme.transitions.create(['box-shadow', 'background-color'], {
+    borderRadius: theme.shape.borderRadius * 2,
+    border: `1px solid ${theme.palette.divider}`,
+    transition: theme.transitions.create(['box-shadow', 'background-color', 'border-color'], {
       duration: theme.transitions.duration.standard,
     }),
     '&.selected': {
-      boxShadow: `0px 0px 8px 2px ${theme.palette.secondary.main}`,
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
     },
     '&:hover': {
       backgroundColor: theme.palette.action.hover,
+      borderColor: theme.palette.primary.main,
     }
   },
   currencyButton: {
-    padding: '0.5em 1em',
-    transition: theme.transitions.create(['box-shadow', 'background-color', 'color'], {
+    padding: theme.spacing(2, 3),
+    borderRadius: theme.shape.borderRadius,
+    transition: theme.transitions.create(['box-shadow', 'background-color', 'border-color'], {
       duration: theme.transitions.duration.standard,
     }),
     '&.selected': {
       backgroundColor: theme.palette.primary.main,
-      color: theme.palette.common.white,
-      boxShadow: `0px 0px 8px 2px ${theme.palette.secondary.main}`,
+      color: theme.palette.primary.contrastText,
+      borderColor: theme.palette.primary.main,
     },
     '&:hover': {
       backgroundColor: theme.palette.action.hover,
+      borderColor: theme.palette.primary.main,
     }
   }
 });
