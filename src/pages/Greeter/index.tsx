@@ -17,21 +17,23 @@ import {
   useTheme,
   Card,
   CardContent,
-  Collapse
+  Collapse,
+  Link
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
   CheckCircle as CheckCircleIcon,
   PermPhoneMsg as SMSIcon,
   Lock as LockIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Restore as RestoreIcon,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
-import { Link } from 'react-router-dom'
 import AppLogo from '../../components/AppLogo'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../UserInterface'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
 import { makeStyles } from '@mui/styles'
@@ -459,23 +461,18 @@ const Greeter: React.FC<any> = ({ history }) => {
         </Box>
 
         {/* Wallet Configuration Card */}
-        <Card sx={{ mb: 3, border: 'none' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ mb: 3 }}>
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <Button 
                 startIcon={<SettingsIcon />}
                 onClick={() => setShowWalletConfig(!showWalletConfig)}
-                variant="text"
+                variant="outlined"
                 color='secondary'
                 size="small"
               >
-                {showWalletConfig ? 'Hide Details' : 'Modify Config'}
+                {showWalletConfig ? 'Hide Details' : 'Show Config'}
               </Button>
-              <Link to='/recovery' style={{ textDecoration: 'none' }}>
-                <Button variant="text" color='secondary'>
-                  Account Recovery
-                </Button>
-              </Link>
             </Box>            
             {isLoadingConfig ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
@@ -485,12 +482,15 @@ const Greeter: React.FC<any> = ({ history }) => {
               <>
                 {wabInfo ? (            
                   <Collapse in={showWalletConfig}>
-                    <Typography variant="h6" color="primary">
-                      Advanced Configuration
+                    <Typography variant="h4" color="primary">
+                      Configuration
                     </Typography>
                     <Box sx={{ py: 2 }}>
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Authentication Backend (WAB) provides 2 of 3 backup and recovery functionality for your root key.
+                      </Typography>
                       <TextField
-                        label="WAB Server URL"
+                        label="WAB URL"
                         fullWidth
                         variant="outlined"
                         value={wabUrl}
@@ -498,8 +498,7 @@ const Greeter: React.FC<any> = ({ history }) => {
                         margin="normal"
                         size="small"
                       />
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                         <Button 
                           variant="outlined" 
                           size="small" 
@@ -509,11 +508,11 @@ const Greeter: React.FC<any> = ({ history }) => {
                           Refresh Info
                         </Button>
                       </Box>
-                      
+                      <Divider />
                       {wabInfo.supportedAuthMethods && wabInfo.supportedAuthMethods.length > 0 && (
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" gutterBottom>
-                            Supported Auth Methods:
+                            Service which will be used to verify your phone number:
                           </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {wabInfo.supportedAuthMethods.map((method) => (
@@ -533,17 +532,9 @@ const Greeter: React.FC<any> = ({ history }) => {
                       
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="body2" gutterBottom>
-                          Network:
+                          BSV Network:
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
-                            size="small"
-                            onClick={() => setSelectedNetwork('test')}
-                            sx={{ textTransform: 'none' }}
-                          >
-                            Testnet
-                          </Button>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                           <Button
                             variant={selectedNetwork === 'main' ? "contained" : "outlined"}
                             size="small"
@@ -552,9 +543,20 @@ const Greeter: React.FC<any> = ({ history }) => {
                           >
                             Mainnet
                           </Button>
+                          <Button
+                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('test')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Testnet
+                          </Button>
                         </Box>
                       </Box>
                       
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Storage Provider to use for your transactions and metadata:
+                      </Typography>
                       <TextField
                         label="Storage URL"
                         fullWidth
@@ -584,8 +586,8 @@ const Greeter: React.FC<any> = ({ history }) => {
                 )}
               </>
             )}
-          </CardContent>
-        </Card>
+          </Box>
+        </Box>
 
         {/* PHONE step */}
         <Accordion 
@@ -602,12 +604,14 @@ const Greeter: React.FC<any> = ({ history }) => {
             sx={{
               backgroundColor: accordionView === 'phone' ? 'action.hover' : 'transparent',
               borderLeft: accordionView === 'phone' ? `4px solid ${theme.palette.primary.main}` : 'none',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              fontSize: 14,
+              height: 10,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography sx={{ fontWeight: 500 }}>
+              <PhoneIcon fontSize="small" sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography variant="body2">
                 Phone Number
               </Typography>
             </Box>
@@ -700,6 +704,19 @@ const Greeter: React.FC<any> = ({ history }) => {
             />
           </AccordionDetails>
         </Accordion>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+          <Link to='/recovery' style={{ textDecoration: 'none' }}>
+            <Button 
+              variant="text" 
+              color='secondary'
+              size="small"
+              startIcon={<RestoreIcon />}
+            >
+              Account Recovery
+            </Button>
+          </Link>
+        </Box>
 
         <Typography
           variant='caption'
