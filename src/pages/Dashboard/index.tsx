@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useContext } from 'react'
-import { useTheme } from '@mui/material/styles'
 import { useBreakpoint } from '../../utils/useBreakpoints'
 import { Switch, Route, useHistory, Redirect } from 'react-router-dom'
 import style from './style.js'
@@ -32,7 +31,6 @@ import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import Apps from './Apps'
-import Welcome from '../Welcome'
 
 // pages
 import Trust from './Trust/index.js'
@@ -50,7 +48,6 @@ const useStyles = makeStyles(style as any, {
 const Dashboard = () => {
   const breakpoints = useBreakpoint()
   const classes = useStyles({ breakpoints })
-  const theme = useTheme()
   const history = useHistory()
   const { appName, appVersion, managers } = useContext(WalletContext)
   const [pageLoading, setPageLoading] = useState(true)
@@ -108,22 +105,28 @@ const Dashboard = () => {
     }
   }, [menuOpen])
 
+  // Check if this is first login and redirect to settings if needed
   useEffect(() => {
     (async () => {
       if (managers.walletManager!.authenticated) {
         setPageLoading(false)
         const { publicKey } = await managers.walletManager!.getPublicKey({ identityKey: true })
         setMyIdentityKey(publicKey)
+        
+        // Check if this is a first-time login
+        const isFirstTime = !localStorage.getItem('hasCompletedSetup');
+        if (isFirstTime) {
+          localStorage.setItem('hasCompletedSetup', 'true');
+          // Navigate to settings page for new users
+          history.push('/dashboard/settings');
+        }
       }
     })()
-  }, [managers])
+  }, [managers, history])
 
   if (pageLoading) {
     return <PageLoading />
   }
-  
-  // If dev override is active, render only the welcome page
-  // return <Welcome history={history} />
   
   // Custom styling for menu items
   const menuItemStyle = (isSelected) => ({
@@ -317,7 +320,7 @@ const Dashboard = () => {
 
           <Box sx={{ mt: 'auto', mb: 2 }}>
             <ListItemButton
-              onClick={() => navigation.push('/welcome')}
+              onClick={() => navigation.push('/logout')}
               sx={menuItemStyle(false)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>

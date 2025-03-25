@@ -1,10 +1,12 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo, useContext } from 'react';
 import {
   ThemeProvider,
   createTheme,
   CssBaseline,
-  useMediaQuery
+  useMediaQuery,
+  PaletteMode
 } from '@mui/material';
+import { WalletContext } from '../UserInterface';
 
 // Define custom theme types
 declare module '@mui/material/styles' {
@@ -76,9 +78,25 @@ interface ThemeProps {
 
 export function AppThemeProvider({ children }: ThemeProps) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const { settings } = useContext(WalletContext);
 
   const theme = useMemo(() => {
-    const mode = prefersDarkMode ? 'dark' : 'light';
+    // Determine the mode based on user settings or system preferences
+    let mode: PaletteMode = 'light';
+    
+    // Check if user has explicitly set a theme preference
+    if (settings?.theme?.mode) {
+      if (settings.theme.mode === 'system') {
+        // Use system preference when set to 'system'
+        mode = prefersDarkMode ? 'dark' : 'light';
+      } else if (settings.theme.mode === 'dark' || settings.theme.mode === 'light') {
+        // Use explicit user preference (ensuring it's a valid PaletteMode)
+        mode = settings.theme.mode;
+      }
+    } else {
+      // Fall back to system preference if no setting exists
+      mode = prefersDarkMode ? 'dark' : 'light';
+    }
     
     return createTheme({
       palette: {
@@ -245,7 +263,7 @@ export function AppThemeProvider({ children }: ThemeProps) {
       },
       spacing: 8,
     });
-  }, [prefersDarkMode]);
+  }, [prefersDarkMode, settings?.theme?.mode]);
 
   return (
     <ThemeProvider theme={theme}>
