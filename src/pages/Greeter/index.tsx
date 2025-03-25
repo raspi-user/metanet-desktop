@@ -18,7 +18,10 @@ import {
   Card,
   CardContent,
   Collapse,
-  Link
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
@@ -37,8 +40,35 @@ import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
 import { makeStyles } from '@mui/styles'
+import { Link as RouterLink } from 'react-router-dom'
 
 const useStyles = makeStyles(style as any, { name: 'Greeter' })
+
+// Helper functions for the Stepper
+const viewToStepIndex = {
+  'phone': 0,
+  'code': 1,
+  'password': 2
+};
+
+// Steps for the stepper
+const steps = [
+  {
+    label: 'Phone Number',
+    icon: <PhoneIcon />,
+    description: 'Enter your phone number for verification',
+  },
+  {
+    label: 'Verification Code',
+    icon: <SMSIcon />,
+    description: 'Enter the code you received via SMS',
+  },
+  {
+    label: 'Password',
+    icon: <LockIcon />,
+    description: 'Create a password to secure your wallet',
+  },
+];
 
 // Phone form component to reduce cognitive complexity
 const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) => {
@@ -88,12 +118,14 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
           variant="outlined"
           fullWidth
           disabled={loading}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                {code.length === 6 && <CheckCircleIcon color='success' />}
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  {code.length === 6 && <CheckCircleIcon color='success' />}
+                </InputAdornment>
+              ),
+            }
           }}
           ref={codeField}
           sx={{ 
@@ -146,18 +178,20 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
         variant="outlined"
         fullWidth
         disabled={loading}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={() => setShowPassword(!showPassword)}
-                edge="end"
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }
         }}
         ref={passwordField}
         sx={{ 
@@ -177,6 +211,21 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
           variant="outlined"
           fullWidth
           disabled={loading}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
+          }}
           sx={{ 
             mb: 2,
             '& .MuiOutlinedInput-root': {
@@ -467,7 +516,7 @@ const Greeter: React.FC<any> = ({ history }) => {
               <Button 
                 startIcon={<SettingsIcon />}
                 onClick={() => setShowWalletConfig(!showWalletConfig)}
-                variant="outlined"
+                variant="text"
                 color='secondary'
                 size="small"
               >
@@ -589,124 +638,65 @@ const Greeter: React.FC<any> = ({ history }) => {
           </Box>
         </Box>
 
-        {/* PHONE step */}
-        <Accordion 
-          expanded={accordionView === 'phone'}
-          sx={{ 
-            mb: 2,
-            boxShadow: 'none',
-            '&:before': { display: 'none' },
-            borderRadius: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <AccordionSummary 
-            sx={{
-              backgroundColor: accordionView === 'phone' ? 'action.hover' : 'transparent',
-              borderLeft: accordionView === 'phone' ? `4px solid ${theme.palette.primary.main}` : 'none',
-              transition: 'all 0.2s ease',
-              fontSize: 14,
-              height: 10,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <PhoneIcon fontSize="small" sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography variant="body2">
-                Phone Number
-              </Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
-            <PhoneForm 
-              phone={phone}
-              setPhone={setPhone}
-              loading={loading}
-              handleSubmitPhone={handleSubmitPhone}
-              phoneField={phoneField}
-            />
-          </AccordionDetails>
-        </Accordion>
-
-        {/* CODE step */}
-        <Accordion 
-          expanded={accordionView === 'code'}
-          sx={{ 
-            mb: 2,
-            boxShadow: 'none',
-            '&:before': { display: 'none' },
-            borderRadius: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <AccordionSummary 
-            sx={{
-              backgroundColor: accordionView === 'code' ? 'action.hover' : 'transparent',
-              borderLeft: accordionView === 'code' ? `4px solid ${theme.palette.primary.main}` : 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <SMSIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography sx={{ fontWeight: 500 }}>
-                Verification Code
-              </Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
-            <CodeForm
-              code={code}
-              setCode={setCode}
-              loading={loading}
-              handleSubmitCode={handleSubmitCode}
-              handleResendCode={handleResendCode}
-              codeField={codeField}
-            />
-          </AccordionDetails>
-        </Accordion>
-
-        {/* PASSWORD step */}
-        <Accordion 
-          expanded={accordionView === 'password'}
-          sx={{ 
-            mb: 2,
-            boxShadow: 'none',
-            '&:before': { display: 'none' },
-            borderRadius: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <AccordionSummary 
-            sx={{
-              backgroundColor: accordionView === 'password' ? 'action.hover' : 'transparent',
-              borderLeft: accordionView === 'password' ? `4px solid ${theme.palette.primary.main}` : 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <LockIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography sx={{ fontWeight: 500 }}>
-                {accountStatus === 'new-user' ? 'Create Password' : 'Enter Password'}
-              </Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
-            <PasswordForm 
-              password={password}
-              setPassword={setPassword}
-              confirmPassword={confirmPassword}
-              setConfirmPassword={setConfirmPassword}
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              loading={loading}
-              handleSubmitPassword={handleSubmitPassword}
-              accountStatus={accountStatus}
-              passwordField={passwordField}
-            />
-          </AccordionDetails>
-        </Accordion>
+        {/* Authentication Stepper - replaces Accordions for clearer progression */}
+        <Stepper activeStep={viewToStepIndex[accordionView]} orientation="vertical">
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel 
+                icon={step.icon}
+                optional={
+                  <Typography variant="caption" color="text.secondary">
+                    {step.description}
+                  </Typography>
+                }
+              >
+                <Typography variant="body2" fontWeight={500}>
+                  {step.label}
+                </Typography>
+              </StepLabel>
+              <StepContent>
+                {index === 0 && (
+                  <PhoneForm 
+                    phone={phone}
+                    setPhone={setPhone}
+                    loading={loading}
+                    handleSubmitPhone={handleSubmitPhone}
+                    phoneField={phoneField}
+                  />
+                )}
+                
+                {index === 1 && (
+                  <CodeForm
+                    code={code}
+                    setCode={setCode}
+                    loading={loading}
+                    handleSubmitCode={handleSubmitCode}
+                    handleResendCode={handleResendCode}
+                    codeField={codeField}
+                  />
+                )}
+                
+                {index === 2 && (
+                  <PasswordForm 
+                    password={password}
+                    setPassword={setPassword}
+                    confirmPassword={confirmPassword}
+                    setConfirmPassword={setConfirmPassword}
+                    showPassword={showPassword}
+                    setShowPassword={setShowPassword}
+                    loading={loading}
+                    handleSubmitPassword={handleSubmitPassword}
+                    accountStatus={accountStatus}
+                    passwordField={passwordField}
+                  />
+                )}
+              </StepContent>
+            </Step>
+          ))}
+        </Stepper>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
-          <Link to='/recovery' style={{ textDecoration: 'none' }}>
+          <RouterLink to='/recovery' style={{ textDecoration: 'none' }}>
             <Button 
               variant="text" 
               color='secondary'
@@ -715,7 +705,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             >
               Account Recovery
             </Button>
-          </Link>
+          </RouterLink>
         </Box>
 
         <Typography
