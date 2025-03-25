@@ -7,9 +7,7 @@ import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import style from './style.js'
 import { WalletContext } from '../../../UserInterface.js'
-import PasswordSettings from './Password/index.jsx'
 // import PhoneSettings from './Phone/index.jsx'
-import RecoveryKeySettings from './RecoveryKey/index.jsx'
 import About from './About/index.jsx'
 import Logout from './Logout/index.jsx'
 // import KernelConfigurator from '../../../components/KernelConfigurator.jsx'
@@ -128,16 +126,6 @@ const Settings = () => {
         </FormControl>
         {settingsLoading ? <LinearProgress style={{ marginTop: '1em' }} /> : null}
       </div>
-      <PasswordSettings history={history} />
-      <Divider />
-      <br />
-      {/*
-      <PhoneSettings />
-      <Divider />
-      <br />*/}
-      <RecoveryKeySettings history={history} />
-      <Divider />
-      <br />
       <About />
       <Divider />
       <br />
@@ -155,7 +143,7 @@ const Settings = () => {
         <br />
         <br />
       </>} */}
-      <Logout history={history} />
+      <Logout />
     </>
   )
 }
