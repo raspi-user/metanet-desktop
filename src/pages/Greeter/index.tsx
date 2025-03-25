@@ -4,14 +4,16 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  AccordionActions,
   Typography,
   Button,
   TextField,
   CircularProgress,
   Divider,
   InputAdornment,
-  IconButton
+  IconButton,
+  Paper,
+  Box,
+  Container
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
@@ -20,17 +22,173 @@ import {
   Lock as LockIcon
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
-import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
-import CWILogo from '../../components/Logo.js'
+import AppLogo from '../../components/AppLogo'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../UserInterface'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
+import { makeStyles } from '@mui/styles'
 
 const useStyles = makeStyles(style as any, { name: 'Greeter' })
 
+// Phone form component to reduce cognitive complexity
+const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) => (
+  <form onSubmit={handleSubmitPhone}>
+    <PhoneEntry
+      value={phone}
+      onChange={setPhone}
+      ref={phoneField}
+      sx={{
+        width: '100%',
+        mb: 2, 
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 1
+        }
+      }}
+    />
+    <Button
+      variant='contained'
+      type='submit'
+      disabled={loading || !phone || phone.length < 10}
+      fullWidth
+      sx={{ 
+        mt: 2,
+        borderRadius: 1,
+        textTransform: 'none',
+        py: 1.2
+      }}
+    >
+      {loading ? <CircularProgress size={24} /> : 'Continue'}
+    </Button>
+  </form>
+);
+
+// Code verification form component
+const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeField }) => (
+  <>
+    <form onSubmit={handleSubmitCode}>
+      <TextField
+        label="6-digit code"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        variant="outlined"
+        fullWidth
+        disabled={loading}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              {code.length === 6 && <CheckCircleIcon color='success' />}
+            </InputAdornment>
+          ),
+        }}
+        ref={codeField}
+        sx={{ 
+          mb: 2,
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 1
+          }
+        }}
+      />
+      <Button
+        variant='contained'
+        type='submit'
+        disabled={loading || code.length !== 6}
+        fullWidth
+        sx={{ 
+          mt: 2,
+          borderRadius: 1,
+          textTransform: 'none',
+          py: 1.2
+        }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Verify Code'}
+      </Button>
+    </form>
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+      <Button
+        disabled={loading}
+        onClick={handleResendCode}
+        size="small"
+        color="secondary"
+        sx={{ textTransform: 'none' }}
+      >
+        Resend Code
+      </Button>
+    </Box>
+  </>
+);
+
+// Password form component
+const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordField }) => (
+  <form onSubmit={handleSubmitPassword}>
+    <TextField
+      label="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      type={showPassword ? 'text' : 'password'}
+      variant="outlined"
+      fullWidth
+      disabled={loading}
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              aria-label="toggle password visibility"
+              onClick={() => setShowPassword(!showPassword)}
+              edge="end"
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+      ref={passwordField}
+      sx={{ 
+        mb: 2,
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 1
+        }
+      }}
+    />
+
+    {accountStatus === 'new-user' && (
+      <TextField
+        label="Confirm Password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        type={showPassword ? 'text' : 'password'}
+        variant="outlined"
+        fullWidth
+        disabled={loading}
+        sx={{ 
+          mb: 2,
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 1
+          }
+        }}
+      />
+    )}
+
+    <Button
+      variant='contained'
+      type='submit'
+      disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
+      fullWidth
+      sx={{ 
+        mt: 2,
+        borderRadius: 1,
+        textTransform: 'none',
+        py: 1.2
+      }}
+    >
+      {loading ? <CircularProgress size={24} /> : (accountStatus === 'new-user' ? 'Create Account' : 'Login')}
+    </Button>
+  </form>
+);
+
+// Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
   const { appVersion, appName, managers } = useContext(WalletContext)
   const classes = useStyles()
@@ -71,7 +229,6 @@ const Greeter: React.FC<any> = ({ history }) => {
   }, [walletManager])
 
   // Step 1: The user enters a phone number, we call manager.startAuth(...)
-  // This replaces the old providePhoneNumber(...) approach:
   const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
@@ -80,14 +237,12 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
     try {
       setLoading(true)
-      // Typically we do manager.startAuth(...) with a Twilio payload
       await walletManager.startAuth({ phoneNumber: phone })
       setAccordionView('code')
       toast.success('A code has been sent to your phone.')
       // Move focus to code field
       if (codeField.current) {
-        // MUI sub-layers: codeField.current.children[1].children[0].focus()
-        (codeField.current as any).children[1].children[0].focus()
+        codeField.current.children[1].children[0].focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -98,7 +253,6 @@ const Greeter: React.FC<any> = ({ history }) => {
   }
 
   // Step 2: The user enters the OTP code, we call manager.completeAuth(...)
-  // This replaces the old provideCode(...) approach:
   const handleSubmitCode = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
@@ -109,8 +263,6 @@ const Greeter: React.FC<any> = ({ history }) => {
       setLoading(true)
       await walletManager.completeAuth({ phoneNumber: phone, otp: code })
 
-      // manager.completeAuth(...) should set manager.authenticationFlow to either
-      // 'existing-user' or 'new-user' after retrieving the presentationKey from the WAB
       if (walletManager.authenticationFlow === 'new-user') {
         setAccountStatus('new-user')
       } else {
@@ -119,7 +271,7 @@ const Greeter: React.FC<any> = ({ history }) => {
 
       setAccordionView('password')
       if (passwordField.current) {
-        (passwordField.current as any).children[1].children[0].focus()
+        passwordField.current.children[1].children[0].focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -155,16 +307,13 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
 
     // If new-user, confirm password match
-    if (accountStatus === 'new-user') {
-      if (password !== confirmPassword) {
-        toast.error("Passwords don't match.")
-        return
-      }
+    if (accountStatus === 'new-user' && password !== confirmPassword) {
+      toast.error("Passwords don't match.")
+      return
     }
 
     setLoading(true)
     try {
-      // manager.providePassword(...) finalizes the creation or retrieval of the user’s primary key
       await walletManager.providePassword(password)
 
       if (walletManager.authenticated) {
@@ -188,195 +337,196 @@ const Greeter: React.FC<any> = ({ history }) => {
   }
 
   return (
-    <div className={classes.max_width}>
-      <div className={classes.content_wrap}>
-        <center>
-          <CWILogo
-            className={classes.logo}
-            rotate
-          />
-          <Typography variant='h2' paragraph fontFamily='Helvetica' fontSize='2em'>
+    <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <Paper 
+        elevation={4} 
+        sx={{ 
+          p: 4, 
+          borderRadius: 2,
+          background: 'linear-gradient(to bottom right, #ffffff, #f5f5f5)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ mb: 2, width: '100px', height: '100px' }}>
+            <AppLogo
+              rotate
+              size="100px"
+              color="#2196F3"
+            />
+          </Box>
+          <Typography 
+            variant='h2' 
+            fontFamily='Helvetica' 
+            fontSize='2em'
+            sx={{ 
+              mb: 1,
+              fontWeight: 'bold',
+              background: 'linear-gradient(45deg, #2196F3, #3f51b5)',
+              backgroundClip: 'text',
+              textFillColor: 'transparent',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
             {appName}
           </Typography>
-          <Typography variant='h4' paragraph fontFamily='Helvetica'>
-            Welcome!
+          <Typography 
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            sx={{ mb: 3 }}
+          >
+            Secure your digital identity with blockchain technology
           </Typography>
-          <Typography variant='body1' paragraph>
-            Please enter your phone number to login or sign up.
-          </Typography>
-          <Divider />
-        </center>
+          <Divider sx={{ width: '80%', mb: 4 }} />
+        </Box>
+
         {/* PHONE step */}
-        <Accordion expanded={accordionView === 'phone'}>
-          <AccordionSummary className={classes.panel_header}>
-            <PhoneIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Phone Number
-            </Typography>
-            {(accordionView === 'code' || accordionView === 'password') && (
-              <CheckCircleIcon className={classes.complete_icon} />
-            )}
+        <Accordion 
+          expanded={accordionView === 'phone'}
+          sx={{ 
+            mb: 2,
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            borderRadius: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <AccordionSummary 
+            sx={{
+              backgroundColor: accordionView === 'phone' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
+              borderLeft: accordionView === 'phone' ? '4px solid #2196F3' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography sx={{ fontWeight: 500 }}>
+                Phone Number
+              </Typography>
+            </Box>
           </AccordionSummary>
-          <form onSubmit={handleSubmitPhone}>
-            <AccordionDetails className={classes.expansion_body}>
-              <PhoneEntry
-                value={phone}
-                onChange={setPhone}
-                placeholder='Enter phone number'
-                autoFocus
-                forewarRef={phoneField}
-              />
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='secondary'
-                style={{ fontWeight: 'bold' }}
-                type='submit'
-                disabled={loading}
-              >
-                {!loading ? 'Send Code' : <CircularProgress size={20} />}
-              </Button>
-            </AccordionActions>
-          </form>
+          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
+            <PhoneForm 
+              phone={phone}
+              setPhone={setPhone}
+              loading={loading}
+              handleSubmitPhone={handleSubmitPhone}
+              phoneField={phoneField}
+            />
+          </AccordionDetails>
         </Accordion>
 
         {/* CODE step */}
-        <Accordion expanded={accordionView === 'code'}>
-          <AccordionSummary className={classes.panel_header}>
-            <SMSIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Enter code
-            </Typography>
-            {accordionView === 'password' && (
-              <CheckCircleIcon className={classes.complete_icon} />
-            )}
+        <Accordion 
+          expanded={accordionView === 'code'}
+          sx={{ 
+            mb: 2,
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            borderRadius: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <AccordionSummary 
+            sx={{
+              backgroundColor: accordionView === 'code' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
+              borderLeft: accordionView === 'code' ? '4px solid #2196F3' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <SMSIcon sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography sx={{ fontWeight: 500 }}>
+                Verification Code
+              </Typography>
+            </Box>
           </AccordionSummary>
-          <form onSubmit={handleSubmitCode}>
-            <AccordionDetails className={classes.expansion_body}>
-              <TextField
-                onChange={e => setCode(e.target.value)}
-                label='Code'
-                fullWidth
-                autoFocus
-                ref={codeField}
-              />
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={handleResendCode}
-                size='small'
-                disabled={loading}
-              >
-                Resend Code
-              </Button>
-            </AccordionActions>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={() => setAccordionView('phone')}
-                disabled={loading}
-              >
-                Back
-              </Button>
-              <Button
-                color='secondary'
-                style={{ fontWeight: 'bold' }}
-                type='submit'
-                disabled={loading}
-              >
-                {!loading ? 'Next' : <CircularProgress size={20} />}
-              </Button>
-            </AccordionActions>
-          </form>
+          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
+            <CodeForm
+              code={code}
+              setCode={setCode}
+              loading={loading}
+              handleSubmitCode={handleSubmitCode}
+              handleResendCode={handleResendCode}
+              codeField={codeField}
+            />
+          </AccordionDetails>
         </Accordion>
 
         {/* PASSWORD step */}
-        <Accordion expanded={accordionView === 'password'}>
-          <AccordionSummary className={classes.panel_header}>
-            <LockIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Password
-            </Typography>
+        <Accordion 
+          expanded={accordionView === 'password'}
+          sx={{ 
+            mb: 2,
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            borderRadius: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <AccordionSummary 
+            sx={{
+              backgroundColor: accordionView === 'password' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
+              borderLeft: accordionView === 'password' ? '4px solid #2196F3' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <LockIcon sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography sx={{ fontWeight: 500 }}>
+                {accountStatus === 'new-user' ? 'Create Password' : 'Enter Password'}
+              </Typography>
+            </Box>
           </AccordionSummary>
-          <form onSubmit={handleSubmitPassword}>
-            <AccordionDetails className={classes.expansion_body}>
-              <div
-                className={
-                  accountStatus === 'new-user'
-                    ? classes.new_password_grid
-                    : classes.password_grid
-                }
-              >
-                <TextField
-                  ref={passwordField}
-                  onChange={e => setPassword(e.target.value)}
-                  label='Password'
-                  fullWidth
-                  type={showPassword ? 'text' : 'password'}
-                  autoFocus
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          aria-label='toggle password visibility'
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge='end'
-                          style={{ color: 'inherit' }}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-                {accountStatus === 'new-user' && (
-                  <TextField
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    label='Retype Password'
-                    fullWidth
-                    type={showPassword ? 'text' : 'password'}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <IconButton
-                            aria-label='toggle password visibility'
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge='end'
-                            style={{ color: 'inherit' }}
-                          >
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                )}
-              </div>
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={() => setAccordionView('phone')}
-                disabled={loading}
-              >
-                Back
-              </Button>
-              <Button
-                variant='contained'
-                color='primary'
-                type='submit'
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  accountStatus === 'new-user' ? 'Create Account' : 'Log In'
-                )}
-              </Button>
-            </AccordionActions>
-          </form>
+          <AccordionDetails sx={{ pt: 3, pb: 3 }}>
+            <PasswordForm 
+              password={password}
+              setPassword={setPassword}
+              confirmPassword={confirmPassword}
+              setConfirmPassword={setConfirmPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              loading={loading}
+              handleSubmitPassword={handleSubmitPassword}
+              accountStatus={accountStatus}
+              passwordField={passwordField}
+            />
+          </AccordionDetails>
         </Accordion>
+
+        <Typography
+          variant='caption'
+          color='textSecondary'
+          align='center'
+          sx={{ 
+            display: 'block',
+            mt: 3,
+            mb: 1,
+            fontSize: '0.75rem',
+            opacity: 0.7
+          }}
+        >
+          By signing in, you agree to the{' '}
+          <a
+            href='https://pow.co/terms'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ color: '#2196F3', textDecoration: 'none' }}
+          >
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a
+            href='https://babbage.systems/license/'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ color: '#2196F3', textDecoration: 'none' }}
+          >
+            Babbage Software License Agreement
+          </a>.
+        </Typography>
 
         <br />
         <br />
@@ -408,8 +558,8 @@ const Greeter: React.FC<any> = ({ history }) => {
             Babbage Software License Agreement
           </a>.
         </Typography>
-      </div>
-    </div>
+      </Paper>
+    </Container>
   )
 }
 
