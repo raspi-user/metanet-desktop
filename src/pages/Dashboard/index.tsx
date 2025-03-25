@@ -32,6 +32,7 @@ import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import Apps from './Apps'
+import Welcome from '../Welcome'
 
 // pages
 import Trust from './Trust/index.js'
@@ -115,11 +116,14 @@ const Dashboard = () => {
         setMyIdentityKey(publicKey)
       }
     })()
-  }, [history])
+  }, [managers])
 
   if (pageLoading) {
     return <PageLoading />
   }
+  
+  // If dev override is active, render only the welcome page
+  // return <Welcome history={history} />
   
   // Custom styling for menu items
   const menuItemStyle = (isSelected) => ({

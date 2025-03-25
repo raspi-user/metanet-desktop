@@ -126,24 +126,6 @@ const Settings = () => {
         </FormControl>
         {settingsLoading ? <LinearProgress style={{ marginTop: '1em' }} /> : null}
       </div>
-      <About />
-      <Divider />
-      <br />
-      {/* <KernelConfigurator /> */}
-      <br />
-      <br />
-      {/* {showAutoLaunch && <>
-        <FormControlLabel
-          control={<Checkbox
-            checked={autoLaunchEnabled}
-            onChange={handleAutoLaunchChange}
-          />}
-          label={<span>Auto-launch Metanet Desktop when you log in</span>}
-        />
-        <br />
-        <br />
-      </>} */}
-      <Logout />
     </>
   )
 }
