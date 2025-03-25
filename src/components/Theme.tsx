@@ -111,7 +111,7 @@ export function AppThemeProvider({ children }: ThemeProps) {
           },
           text: {
             primary: '#FFFFFF',
-            secondary: '#4A5568', // Gray
+            secondary: '#888888', // Gray
           }
         })
       },

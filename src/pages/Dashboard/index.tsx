@@ -337,7 +337,7 @@ const Dashboard = () => {
                 mt: 2,
                 textAlign: 'center',
                 width: '100%',
-                opacity: 0.33,
+                opacity: 0.5,
               }}
             >
               {appName} v{appVersion}
