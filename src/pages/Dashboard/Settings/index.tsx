@@ -36,9 +36,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: 'center',
     transition: 'all 0.2s ease-in-out',
     '&.selected': {
-      borderColor: theme.palette.primary.main,
+      borderColor: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.primary.main,
       borderWidth: '2px',
-      boxShadow: theme.shadows[3]
+      boxShadow: theme.palette.mode === 'dark' ? 'none' : theme.shadows[3]
     }
   },
   currencyButton: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: 'center',
     transition: 'all 0.2s ease-in-out',
     '&.selected': {
-      borderColor: theme.palette.primary.main,
+      borderColor: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.primary.main,
       borderWidth: '2px',
       backgroundColor: theme.palette.action.selected
     }
@@ -63,6 +63,7 @@ const Settings = () => {
   const { settings, updateSettings } = useContext(WalletContext)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const theme = useTheme()
+  const isDarkMode = theme.palette.mode === 'dark'
 
   const currencies = {
     BSV: '0.033',
@@ -171,6 +172,21 @@ const Settings = () => {
     }
   };
 
+  const getSelectedButtonStyle = (isSelected) => {
+    if (!isSelected) return {};
+    
+    return isDarkMode ? {
+      borderColor: 'common.white',
+      borderWidth: '2px',
+      outline: '1px solid rgba(255, 255, 255, 0.5)',
+      boxShadow: 'none',
+    } : {
+      borderColor: 'primary.main',
+      borderWidth: '2px',
+      boxShadow: 3,
+    };
+  };
+
   return (
     <div className={classes.root}>
       <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
@@ -186,7 +202,6 @@ const Settings = () => {
         </Box>
       )}
 
-      {/* Currency Selection Section */}
       <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Default Currency
@@ -204,7 +219,7 @@ const Settings = () => {
                 className={`${classes.currencyButton} ${selectedCurrency === currency ? 'selected' : ''}`}
                 onClick={() => handleCurrencyChange(currency)}
                 sx={{
-                  borderColor: selectedCurrency === currency ? 'primary.main' : 'divider',
+                  ...(selectedCurrency === currency && getSelectedButtonStyle(true)),
                   bgcolor: selectedCurrency === currency ? 'action.selected' : 'transparent',
                 }}
               >
@@ -220,7 +235,6 @@ const Settings = () => {
         </Grid>
       </Paper>
 
-      {/* Theme Selection Section */}
       <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Choose Your Theme
@@ -238,8 +252,7 @@ const Settings = () => {
                 className={`${classes.themeButton} ${selectedTheme === themeOption ? 'selected' : ''}`}
                 sx={{
                   ...getThemeButtonStyles(themeOption),
-                  borderColor: selectedTheme === themeOption ? 'primary.main' : 'divider',
-                  boxShadow: selectedTheme === themeOption ? 3 : 0,
+                  ...(selectedTheme === themeOption && getSelectedButtonStyle(true)),
                 }}
               >
                 {renderThemeIcon(themeOption)}
