@@ -14,13 +14,17 @@ import {
   Paper,
   Box,
   Container,
-  useTheme
+  useTheme,
+  Card,
+  CardContent,
+  Collapse
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
   CheckCircle as CheckCircleIcon,
   PermPhoneMsg as SMSIcon,
-  Lock as LockIcon
+  Lock as LockIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
 import { Link } from 'react-router-dom'
@@ -214,6 +218,19 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [pageLoaded, setPageLoaded] = useState(false)
+  
+  // Wallet configuration state
+  const [showWalletConfig, setShowWalletConfig] = useState(false)
+  const [wabUrl, setWabUrl] = useState<string>("https://wab.babbage.systems")
+  const [wabInfo, setWabInfo] = useState<{
+    supportedAuthMethods: string[];
+    faucetEnabled: boolean;
+    faucetAmount: number;
+  } | null>(null)
+  const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("")
+  const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>('main')
+  const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>("https://storage.babbage.systems")
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false)
 
   const phoneField = useRef(null)
   const codeField = useRef(null)
@@ -221,6 +238,46 @@ const Greeter: React.FC<any> = ({ history }) => {
 
   // Access the manager:
   const walletManager = managers.walletManager
+
+  // Auto-fetch wallet configuration info when component mounts
+  useEffect(() => {
+    if (!wabInfo && !walletManager?.authenticated) {
+      fetchWalletConfig()
+    }
+  }, [])
+
+  // Fetch wallet configuration info
+  const fetchWalletConfig = async () => {
+    setIsLoadingConfig(true)
+    try {
+      const res = await fetch(`${wabUrl}/info`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch info: ${res.status}`)
+      }
+      const info = await res.json()
+      setWabInfo(info)
+      
+      // Auto-select the first supported authentication method
+      if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
+        setSelectedAuthMethod(info.supportedAuthMethods[0])
+      }
+    } catch (error: any) {
+      console.error("Error fetching wallet config:", error)
+      toast.error("Could not fetch wallet configuration: " + error.message)
+    } finally {
+      setIsLoadingConfig(false)
+    }
+  }
+
+  // Apply wallet configuration
+  const applyWalletConfig = () => {
+    if (!wabInfo || !selectedAuthMethod) {
+      toast.error("Please select an authentication method")
+      return
+    }
+    setShowWalletConfig(false)
+    toast.success("Wallet configuration applied")
+  }
 
   useEffect(() => {
     (async () => {
@@ -364,17 +421,20 @@ const Greeter: React.FC<any> = ({ history }) => {
               rotate
               size="100px"
               color="#2196F3"
-              backgroundColor={theme.palette.background.default}
             />
           </Box>
           <Typography 
             variant='h2' 
             fontFamily='Helvetica' 
             fontSize='2em'
-            sx={{ 
+            sx={{
               mb: 1,
               fontWeight: 'bold',
-              color: 'primary.main'
+              background: theme.palette.mode === 'dark' 
+                ? 'linear-gradient(90deg, #FFFFFF 0%, #F5F5F5 100%)'
+                : 'linear-gradient(90deg, #2196F3 0%, #4569E5 100%)',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
             }}
           >
             {appName}
@@ -385,10 +445,147 @@ const Greeter: React.FC<any> = ({ history }) => {
             align="center"
             sx={{ mb: 3 }}
           >
-            Secure your digital identity with blockchain technology
+            Secure BSV Blockchain Wallet
           </Typography>
-          <Divider sx={{ width: '80%', mb: 4 }} />
+          <Divider sx={{ width: '80%' }} />
+          <Typography 
+            variant="caption"
+            color="text.secondary"
+            align="center"
+            sx={{ mt: 1 }}
+          >
+            <i>v{appVersion}</i>
+          </Typography>
         </Box>
+
+        {/* Wallet Configuration Card */}
+        <Card sx={{ mb: 3, border: 'none' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Link to='/recovery'>
+                <Button variant="text" color='secondary' className={classes.recovery_link}>
+                  Account Recovery
+                </Button>
+              </Link>
+              <Button 
+                startIcon={<SettingsIcon />}
+                onClick={() => setShowWalletConfig(!showWalletConfig)}
+                variant="text"
+                color='secondary'
+                size="small"
+              >
+                {showWalletConfig ? 'Hide Details' : 'Modify Config'}
+              </Button>
+            </Box>            
+            {isLoadingConfig ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <>
+                {wabInfo ? (            
+                  <Collapse in={showWalletConfig}>
+                    <Typography variant="h6" color="primary">
+                      Advanced Configuration
+                    </Typography>
+                    <Box sx={{ py: 2 }}>
+                      <TextField
+                        label="WAB Server URL"
+                        fullWidth
+                        variant="outlined"
+                        value={wabUrl}
+                        onChange={(e) => setWabUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, mb: 2 }}>
+                        <Button 
+                          variant="outlined" 
+                          size="small" 
+                          onClick={fetchWalletConfig}
+                          disabled={isLoadingConfig}
+                        >
+                          Refresh Info
+                        </Button>
+                      </Box>
+                      
+                      {wabInfo.supportedAuthMethods && wabInfo.supportedAuthMethods.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="body2" gutterBottom>
+                            Supported Auth Methods:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {wabInfo.supportedAuthMethods.map((method) => (
+                              <Button
+                                key={method}
+                                variant={selectedAuthMethod === method ? "contained" : "outlined"}
+                                size="small"
+                                onClick={() => setSelectedAuthMethod(method)}
+                                sx={{ textTransform: 'none' }}
+                              >
+                                {method}
+                              </Button>
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                      
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" gutterBottom>
+                          Network:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('test')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Testnet
+                          </Button>
+                          <Button
+                            variant={selectedNetwork === 'main' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('main')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Mainnet
+                          </Button>
+                        </Box>
+                      </Box>
+                      
+                      <TextField
+                        label="Storage URL"
+                        fullWidth
+                        variant="outlined"
+                        value={selectedStorageUrl}
+                        onChange={(e) => setSelectedStorageUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                          onClick={applyWalletConfig}
+                          disabled={!wabInfo || !selectedAuthMethod}
+                        >
+                          Apply Configuration
+                        </Button>
+                    </Box>
+                  </Collapse>
+                ) : (
+                  <Typography variant="body2" color="error">
+                    Failed to load wallet configuration
+                  </Typography>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* PHONE step */}
         <Accordion 
@@ -516,54 +713,14 @@ const Greeter: React.FC<any> = ({ history }) => {
             opacity: 0.7
           }}
         >
-          By signing in, you agree to the{' '}
+          By using this software, you acknowledge that you have read, understood and accepted the terms of the{' '}
           <a
-            href='https://pow.co/terms'
+            href='https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt'
             target='_blank'
             rel='noopener noreferrer'
             style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
-            Terms of Service
-          </a>{' '}
-          and{' '}
-          <a
-            href='https://babbage.systems/license/'
-            target='_blank'
-            rel='noopener noreferrer'
-            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
-          >
-            Babbage Software License Agreement
-          </a>.
-        </Typography>
-
-        <br />
-        <br />
-        <Link to='/recovery'>
-          <Button color='secondary' className={classes.recovery_link}>
-            Account Recovery?
-          </Button>
-        </Link>
-        <Typography
-          align='center'
-          color='textSecondary'
-          className={classes.copyright_text}
-        >
-          <b>{appName} version {appVersion}</b>
-        </Typography>
-        <Typography
-          align='center'
-          color='textSecondary'
-          className={classes.copyright_text}
-        >
-          Copyright &copy; 2020-2023 Peer-to-peer Privacy Systems Research, LLC.
-          All rights reserved. Redistribution of this software is strictly prohibited.
-          Use of this software is subject to the{' '}
-          <a
-            href='https://projectbabbage.com/desktop/license'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            Babbage Software License Agreement
+            Software License
           </a>.
         </Typography>
       </Paper>

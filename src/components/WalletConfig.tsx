@@ -10,9 +10,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   Divider
 } from '@mui/material'
+import Grid from '@mui/material/Grid2'
 
 interface WalletConfigProps {
   noManagerYet: boolean
@@ -63,7 +63,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
             Configure your wallet with a Wallet Authentication Backend
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid flex={12}>
               <TextField
                 fullWidth
                 label='WAB Server URL'
@@ -72,7 +72,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
                 onChange={e => setWabUrl(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid flex={12}>
               <Button variant='contained' color='primary' onClick={fetchWabInfo}>
                 Fetch Info
               </Button>
@@ -80,7 +80,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
 
             {wabInfo && (
               <>
-                <Grid item xs={12}>
+                <Grid flex={12}>
                   <Typography variant='subtitle1'>
                     Supported Methods: {wabInfo.supportedAuthMethods.join(', ')}
                   </Typography>
@@ -88,7 +88,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
                     Faucet: {wabInfo.faucetEnabled ? 'Enabled' : 'Disabled'} (Amount: {wabInfo.faucetAmount})
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid flex={12}>
                   <FormControl fullWidth variant='outlined'>
                     <InputLabel id='auth-method-label'>Choose Auth Method</InputLabel>
                     <Select
@@ -111,7 +111,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
               </>
             )}
 
-            <Grid item xs={12}>
+            <Grid flex={12}>
               <FormControl fullWidth variant='outlined'>
                 <InputLabel id='network-label'>Chain/Network</InputLabel>
                 <Select
@@ -120,13 +120,13 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
                   onChange={e => setSelectedNetwork(e.target.value as ('main' | 'test'))}
                   label='Chain/Network'
                 >
-                  <MenuItem value='test'>Testnet</MenuItem>
                   <MenuItem value='main'>Mainnet</MenuItem>
+                  <MenuItem value='test'>Testnet</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid flex={12}>
               <TextField
                 fullWidth
                 label='Storage URL'
@@ -137,7 +137,7 @@ const WalletConfig: React.FC<WalletConfigProps> = ({
             </Grid>
 
             {/* Render button always, but disable it until conditions are met */}
-            <Grid item xs={12}>
+            <Grid flex={12}>
               <Button
                 variant='contained'
                 color='secondary'
