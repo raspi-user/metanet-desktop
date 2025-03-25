@@ -462,11 +462,6 @@ const Greeter: React.FC<any> = ({ history }) => {
         <Card sx={{ mb: 3, border: 'none' }}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Link to='/recovery'>
-                <Button variant="text" color='secondary' className={classes.recovery_link}>
-                  Account Recovery
-                </Button>
-              </Link>
               <Button 
                 startIcon={<SettingsIcon />}
                 onClick={() => setShowWalletConfig(!showWalletConfig)}
@@ -476,6 +471,11 @@ const Greeter: React.FC<any> = ({ history }) => {
               >
                 {showWalletConfig ? 'Hide Details' : 'Modify Config'}
               </Button>
+              <Link to='/recovery' style={{ textDecoration: 'none' }}>
+                <Button variant="text" color='secondary'>
+                  Account Recovery
+                </Button>
+              </Link>
             </Box>            
             {isLoadingConfig ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>

@@ -121,7 +121,7 @@ export function AppThemeProvider({ children }: ThemeProps) {
             main: '#FFFFFF',
           },
           secondary: {
-            main: '#2C5282', // Keep teal for dark mode accents
+            main: '#487dbf', // Keep teal for dark mode accents
           },
           background: {
             default: '#1D2125',
