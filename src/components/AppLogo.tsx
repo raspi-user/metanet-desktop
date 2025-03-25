@@ -58,7 +58,7 @@ const AppLogo: React.FC<AppLogoProps> = ({ className, size, color = '#2196F3', r
       </style>
       <g>
         {/* Background circle */}
-        <circle cx={centerX} cy={centerY} r={radius + 10} fill="white" />
+        <circle cx={centerX} cy={centerY} r={radius + 10} fill={'transparent'} />
         
         {/* Edges */}
         {edges.map((edge, index) => (

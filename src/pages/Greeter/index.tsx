@@ -13,7 +13,8 @@ import {
   IconButton,
   Paper,
   Box,
-  Container
+  Container,
+  useTheme
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
@@ -34,164 +35,174 @@ import { makeStyles } from '@mui/styles'
 const useStyles = makeStyles(style as any, { name: 'Greeter' })
 
 // Phone form component to reduce cognitive complexity
-const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) => (
-  <form onSubmit={handleSubmitPhone}>
-    <PhoneEntry
-      value={phone}
-      onChange={setPhone}
-      ref={phoneField}
-      sx={{
-        width: '100%',
-        mb: 2, 
-        '& .MuiOutlinedInput-root': {
-          borderRadius: 1
-        }
-      }}
-    />
-    <Button
-      variant='contained'
-      type='submit'
-      disabled={loading || !phone || phone.length < 10}
-      fullWidth
-      sx={{ 
-        mt: 2,
-        borderRadius: 1,
-        textTransform: 'none',
-        py: 1.2
-      }}
-    >
-      {loading ? <CircularProgress size={24} /> : 'Continue'}
-    </Button>
-  </form>
-);
-
-// Code verification form component
-const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeField }) => (
-  <>
-    <form onSubmit={handleSubmitCode}>
-      <TextField
-        label="6-digit code"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        variant="outlined"
-        fullWidth
-        disabled={loading}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              {code.length === 6 && <CheckCircleIcon color='success' />}
-            </InputAdornment>
-          ),
-        }}
-        ref={codeField}
-        sx={{ 
-          mb: 2,
+const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) => {
+  const theme = useTheme();
+  return (
+    <form onSubmit={handleSubmitPhone}>
+      <PhoneEntry
+        value={phone}
+        onChange={setPhone}
+        ref={phoneField}
+        sx={{
+          width: '100%',
+          mb: 2, 
           '& .MuiOutlinedInput-root': {
-            borderRadius: 1
+            borderRadius: theme.shape.borderRadius
           }
         }}
       />
       <Button
         variant='contained'
         type='submit'
-        disabled={loading || code.length !== 6}
+        disabled={loading || !phone || phone.length < 10}
         fullWidth
         sx={{ 
           mt: 2,
-          borderRadius: 1,
+          borderRadius: theme.shape.borderRadius,
           textTransform: 'none',
           py: 1.2
         }}
       >
-        {loading ? <CircularProgress size={24} /> : 'Verify Code'}
+        {loading ? <CircularProgress size={24} /> : 'Continue'}
       </Button>
     </form>
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-      <Button
-        disabled={loading}
-        onClick={handleResendCode}
-        size="small"
-        color="secondary"
-        sx={{ textTransform: 'none' }}
-      >
-        Resend Code
-      </Button>
-    </Box>
-  </>
-);
+  );
+};
+
+// Code verification form component
+const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeField }) => {
+  const theme = useTheme();
+  return (
+    <>
+      <form onSubmit={handleSubmitCode}>
+        <TextField
+          label="6-digit code"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          variant="outlined"
+          fullWidth
+          disabled={loading}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {code.length === 6 && <CheckCircleIcon color='success' />}
+              </InputAdornment>
+            ),
+          }}
+          ref={codeField}
+          sx={{ 
+            mb: 2,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: theme.shape.borderRadius
+            }
+          }}
+        />
+        <Button
+          variant='contained'
+          type='submit'
+          disabled={loading || code.length !== 6}
+          fullWidth
+          sx={{ 
+            mt: 2,
+            borderRadius: theme.shape.borderRadius,
+            textTransform: 'none',
+            py: 1.2
+          }}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Verify Code'}
+        </Button>
+      </form>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Button
+          disabled={loading}
+          onClick={handleResendCode}
+          size="small"
+          color="secondary"
+          sx={{ textTransform: 'none' }}
+        >
+          Resend Code
+        </Button>
+      </Box>
+    </>
+  );
+};
 
 // Password form component
-const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordField }) => (
-  <form onSubmit={handleSubmitPassword}>
-    <TextField
-      label="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      type={showPassword ? 'text' : 'password'}
-      variant="outlined"
-      fullWidth
-      disabled={loading}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              aria-label="toggle password visibility"
-              onClick={() => setShowPassword(!showPassword)}
-              edge="end"
-            >
-              {showPassword ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </InputAdornment>
-        ),
-      }}
-      ref={passwordField}
-      sx={{ 
-        mb: 2,
-        '& .MuiOutlinedInput-root': {
-          borderRadius: 1
-        }
-      }}
-    />
-
-    {accountStatus === 'new-user' && (
+const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordField }) => {
+  const theme = useTheme();
+  return (
+    <form onSubmit={handleSubmitPassword}>
       <TextField
-        label="Confirm Password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
+        label="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         type={showPassword ? 'text' : 'password'}
         variant="outlined"
         fullWidth
         disabled={loading}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={() => setShowPassword(!showPassword)}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+        ref={passwordField}
         sx={{ 
           mb: 2,
           '& .MuiOutlinedInput-root': {
-            borderRadius: 1
+            borderRadius: theme.shape.borderRadius
           }
         }}
       />
-    )}
 
-    <Button
-      variant='contained'
-      type='submit'
-      disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
-      fullWidth
-      sx={{ 
-        mt: 2,
-        borderRadius: 1,
-        textTransform: 'none',
-        py: 1.2
-      }}
-    >
-      {loading ? <CircularProgress size={24} /> : (accountStatus === 'new-user' ? 'Create Account' : 'Login')}
-    </Button>
-  </form>
-);
+      {accountStatus === 'new-user' && (
+        <TextField
+          label="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          type={showPassword ? 'text' : 'password'}
+          variant="outlined"
+          fullWidth
+          disabled={loading}
+          sx={{ 
+            mb: 2,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: theme.shape.borderRadius
+            }
+          }}
+        />
+      )}
+
+      <Button
+        variant='contained'
+        type='submit'
+        disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
+        fullWidth
+        sx={{ 
+          mt: 2,
+          borderRadius: theme.shape.borderRadius,
+          textTransform: 'none',
+          py: 1.2
+        }}
+      >
+        {loading ? <CircularProgress size={24} /> : (accountStatus === 'new-user' ? 'Create Account' : 'Login')}
+      </Button>
+    </form>
+  );
+};
 
 // Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
   const { appVersion, appName, managers } = useContext(WalletContext)
   const classes = useStyles()
+  const theme = useTheme()
 
   // We keep the same Accordion steps: phone, code, password
   const [accordionView, setAccordionView] = useState('phone')
@@ -343,8 +354,8 @@ const Greeter: React.FC<any> = ({ history }) => {
         sx={{ 
           p: 4, 
           borderRadius: 2,
-          background: 'linear-gradient(to bottom right, #ffffff, #f5f5f5)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+          bgcolor: 'background.paper',
+          boxShadow: theme.shadows[3]
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
@@ -353,6 +364,7 @@ const Greeter: React.FC<any> = ({ history }) => {
               rotate
               size="100px"
               color="#2196F3"
+              backgroundColor={theme.palette.background.default}
             />
           </Box>
           <Typography 
@@ -362,11 +374,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             sx={{ 
               mb: 1,
               fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #2196F3, #3f51b5)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              color: 'primary.main'
             }}
           >
             {appName}
@@ -395,8 +403,8 @@ const Greeter: React.FC<any> = ({ history }) => {
         >
           <AccordionSummary 
             sx={{
-              backgroundColor: accordionView === 'phone' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
-              borderLeft: accordionView === 'phone' ? '4px solid #2196F3' : 'none',
+              backgroundColor: accordionView === 'phone' ? 'action.hover' : 'transparent',
+              borderLeft: accordionView === 'phone' ? `4px solid ${theme.palette.primary.main}` : 'none',
               transition: 'all 0.2s ease'
             }}
           >
@@ -431,8 +439,8 @@ const Greeter: React.FC<any> = ({ history }) => {
         >
           <AccordionSummary 
             sx={{
-              backgroundColor: accordionView === 'code' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
-              borderLeft: accordionView === 'code' ? '4px solid #2196F3' : 'none',
+              backgroundColor: accordionView === 'code' ? 'action.hover' : 'transparent',
+              borderLeft: accordionView === 'code' ? `4px solid ${theme.palette.primary.main}` : 'none',
               transition: 'all 0.2s ease'
             }}
           >
@@ -468,8 +476,8 @@ const Greeter: React.FC<any> = ({ history }) => {
         >
           <AccordionSummary 
             sx={{
-              backgroundColor: accordionView === 'password' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
-              borderLeft: accordionView === 'password' ? '4px solid #2196F3' : 'none',
+              backgroundColor: accordionView === 'password' ? 'action.hover' : 'transparent',
+              borderLeft: accordionView === 'password' ? `4px solid ${theme.palette.primary.main}` : 'none',
               transition: 'all 0.2s ease'
             }}
           >
@@ -513,7 +521,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             href='https://pow.co/terms'
             target='_blank'
             rel='noopener noreferrer'
-            style={{ color: '#2196F3', textDecoration: 'none' }}
+            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
             Terms of Service
           </a>{' '}
@@ -522,7 +530,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             href='https://babbage.systems/license/'
             target='_blank'
             rel='noopener noreferrer'
-            style={{ color: '#2196F3', textDecoration: 'none' }}
+            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
             Babbage Software License Agreement
           </a>.
