@@ -140,7 +140,7 @@ const Trust = ({ history }) => {
           </div>
           : 'You have unsaved changes. Do you want to save them before leaving?'}
       </NavigationConfirmModal>
-      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>Manage Your Trust Network</Typography>
+      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>Certifiers</Typography>
       <Typography variant='body1' color='textSecondary'>
         People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
       </Typography>
@@ -159,7 +159,7 @@ const Trust = ({ history }) => {
         message="You have unsaved changes, are you sure you want to leave?"
       />
       <div>
-        <Typography variant='h2' color='textPrimary' padding='0em 0em 0.5em 0em'>Trusted Certifiers</Typography>
+        <Typography variant='h2' color='textPrimary' padding='0em 0em 0.5em 0em'>Certifiers I Trust</Typography>
         <Typography paragraph variant='body1' color='textSecondary'>Give points to show which certifiers you trust the most to confirm someone&apos;s identity. More points mean a higher priority.</Typography>
       </div>
       <div className={classes.master_grid}>

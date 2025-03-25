@@ -10,7 +10,8 @@ import {
   School as SchoolIcon,
   Menu as MenuIcon,
   Badge as IdentityIcon,
-  ExitToApp as LogoutIcon
+  ExitToApp as LogoutIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
 import {
@@ -31,12 +32,12 @@ import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import Apps from './Apps'
-import packageJson from '../../../package.json'
 
 // pages
 import Trust from './Trust/index.js'
 import MyIdentity from './MyIdentity/index.js'
 import Settings from './Settings/index'
+import Security from './Security'
 
 const useStyles = makeStyles(style as any, {
   name: 'Dashboard'
@@ -50,7 +51,7 @@ const Dashboard = () => {
   const classes = useStyles({ breakpoints })
   const theme = useTheme()
   const history = useHistory()
-  const { appName, managers } = useContext(WalletContext)
+  const { appName, appVersion, managers } = useContext(WalletContext)
   const [pageLoading, setPageLoading] = useState(true)
   const [myIdentityKey, setMyIdentityKey] = useState('self')
   const [menuOpen, setMenuOpen] = useState(true)
@@ -243,7 +244,7 @@ const Dashboard = () => {
                     variant="body1" 
                     fontWeight={history.location.pathname === '/dashboard/identity' ? 600 : 400}
                   >
-                    My Identity
+                    Identity
                   </Typography>
                 }
               />
@@ -263,7 +264,27 @@ const Dashboard = () => {
                     variant="body1" 
                     fontWeight={history.location.pathname === '/dashboard/trust' ? 600 : 400}
                   >
-                    Trust Network
+                    Certifiers
+                  </Typography>
+                }
+              />
+            </ListItemButton>
+            
+            <ListItemButton
+              onClick={() => navigation.push('/dashboard/security')}
+              selected={history.location.pathname === '/dashboard/security'}
+              sx={menuItemStyle(history.location.pathname === '/dashboard/security')}
+            >
+              <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/security' ? 'primary.main' : 'inherit' }}>
+                <SecurityIcon />
+              </ListItemIcon>
+              <ListItemText 
+                primary={
+                  <Typography 
+                    variant="body1" 
+                    fontWeight={history.location.pathname === '/dashboard/security' ? 600 : 400}
+                  >
+                    Security
                   </Typography>
                 }
               />
@@ -284,41 +305,6 @@ const Dashboard = () => {
                     fontWeight={history.location.pathname === '/dashboard/settings' ? 600 : 400}
                   >
                     Settings
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          </List>
-          
-          <Divider sx={{ mb: 2 }} />
-          
-          <Typography 
-            variant="overline" 
-            sx={{ 
-              fontWeight: 'bold', 
-              px: 2, 
-              mb: 1, 
-              color: 'text.secondary',
-              letterSpacing: '0.08em'
-            }}
-          >
-            RESOURCES
-          </Typography>
-          
-          <List component="nav" sx={{ mb: 'auto' }}>
-            <ListItemButton
-              onClick={() => {
-                window.open('https://projectbabbage.com/docs', '_blank')
-              }}
-              sx={menuItemStyle(false)}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <SchoolIcon />
-              </ListItemIcon>
-              <ListItemText 
-                primary={
-                  <Typography variant="body1">
-                    Learn Metanet Tech
                   </Typography>
                 }
               />
@@ -350,10 +336,13 @@ const Dashboard = () => {
                 display: 'block',
                 mt: 2,
                 textAlign: 'center',
-                width: '100%'
+                width: '100%',
+                opacity: 0.33,
               }}
             >
-              {appName} v{packageJson.version}
+              {appName} v{appVersion}
+              <br />
+              <i>Made with love for the BSV Blockchain</i>
             </Typography>
           </Box>
         </Box>
@@ -373,6 +362,10 @@ const Dashboard = () => {
           <Route
             path='/dashboard/trust'
             component={Trust}
+          />
+          <Route
+            path='/dashboard/security'
+            component={Security}
           />
           <Route
             path='/dashboard/apps'

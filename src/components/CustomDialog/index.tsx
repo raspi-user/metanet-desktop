@@ -42,7 +42,6 @@ const CustomDialog: React.FC<CustomDialogProps> = ({
       {...props}
     >
       <DialogTitle component="div" className={classes.title}>
-        <Logo />
         <Typography variant="h6">{title}</Typography>
       </DialogTitle>
       

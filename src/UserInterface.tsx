@@ -43,6 +43,8 @@ import { Chain } from '@bsv/wallet-toolbox-client/out/src/sdk'
 import { WABClient, TwilioPhoneInteractor } from '@bsv/wallet-toolbox-client'
 import WalletConfig from './components/WalletConfig'
 
+import packageJson from '../package.json'
+
 /** Defaults */
 const STORAGE_URL = 'https://storage.babbage.systems'
 const CHAIN = 'main'
@@ -88,7 +90,7 @@ export const WalletContext = createContext<WalletContextValue>({
     isFocused: async () => false,
     onFocusRequested: async () => { },
     onFocusRelinquished: async () => { },
-    appVersion: '0.2.0',
+    appVersion: packageJson.version,
     appName: 'Metanet Desktop',
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
@@ -142,7 +144,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     requestFocus,
     relinquishFocus,
     adminOriginator = 'admin.com',
-    appVersion = '0.0.0',
+    appVersion = packageJson.version,
     appName = 'Metanet Desktop'
 }) => {
     const [managers, updateManagers] = useState<ManagerState>({});
