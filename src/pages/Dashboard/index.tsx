@@ -49,7 +49,7 @@ const Dashboard = () => {
   const breakpoints = useBreakpoint()
   const classes = useStyles({ breakpoints })
   const history = useHistory()
-  const { appName, appVersion, managers } = useContext(WalletContext)
+  const { appName, appVersion, managers, logout } = useContext(WalletContext)
   const [pageLoading, setPageLoading] = useState(true)
   const [myIdentityKey, setMyIdentityKey] = useState('self')
   const [menuOpen, setMenuOpen] = useState(true)
@@ -320,7 +320,10 @@ const Dashboard = () => {
 
           <Box sx={{ mt: 'auto', mb: 2 }}>
             <ListItemButton
-              onClick={() => navigation.push('/logout')}
+              onClick={() => {
+                logout();
+                history.push('/');
+              }}
               sx={menuItemStyle(false)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>

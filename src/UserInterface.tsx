@@ -82,6 +82,8 @@ export interface WalletContextValue {
     settings: WalletSettings;
     updateSettings: (newSettings: WalletSettings) => void;
     network: 'mainnet' | 'testnet';
+    // Logout
+    logout: () => void;
 }
 
 export const WalletContext = createContext<WalletContextValue>({
@@ -95,7 +97,8 @@ export const WalletContext = createContext<WalletContextValue>({
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
     updateSettings: () => {},
-    network: 'mainnet'
+    network: 'mainnet',
+    logout: () => {}
 })
 
 // -----
@@ -343,6 +346,20 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     // For new users, show the WalletConfig if no snapshot exists.
     const noManagerYet = !managers.walletManager;
 
+    const logout = () => {
+        // Clear localStorage to prevent auto-login
+        if (localStorage.snap) {
+            localStorage.removeItem('snap');
+        }
+        
+        // Reset manager state
+        setManagers({});
+        
+        // Reset configuration state
+        setConfigComplete(false);
+        setSnapshotLoaded(false);
+    };
+
     const contextValue = useMemo(() => ({
         managers,
         updateManagers: setManagers,
@@ -354,7 +371,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         adminOriginator,
         settings,
         updateSettings,
-        network: selectedNetwork === 'main' ? 'mainnet' : 'testnet' as 'mainnet' | 'testnet'
+        network: selectedNetwork === 'main' ? 'mainnet' : 'testnet' as 'mainnet' | 'testnet',
+        logout
     }), [
         managers, 
         setManagers, 
