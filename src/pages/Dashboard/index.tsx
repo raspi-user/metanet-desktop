@@ -31,6 +31,7 @@ import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import Apps from './Apps'
+import packageJson from '../../../package.json'
 
 // pages
 import Trust from './Trust/index.js'
@@ -49,7 +50,7 @@ const Dashboard = () => {
   const classes = useStyles({ breakpoints })
   const theme = useTheme()
   const history = useHistory()
-  const { appName, appVersion, managers } = useContext(WalletContext)
+  const { appName, managers } = useContext(WalletContext)
   const [pageLoading, setPageLoading] = useState(true)
   const [myIdentityKey, setMyIdentityKey] = useState('self')
   const [menuOpen, setMenuOpen] = useState(true)
@@ -61,7 +62,7 @@ const Dashboard = () => {
   }
   const getMargin = () => {
     if (menuOpen && !(breakpoints as any).sm) {
-      return '260px'
+      return '320px'
     }
     return '0px'
   }
@@ -167,10 +168,10 @@ const Dashboard = () => {
         variant='persistent' 
         onClose={handleDrawerToggle}
         sx={{
-          width: 260,
+          width: 320,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: 260,
+            width: 320,
             boxSizing: 'border-box',
             borderRight: '1px solid',
             borderColor: 'divider',
@@ -322,7 +323,9 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-            
+          </List>
+
+          <Box sx={{ mt: 'auto', mb: 2 }}>
             <ListItemButton
               onClick={() => navigation.push('/welcome')}
               sx={menuItemStyle(false)}
@@ -338,35 +341,21 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-          </List>
-          
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              mt: 2, 
-              p: 2, 
-              backgroundColor: 'rgba(25, 118, 210, 0.05)',
-              borderRadius: 2,
-              textAlign: 'center'
-            }}
-          >
+
             <Typography
               variant='caption'
               color='textSecondary'
               align='center'
-              sx={{ display: 'block', mb: 1 }}
+              sx={{ 
+                display: 'block',
+                mt: 2,
+                textAlign: 'center',
+                width: '100%'
+              }}
             >
-              {appName} v{appVersion}
+              {appName} v{packageJson.version}
             </Typography>
-            <Typography
-              variant='caption'
-              color='textSecondary'
-              align='center'
-              sx={{ fontStyle: 'italic' }}
-            >
-              Made with love by the Babbage Team
-            </Typography>
-          </Paper>
+          </Box>
         </Box>
       </Drawer>
       <div className={classes.page_container}>
