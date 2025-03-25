@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react'
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react'
 import {
     Wallet,
     WalletPermissionsManager,
@@ -94,7 +94,7 @@ export const WalletContext = createContext<WalletContextValue>({
     appName: 'Metanet Desktop',
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
-    updateSettings: () => { },
+    updateSettings: () => {},
     network: 'mainnet'
 })
 
@@ -147,15 +147,15 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     appVersion = packageJson.version,
     appName = 'Metanet Desktop'
 }) => {
-    const [managers, updateManagers] = useState<ManagerState>({});
-    const [settings, setLocalSettings] = useState(DEFAULT_SETTINGS);
+    const [managers, setManagers] = useState<ManagerState>({});
+    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
     const updateSettings = async (newSettings: WalletSettings) => {
         if (!managers.settingsManager) {
             throw new Error('The user must be logged in to update settings!')
         }
         await managers.settingsManager.set(newSettings);
-        setLocalSettings(newSettings);
+        setSettings(newSettings);
     }
 
     // ---- Callbacks for password/recovery/etc.
@@ -262,7 +262,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                 (window as any).permissionsManager = permissionsManager;
 
-                updateManagers({
+                setManagers({
                     walletManager: exampleWalletManager,
                     permissionsManager,
                     settingsManager
@@ -307,7 +307,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
             // Fire the parent callback and update context.
             onWalletReady(exampleWalletManager);
-            updateManagers({ walletManager: exampleWalletManager });
+            setManagers({ walletManager: exampleWalletManager });
         }
     }, [
         passwordRetriever,
@@ -319,7 +319,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         selectedStorageUrl,
         selectedAuthMethod,
         onWalletReady,
-        updateManagers,
+        setManagers,
         protocolPermissionCallback,
         basketAccessCallback,
         spendingAuthorizationCallback,
@@ -332,7 +332,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
             if (managers.settingsManager) {
                 try {
                     const settings = await managers.settingsManager.get();
-                    setLocalSettings(settings);
+                    setSettings(settings);
                 } catch (e) {
                     // Unable to load settings, defaaults are already loaded.
                 }
@@ -343,21 +343,35 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
     // For new users, show the WalletConfig if no snapshot exists.
     const noManagerYet = !managers.walletManager;
 
+    const contextValue = useMemo(() => ({
+        managers,
+        updateManagers: setManagers,
+        isFocused: isFocused ? isFocused : async () => false,
+        onFocusRequested: requestFocus ? requestFocus : async () => { },
+        onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
+        appName,
+        appVersion,
+        adminOriginator,
+        settings,
+        updateSettings,
+        network: selectedNetwork === 'main' ? 'mainnet' : 'testnet' as 'mainnet' | 'testnet'
+    }), [
+        managers, 
+        setManagers, 
+        isFocused, 
+        requestFocus, 
+        relinquishFocus, 
+        appName, 
+        appVersion, 
+        adminOriginator, 
+        settings, 
+        updateSettings, 
+        selectedNetwork
+    ])
+
     return (
         <WalletContext.Provider
-            value={{
-                managers,
-                updateManagers,
-                isFocused: isFocused ? isFocused : async () => false,
-                onFocusRequested: requestFocus ? requestFocus : async () => { },
-                onFocusRelinquished: relinquishFocus ? relinquishFocus : async () => { },
-                appName,
-                appVersion,
-                adminOriginator,
-                settings,
-                updateSettings,
-                network: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
-            }}
+            value={contextValue}
         >
             <Router>
                 {/* This component handles redirecting once the snapshot is loaded and authentication is valid */}

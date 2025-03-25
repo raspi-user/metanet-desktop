@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { ReactNode, useState, useEffect, useContext } from 'react'
-import { Tooltip, Typography } from '@mui/material'
+import { Tooltip, Typography, Button } from '@mui/material'
 import { formatSatoshis, formatSatoshisAsFiat, satoshisOptions } from './amountFormatHelpers'
 import { ExchangeRateContext } from './ExchangeRateContextProvider'
 import { useTheme } from '@emotion/react'
@@ -34,11 +34,9 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
   const [formattedFiatAmount, setFormattedFiatAmount] = useState('...')
   const theme: any = useTheme()
 
-  // settings.currency : 'USD' | 'BSV' | 'SATS' | 'EUR' | 'GDP' | ''
-
-  const context = useContext<WalletContextValue>(WalletContext)
-  const [settings, setSettings] = useState<{ currency?: string }>({})
-  const { currency: settingsCurrency } = settings
+  // Get current settings directly from context
+  const { settings } = useContext<WalletContextValue>(WalletContext)
+  const settingsCurrency = settings?.currency || ''
 
   // Retrieve necessary values and functions from the ExchangeRateContext
   const ctx = useContext<any>(ExchangeRateContext)
@@ -57,15 +55,6 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
 
   const [color, setColor] = useState('textPrimary')
 
-  // Populate settings from the context
-  useEffect(() => {
-    if (context.managers.settingsManager) {
-      (async () => {
-        setSettings(await context.managers.settingsManager!.get() as any)
-      })()
-    }
-  }, [context])
-
   // Update the satoshis and formattedSatoshis whenever the relevant props change
   useEffect(() => {
     if (Number.isInteger(Number(children))) {
@@ -79,10 +68,10 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
       } else if (description === 'Spend from your Metanet Balance') {
         setFormattedSatoshis(`-${satoshisToDisplay}`)
         setColor(theme.palette.secondary.main)
-      } else if (satoshisToDisplay.toString()[0] === '+') {
+      } else if (satoshisToDisplay.startsWith('+')) { 
         setFormattedSatoshis(satoshisToDisplay)
         setColor('green')
-      } else if (satoshisToDisplay.toString()[0] === '-') {
+      } else if (satoshisToDisplay.startsWith('-')) { 
         setFormattedSatoshis(satoshisToDisplay)
         setColor(theme.palette.secondary.main)
       } else {
@@ -93,17 +82,51 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
       setSatoshis(NaN)
       setFormattedSatoshis('...')
     }
-  }, [children, showPlus, abbreviate, satsFormat, settingsCurrency]) // Update if these props change
+  }, [children, showPlus, abbreviate, satsFormat, settingsCurrency, settings]) 
 
   // When satoshis or the exchange rate context changes, update the formatted fiat amount
   useEffect(() => {
     if (!isNaN(satoshis) && satoshisPerUSD) {
       const newFormattedFiat = formatSatoshisAsFiat(satoshis, satoshisPerUSD, fiatFormat, settingsCurrency, eurPerUSD, gbpPerUSD, showFiatAsInteger)
-      setFormattedFiatAmount(newFormattedFiat!)
+      setFormattedFiatAmount(newFormattedFiat || '...') 
     } else {
       setFormattedFiatAmount('...')
     }
-  }, [satoshis, satoshisPerUSD, fiatFormat, settingsCurrency]) // Depend on satoshis and context values
+  }, [satoshis, satoshisPerUSD, fiatFormat, settingsCurrency, settings]) 
+
+  // Create handlers for clicks with proper accessibility
+  const handleFiatClick = () => {
+    cycleFiatFormat();
+  };
+
+  const handleSatsClick = () => {
+    cycleSatsFormat();
+  };
+
+  const handleTogglePreference = () => {
+    toggleIsFiatPreferred();
+  };
+
+  // Accessibility improvements - make interactive elements proper buttons with aria attributes
+  const renderAccessibleAmount = (content, onClick) => (
+    <Button 
+      onClick={onClick}
+      variant="text" 
+      size="small"
+      sx={{ 
+        p: 0, 
+        minWidth: 'auto', 
+        color: 'inherit',
+        textTransform: 'none',
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        lineHeight: 'inherit',
+        letterSpacing: 'inherit'
+      }}
+    >
+      {content}
+    </Button>
+  );
 
   // Updated component return with direct event handling
   if (settingsCurrency) {
@@ -121,13 +144,13 @@ const AmountDisplay: React.FC<Props> = ({ abbreviate, showPlus, description, chi
   } else {
     return isFiatPreferred
       ? (
-        <Tooltip title={<Typography onClick={toggleIsFiatPreferred} color='inherit'>{formattedSatoshis}</Typography>} arrow>
-          <span style={{ color }} onClick={cycleFiatFormat}>{formattedFiatAmount}</span>
+        <Tooltip title={<Typography onClick={handleTogglePreference} color='inherit'>{formattedSatoshis}</Typography>} arrow>
+          {renderAccessibleAmount(formattedFiatAmount, handleFiatClick)}
         </Tooltip>
       )
       : (
-        <Tooltip title={<Typography onClick={toggleIsFiatPreferred} color='inherit'>{formattedFiatAmount}</Typography>} arrow>
-          <span style={{ color }} onClick={cycleSatsFormat}>{formattedSatoshis}</span>
+        <Tooltip title={<Typography onClick={handleTogglePreference} color='inherit'>{formattedFiatAmount}</Typography>} arrow>
+          {renderAccessibleAmount(formattedSatoshis, handleSatsClick)}
         </Tooltip>
       )
   }
