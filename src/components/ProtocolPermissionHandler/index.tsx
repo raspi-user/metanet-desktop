@@ -19,20 +19,12 @@ const ProtocolPermissionHandler: React.FC<{
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const [perms, setPerms] = useState<Array<any>>([{
-    requestID: 'i88787',
-    originator: 'goose',
-    protocolID: 'things',
-    protocolSecurityLevel: 2,
-    counterparty: 'self',
-    description: 'things I do',
-    renewal: false
-  }])
+  const [perms, setPerms] = useState<Array<any>>([{}])
 
   const theme = useTheme()
 
   const handleCancel = () => {
-    managers.permissionsManager!.denyPermission(perms[0].requestID)
+    managers.permissionsManager.denyPermission(perms[0].requestID)
     setPerms(prev => {
       const newPerms = prev.slice(1)
       if (newPerms.length === 0) {
@@ -46,7 +38,7 @@ const ProtocolPermissionHandler: React.FC<{
   }
 
   const handleGrant = () => {
-    managers.permissionsManager!.grantPermission({ requestID: perms[0].requestID })
+    managers.permissionsManager.grantPermission({ requestID: perms[0].requestID })
     setPerms(prev => {
       const newPerms = prev.slice(1)
       if (newPerms.length === 0) {

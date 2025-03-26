@@ -29,13 +29,30 @@ declare module '@mui/material/styles' {
         flexWrap: string;
         gap: string | number;
       };
-      chip: (props: { size: number; backgroundColor: string }) => {
+      chip: (props: { size: number; backgroundColor?: string }) => {
         height: string | number;
         minHeight: string | number;
         backgroundColor: string;
         borderRadius: string;
         padding: string | number;
         margin: string | number;
+      };
+      chipLabel: {
+        display: string;
+        flexDirection: string;
+      };
+      chipLabelTitle: (props: { size: number }) => {
+        fontSize: string | number;
+        fontWeight: string;
+      };
+      chipLabelSubtitle: {
+        fontSize: string;
+        opacity: number;
+      };
+      chipContainer: {
+        position: string;
+        display: string;
+        alignItems: string;
       };
     }
   }
@@ -58,13 +75,30 @@ declare module '@mui/material/styles' {
         flexWrap?: string;
         gap?: string | number;
       };
-      chip?: (props: { size: number; backgroundColor: string }) => {
+      chip?: (props: { size: number; backgroundColor?: string }) => {
         height?: string | number;
         minHeight?: string | number;
         backgroundColor?: string;
         borderRadius?: string;
         padding?: string | number;
         margin?: string | number;
+      };
+      chipLabel?: {
+        display?: string;
+        flexDirection?: string;
+      };
+      chipLabelTitle?: (props: { size: number }) => {
+        fontSize?: string | number;
+        fontWeight?: string;
+      };
+      chipLabelSubtitle?: {
+        fontSize?: string;
+        opacity?: number;
+      };
+      chipContainer?: {
+        position?: string;
+        display?: string;
+        alignItems?: string;
       };
     }
   }
@@ -270,7 +304,24 @@ export function AppThemeProvider({ children }: ThemeProps) {
           borderRadius: '16px',
           padding: '8px',
           margin: '4px'
-        })
+        }),
+        chipLabel: {
+          display: 'flex',
+          flexDirection: 'column',
+        },
+        chipLabelTitle: ({ size }) => ({
+          fontSize: `${Math.max(size * 0.8, 0.8)}rem`,
+          fontWeight: '500',
+        }),
+        chipLabelSubtitle: {
+          fontSize: '0.7rem',
+          opacity: 0.7,
+        },
+        chipContainer: {
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+        }
       },
       spacing: 8,
     });
