@@ -1,19 +1,16 @@
 /* eslint-disable indent */
 /* eslint-disable react/prop-types */
 import { useState, useContext, useEffect } from 'react'
-import { Typography, IconButton } from '@mui/material'
+import { Typography, IconButton, Box, Paper, Button } from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 import { makeStyles } from '@mui/styles'
 import style from './style.js'
-// import AddIdCertIcon from '../../../images/addIdCertIcon'
 import CheckIcon from '@mui/icons-material/Check'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import EyeCon from '@mui/icons-material/Visibility'
 import { WalletContext } from '../../../UserInterface.js'
 import { ProtoWallet, VerifiableCertificate } from '@bsv/sdk'
-// import { decryptCertificateFields } from 'authrite-utils'
-// import AddPopularSigniaCertifiersModal from './AddPopularSigniaCertifiersModal.jsx'
-import EyeCon from '@mui/icons-material/Visibility'
 import CertificateChip from '../../../components/CertificateChip/index.js'
-// import CertificatesGrid from './CertificatesGrid.jsx'
 
 const useStyles = makeStyles(style, {
   name: 'MyIdentity'
@@ -27,7 +24,7 @@ const MyIdentity = () => {
   const [certificates, setCertificates] = useState([])
   const [primaryIdentityKey, setPrimaryIdentityKey] = useState('...')
   const [privilegedIdentityKey, setPrivilegedIdentityKey] = useState('...')
-  const [copied, setCopied] = useState({ id: false })
+  const [copied, setCopied] = useState({ id: false, privileged: false })
   const classes = useStyles()
 
   const handleCopy = (data, type) => {
@@ -104,13 +101,16 @@ const MyIdentity = () => {
 
   const handleRevealPrivilegedKey = async () => {
     try {
+      console.log('handleRevealPrivilegedKey')
       const { publicKey } = await managers.permissionsManager.getPublicKey({
         identityKey: true,
         privileged: true,
         privilegedReason: 'Reveal your privileged identity key alongside your everyday one.'
       })
       setPrivilegedIdentityKey(publicKey)
-    } catch (e) { }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const shownCertificates = certificates.filter(x => {
@@ -123,100 +123,111 @@ const MyIdentity = () => {
   })
 
   return (
-    <div className={classes.content_wrap}>
-      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>{network === 'testnet' ? 'Testnet Identity' : 'Identity'}</Typography>
-      <Typography variant='body1' color='textSecondary'>
-        <b>Everyday Identity Key:</b> {primaryIdentityKey}
-        <IconButton size='small' onClick={() => handleCopy(primaryIdentityKey, 'id')} disabled={copied.id}>
-          {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
-        </IconButton>
+    <div className={classes.root}>
+      <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
+        {network === 'testnet' ? 'Testnet Identity' : 'Identity'}
       </Typography>
-      <Typography variant='body1' color='textSecondary'>
-        <b>Secure Identity Key:</b> {privilegedIdentityKey === '...' ? <IconButton onClick={handleRevealPrivilegedKey}><EyeCon /></IconButton> : privilegedIdentityKey}
-        {privilegedIdentityKey !== '...' && <IconButton size='small' onClick={() => handleCopy(privilegedIdentityKey, 'id')} disabled={copied.id}>
-          {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
-        </IconButton>}
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
+        Manage your identity keys and certificates.
       </Typography>
-      <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Certificates</Typography>
-      <Typography
-        paragraph
-        variant='body1'
-        color='textSecondary'
-        style={{
-          wordWrap: 'break-word',
-          overflowWrap: 'break-word',
-          paddingBottom: '1em'
-        }}>
-        As you go about your life, people and businesses you interact with can give you certificates and credentials for your qualifications. You can also register with popular certifiers so you show up in apps when people interact with you.
-      </Typography>
-      {/* <TextField TODO: Search certificates
-        value={search}
-        onChange={(e => setSearch(e.target.value))}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position='start'>
-              <SearchIcon fontSize='small' />
-            </InputAdornment>
-          )
-        }}
-        label='Search'
-        placeholder='Find certificates...'
-        fullWidth
-        sx={{
-          '& .MuiInputLabel-root': {
-            fontSize: '0.8rem'
-          },
-          '& .MuiOutlinedInput-root': {
-            height: '36px',
-            padding: '0 10px'
-          }
-        }}
-      /> */}
 
-      <div className={classes.master_grid}>
-        {shownCertificates.map((cert, i) => <div key={i}>
-          <CertificateChip
-            certType={cert.type}
-            issuer={cert.certifier}
-            fieldsToDisplay={cert.decryptedFields}
-          />
-        </div>)}
-      </div>
-      {/* <CertificatesGrid certificates={shownCertificates} />
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Identity Keys
+        </Typography>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+            <b>Everyday Identity Key:</b>
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontFamily: 'monospace', 
+                bgcolor: 'action.hover', 
+                py: 1, 
+                px: 2, 
+                borderRadius: 1,
+                flexGrow: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {primaryIdentityKey}
+            </Typography>
+            <IconButton size='small' onClick={() => handleCopy(primaryIdentityKey, 'id')} disabled={copied.id} sx={{ ml: 1 }}>
+              {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
+            </IconButton>
+          </Box>
 
-      {shownCertificates.length === 0 && (
-        <Typography align='center' color='textSecondary' style={{ marginTop: '2em' }}>No Certificates!</Typography>
-      )}
-      <AddPopularSigniaCertifiersModal
-        open={addPopularSigniaCertifiersModalOpen}
-        setOpen={setAddPopularSigniaCertifiersModalOpen}
-        classes={classes}
-        history={history}
-      />
-      <br />
-      <center>
-        <div style={{ paddingBottom: '3em' }}>
-          {certificates.length === 0
-            ? <Typography variant='h3' align='center' color='textPrimary' className={classes.oracle_open_title}>
-              Please register your identity to start using the Metanet Client.
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+            <b>Privileged Identity Key:</b>
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {privilegedIdentityKey === '...' ? (
+              <Button 
+                variant="outlined" 
+                startIcon={<EyeCon />} 
+                onClick={handleRevealPrivilegedKey}
+                size="small"
+                sx={{ mr: 1 }}
+              >
+                Reveal Key
+              </Button>
+            ) : (
+              <>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: 'monospace', 
+                    bgcolor: 'action.hover', 
+                    py: 1, 
+                    px: 2, 
+                    borderRadius: 1,
+                    flexGrow: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {privilegedIdentityKey}
+                </Typography>
+                <IconButton size='small' onClick={() => handleCopy(privilegedIdentityKey, 'privileged')} disabled={copied.privileged} sx={{ ml: 1 }}>
+                  {copied.privileged ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
+                </IconButton>
+              </>
+            )}
+          </Box>
+        </Box>
+      </Paper>
+
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, mt: 4, bgcolor: 'background.paper' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Certificates
+        </Typography>
+        <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+          As you go about your life, people and businesses you interact with can give you certificates and credentials. These verify your qualifications and help you establish trust.
+        </Typography>
+
+        <Grid2 container spacing={2}>
+          {shownCertificates.map((cert, i) => (
+            <Grid2 key={i} flex={{ xs: 12, md: 6 }}>
+              <CertificateChip
+                certType={cert.type}
+                issuer={cert.certifier}
+                fieldsToDisplay={cert.decryptedFields}
+              />
+            </Grid2>
+          ))}
+        </Grid2>
+        
+        {shownCertificates.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary">
+              No certificates found. Register with identity certifiers to receive certificates.
             </Typography>
-            : <Typography variant='h3' align='center' color='textPrimary' className={classes.oracle_open_title}>
-              Register with more Identity Certifiers on the Metanet.
-            </Typography>
-          }
-          <br />
-          <Button
-            className={classes.oracle_button}
-            startIcon={<AddIdCertIcon />}
-            variant='outlined'
-            onClick={() => {
-              setAddPopularSigniaCertifiersModalOpen(true)
-            }}
-          >
-            {certificates.length === 0 ? 'Register your identity' : 'Popular Certifiers'}
-          </Button>
-        </div>
-      </center> */}
+          </Box>
+        )}
+      </Paper>
     </div>
   )
 }

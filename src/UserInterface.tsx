@@ -320,13 +320,12 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                         // Setup permissions with provided callbacks.
                         const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
-                            // TODO: Re-enable permissions once they are fully working.
-                            seekPermissionsForPublicKeyRevelation: false,
-                            seekProtocolPermissionsForSigning: false,
-                            seekProtocolPermissionsForEncrypting: false,
-                            seekProtocolPermissionsForHMAC: false,
-                            seekPermissionsForIdentityKeyRevelation: false,
-                            seekPermissionsForKeyLinkageRevelation: false
+                            seekPermissionsForPublicKeyRevelation: true,
+                            seekProtocolPermissionsForSigning: true,
+                            seekProtocolPermissionsForEncrypting: true,
+                            seekProtocolPermissionsForHMAC: true,
+                            seekPermissionsForIdentityKeyRevelation: true,
+                            seekPermissionsForKeyLinkageRevelation: true
                         });
                         
                         if (protocolPermissionCallback) {
