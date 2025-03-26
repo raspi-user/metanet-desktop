@@ -40,6 +40,8 @@ const RecoveryKeySettings: React.FC<RecoveryKeySettingsProps> = ({ history, onVi
         onViewKey(key)
         setRecoveryKey('')
       }
+    } catch (error) {
+      console.log(error)
     } finally {
       setShowLoading(false)
     }
@@ -61,8 +63,10 @@ const RecoveryKeySettings: React.FC<RecoveryKeySettingsProps> = ({ history, onVi
 
   return (
     <>
-      <Typography variant='h2' color='textPrimary' paragraph>Recovery Key</Typography>
-      <Typography variant='body1' color='textSecondary'>
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Recovery Key
+      </Typography>
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
         You will need your recovery key if you ever forget your password or lose your phone.
       </Typography>
       <br />
@@ -90,8 +94,6 @@ const RecoveryKeySettings: React.FC<RecoveryKeySettingsProps> = ({ history, onVi
             </Button>
           )}
       </div>
-      <br />
-      <br />
     </>
   )
 }

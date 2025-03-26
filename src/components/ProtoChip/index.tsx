@@ -11,6 +11,7 @@ import { DEFAULT_APP_ICON } from '../../constants/popularApps'
 // import confederacyHost from '../../utils/confederacyHost'
 import CounterpartyChip from '../CounterpartyChip/index'
 import DataObject from '@mui/icons-material/DataObject'
+import { toast } from 'react-toastify'
 // import { SettingsContext } from '../../context/SettingsContext'
 
 const useStyles = makeStyles(style as any, {
@@ -51,9 +52,6 @@ const ProtoChip: React.FC<ProtoChipProps> = ({
   iconURL,
   backgroundColor = 'transparent'
 }) => {
-  if (typeof protocolID !== 'string') {
-    throw new Error('ProtoChip requires protocolID to be a string')
-  }
   const classes = useStyles()
   const theme: any = useTheme()
   // const { settings } = useContext(SettingsContext)
@@ -131,6 +129,12 @@ const ProtoChip: React.FC<ProtoChipProps> = ({
   // }, [protocolID, securityLevel, settings])
 
   const chipStyle = theme.templates.chip({ size, backgroundColor })
+
+
+  if (typeof protocolID !== 'string') {
+    console.log('ProtoChip: protocolID must be a string. Received:', protocolID)
+    return null
+  }
 
   return (
     <div className={classes.chipContainer}>

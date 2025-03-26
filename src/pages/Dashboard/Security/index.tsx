@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Theme } from '@mui/material/styles'
 import { 
@@ -8,10 +8,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Button
+  Button,
+  Paper
 } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { WalletContext } from '../../../UserInterface'
 import ChangePassword from '../Settings/Password'
 import RecoveryKey from '../Settings/RecoveryKey'
 
@@ -54,20 +54,20 @@ const Security: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>
+      <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
         Security
       </Typography>
-      <Typography variant='body1' color='textSecondary' paragraph>
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
         Manage your password and recovery key settings.
       </Typography>
 
-      <div className={classes.section}>
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
         <ChangePassword history={history} />
-      </div>
+      </Paper>
 
-      <div className={classes.section}>
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
         <RecoveryKey history={history} onViewKey={handleViewKey} />
-      </div>
+      </Paper>
 
       <Dialog
         open={showKeyDialog}
@@ -80,7 +80,7 @@ const Security: React.FC = () => {
           Your Recovery Key
         </DialogTitle>
         <DialogContent>
-          <DialogContentText color="textSecondary" paragraph>
+          <DialogContentText color="textSecondary" sx={{ mb: 2 }}>
             Please save this key in a secure location. You will need it to recover your account if you forget your password.
           </DialogContentText>
           <Typography className={classes.key}>

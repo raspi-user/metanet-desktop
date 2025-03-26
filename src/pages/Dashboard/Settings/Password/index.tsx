@@ -41,8 +41,8 @@ const PasswordSettings = ({ history }) => {
 
   return (
     <div>
-      <Typography variant='h2' color='textPrimary' paragraph>Change Password</Typography>
-      <Typography variant='body1' color='textSecondary'>
+      <Typography variant='h4' color='textPrimary' sx={{ mb: 2 }}>Change Password</Typography>
+      <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
         You will be prompted to enter your old password to confirm the change.
       </Typography>
       <form onSubmit={handleSubmitPassword}>
@@ -84,8 +84,6 @@ const PasswordSettings = ({ history }) => {
             )}
         </div>
       </form>
-      <br />
-      <br />
     </div>
   )
 }
