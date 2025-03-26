@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
-import { Typography, Grid, Container, TextField, LinearProgress } from '@mui/material'
-import { makeStyles, useTheme } from '@mui/styles'
-import style from './style'
+import { Typography, TextField, LinearProgress, Paper, Box } from '@mui/material'
+import Grid from '@mui/material/Grid2'
+import { useTheme } from '@mui/styles'
 import MetanetApp from '../../../components/MetanetApp'
 import SearchIcon from '@mui/icons-material/Search'
 import parseAppManifest from '../../../utils/parseAppManifest'
@@ -11,12 +11,7 @@ import Fuse from 'fuse.js'
 import getApps from './getApps'
 import { WalletContext } from '../../../UserInterface'
 
-const useStyles = makeStyles(style, {
-  name: 'Actions'
-})
-
 const Apps = () => {
-  const classes = useStyles()
   const theme = useTheme()
   const [apps, setApps] = useState([])
   const loadRecentApps = () => {
@@ -158,87 +153,87 @@ const Apps = () => {
   }, [adminOriginator])
 
   return (
-    <div className={classes.apps_view}>
-      <Container style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+    <Box sx={{ padding: theme.spacing(3), maxWidth: '800px', margin: '0 auto' }}>
+      <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
+        Applications
+      </Typography>
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
+        Browse and manage your application permissions.
+      </Typography>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <TextField
-          variant='outlined'
+          variant="outlined"
           fullWidth
           value={search}
           onChange={handleSearchChange}
-          placeholder='Search'
+          placeholder="Search"
           onFocus={handleSearchFocus}
           onBlur={handleSearchBlur}
           inputRef={inputRef}
           InputProps={{
             startAdornment: (
-              <SearchIcon onClick={handleIconClick} style={{ marginRight: '8px' }} />
+              <SearchIcon 
+                onClick={handleIconClick} 
+                sx={{ mr: 1, cursor: 'pointer' }} 
+              />
             ),
             sx: {
-              borderRadius: '25px',
               height: '3em'
             }
           }}
           sx={{
-            marginTop: theme.spacing(3),
-            marginBottom: theme.spacing(2),
-            width: isExpanded ? 'calc(50%)' : '8em',
+            mt: 1,
+            mb: 3,
+            width: isExpanded ? 'calc(100%)' : '8em',
             transition: 'width 0.3s ease'
           }}
         />
-      </Container>
+      </Box>
 
-      {(search === '' && !loadingRecentApps && recentApps.length > 3) && <>
-        <Typography variant='h3' color='textPrimary' gutterBottom style={{ paddingBottom: '0.2em' }}>
-          Your Recent Apps
-        </Typography>
-        <Grid container spacing={2} className={classes.apps_view}>
-          {recentApps.map((app, index) => (
-            <Grid
-              item
-              xs={6} sm={6} md={3} lg={3}
-              key={index}
-              className={classes.gridItem}
-            >
-              <MetanetApp
-                appName={app.appName}
-                iconImageUrl={app.appIconImageUrl}
-                domain={app.domain}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </>}
-      <Typography variant='h3' color='textPrimary' gutterBottom style={{ paddingBottom: '0.2em' }}>
-        All Your Apps
-      </Typography>
-
-      {loading ? <LinearProgress style={{ marginTop: '1em' }} /> : <></>}
-      {(filteredApps.length === 0 && !loading) &&
-        <center>
-          <br />
-          <Typography variant='h4' align='center' color='textSecondary' paddingTop='2em'>No apps found!</Typography>
-        </center>}
-      <Grid container spacing={2} alignItems='center' justifyContent='left' className={classes.apps_view}>
-        {filteredApps.map((app, index) => (
-          <Grid item key={index} xs={6} sm={6} md={3} lg={3} className={classes.gridItem}>
-            <MetanetApp
-              appName={app.appName}
-              iconImageUrl={app.appIconImageUrl}
-              domain={app.domain}
-            />
+      {(search === '' && !loadingRecentApps && recentApps.length > 3) && (
+        <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Recent Applications
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {recentApps.map((app, index) => (
+              <Grid 
+                key={index}
+                xs={12} sm={6} md={3}
+              >
+                <MetanetApp
+                  appName={app.appName}
+                  iconImageUrl={app.appIconImageUrl}
+                  domain={app.domain}
+                />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-      {/* {(search === '') && <>
-        <Typography variant='h3' color='textPrimary' gutterBottom style={{ paddingBottom: '0.2em' }}>
-          Popular Apps
+        </Paper>
+      )}
+
+      <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.paper' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          All
         </Typography>
-        <Grid container spacing={2} className={classes.apps_view}>
-          {POPULAR_APPS.map((app, index) => (
-            <Grid
-              item
-              xs={6} sm={6} md={3} lg={3}
-              key={index} className={classes.gridItem}
+
+        {loading && <LinearProgress sx={{ mt: 1, mb: 2 }} />}
+        
+        {(filteredApps.length === 0 && !loading) && (
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Typography variant="h5" color="textSecondary">
+              None found
+            </Typography>
+          </Box>
+        )}
+        
+        <Grid container spacing={2}>
+          {filteredApps.map((app, index) => (
+            <Grid 
+              key={index}
+              xs={12} sm={6} md={3}
             >
               <MetanetApp
                 appName={app.appName}
@@ -248,9 +243,9 @@ const Apps = () => {
             </Grid>
           ))}
         </Grid>
-      </>
-      } */}
-    </div>
+      </Paper>
+    </Box>
   )
 }
+
 export default Apps

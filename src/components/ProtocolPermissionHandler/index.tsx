@@ -19,7 +19,7 @@ const ProtocolPermissionHandler: React.FC<{
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const [perms, setPerms] = useState<Array<any>>([{}])
+  const [perms, setPerms] = useState<Array<any>>([])
 
   const theme = useTheme()
 
