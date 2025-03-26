@@ -48,9 +48,8 @@ export default theme => ({
     display: 'grid'
   },
   trust_threshold: {
-    maxWidth: '25em',
-    minWidth: '20em',
-    marginBottom: theme.spacing(5),
+    width: '100%',
+    marginBottom: theme.spacing(1),
     placeSelf: 'center'
   },
   master_grid: {

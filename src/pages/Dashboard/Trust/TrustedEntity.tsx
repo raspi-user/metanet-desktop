@@ -78,7 +78,8 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
           sx={{ 
             display: 'flex',
             alignItems: 'center',
-            px: 2,
+            pl: 2,
+            pr: 3,
             py: 1,
             gap: 2
           }}
@@ -94,10 +95,6 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
           />
         </Box>
       </Box>
-      <Hidden mdUp>
-        <div style={{ minHeight: '0.1em' }} />
-        <div />
-      </Hidden>
       <CustomDialog title='Delete Trust Relationship' open={deleteOpen} onClose={() => setDeleteOpen(false)}>
         <DialogContent>
           <DialogContentText>Do you want to delete this trust relationship?</DialogContentText>
