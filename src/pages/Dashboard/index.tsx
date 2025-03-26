@@ -203,19 +203,6 @@ const Dashboard = () => {
           
           <Divider sx={{ mb: 2 }} />
           
-          <Typography 
-            variant="overline" 
-            sx={{ 
-              fontWeight: 'bold', 
-              px: 2, 
-              mb: 1, 
-              color: 'text.secondary',
-              letterSpacing: '0.08em'
-            }}
-          >
-            MAIN MENU
-          </Typography>
-          
           <List component="nav" sx={{ mb: 2 }}>
             <ListItemButton
               onClick={() => navigation.push('/dashboard/apps')}
