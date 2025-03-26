@@ -66,19 +66,19 @@ const steps = [
   {
     label: 'Password',
     icon: <LockIcon />,
-    description: 'Create a password to secure your wallet',
+    description: 'Enter your password',
   },
 ];
 
 // Phone form component to reduce cognitive complexity
-const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) => {
+const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneFieldRef }) => {
   const theme = useTheme();
   return (
     <form onSubmit={handleSubmitPhone}>
       <PhoneEntry
         value={phone}
         onChange={setPhone}
-        ref={phoneField}
+        ref={phoneFieldRef}
         sx={{
           width: '100%',
           mb: 2, 
@@ -106,7 +106,7 @@ const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneField }) 
 };
 
 // Code verification form component
-const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeField }) => {
+const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeFieldRef }) => {
   const theme = useTheme();
   return (
     <>
@@ -120,6 +120,7 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
           disabled={loading}
           slotProps={{
             input: {
+              ref: codeFieldRef,
               endAdornment: (
                 <InputAdornment position="end">
                   {code.length === 6 && <CheckCircleIcon color='success' />}
@@ -127,7 +128,6 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
               ),
             }
           }}
-          ref={codeField}
           sx={{ 
             mb: 2,
             '& .MuiOutlinedInput-root': {
@@ -166,7 +166,7 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
 };
 
 // Password form component
-const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordField }) => {
+const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordFieldRef }) => {
   const theme = useTheme();
   return (
     <form onSubmit={handleSubmitPassword}>
@@ -180,6 +180,7 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
         disabled={loading}
         slotProps={{
           input: {
+            ref: passwordFieldRef,
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
@@ -193,7 +194,6 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
             ),
           }
         }}
-        ref={passwordField}
         sx={{ 
           mb: 2,
           '& .MuiOutlinedInput-root': {
@@ -283,9 +283,9 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>("https://storage.babbage.systems")
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
 
-  const phoneField = useRef(null)
-  const codeField = useRef(null)
-  const passwordField = useRef(null)
+  const phoneFieldRef = useRef(null)
+  const codeFieldRef = useRef(null)
+  const passwordFieldRef = useRef(null)
 
   // Access the manager:
   const walletManager = managers.walletManager
@@ -360,8 +360,8 @@ const Greeter: React.FC<any> = ({ history }) => {
       setAccordionView('code')
       toast.success('A code has been sent to your phone.')
       // Move focus to code field
-      if (codeField.current) {
-        codeField.current.children[1].children[0].focus()
+      if (codeFieldRef.current) {
+        codeFieldRef.current.focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -389,8 +389,8 @@ const Greeter: React.FC<any> = ({ history }) => {
       }
 
       setAccordionView('password')
-      if (passwordField.current) {
-        passwordField.current.children[1].children[0].focus()
+      if (passwordFieldRef.current) {
+        passwordFieldRef.current.focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -661,7 +661,7 @@ const Greeter: React.FC<any> = ({ history }) => {
                     setPhone={setPhone}
                     loading={loading}
                     handleSubmitPhone={handleSubmitPhone}
-                    phoneField={phoneField}
+                    phoneFieldRef={phoneFieldRef}
                   />
                 )}
                 
@@ -672,7 +672,7 @@ const Greeter: React.FC<any> = ({ history }) => {
                     loading={loading}
                     handleSubmitCode={handleSubmitCode}
                     handleResendCode={handleResendCode}
-                    codeField={codeField}
+                    codeFieldRef={codeFieldRef}
                   />
                 )}
                 
@@ -687,7 +687,7 @@ const Greeter: React.FC<any> = ({ history }) => {
                     loading={loading}
                     handleSubmitPassword={handleSubmitPassword}
                     accountStatus={accountStatus}
-                    passwordField={passwordField}
+                    passwordFieldRef={passwordFieldRef}
                   />
                 )}
               </StepContent>

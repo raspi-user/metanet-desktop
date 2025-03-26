@@ -29,7 +29,7 @@ import BasketAccessHandler from './components/BasketAccessHandler'
 import { AppThemeProvider } from "./components/Theme";
 import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
 import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
-import { HashRouter as Router, Route, Switch } from 'react-router-dom'
+import { HashRouter as Router, Route, Switch, useHistory } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { BreakpointProvider } from './utils/useBreakpoints'
@@ -107,6 +107,7 @@ export const WalletContext = createContext<WalletContextValue>({
 // AuthRedirector: Handles auto-login redirect when snapshot has loaded
 // -----
 const AuthRedirector: React.FC<{ snapshotLoaded: boolean }> = ({ snapshotLoaded }) => {
+    const history = useHistory();
     const { managers } = useContext(WalletContext);
 
     useEffect(() => {
@@ -115,9 +116,9 @@ const AuthRedirector: React.FC<{ snapshotLoaded: boolean }> = ({ snapshotLoaded 
             snapshotLoaded &&
             (managers.walletManager as any).authenticated
         ) {
-            // TODO: Implement redirect logic
+            history.push('/dashboard/apps');
         }
-    }, [managers.walletManager, snapshotLoaded]);
+    }, [managers.walletManager, snapshotLoaded, history]);
 
     return null;
 };
@@ -341,6 +342,10 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                         // Store in window for debugging
                         (window as any).permissionsManager = permissionsManager;
+
+                        setManagers(managers => ({ ...managers,
+                            permissionsManager
+                        }))
 
                         return permissionsManager;
                     } catch (error: any) {

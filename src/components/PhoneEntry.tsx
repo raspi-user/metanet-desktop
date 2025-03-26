@@ -116,7 +116,7 @@ const PhoneEntry = forwardRef<HTMLDivElement, PhoneEntryProps>((props, ref) => {
   };
 
   return (
-    <Box ref={ref} sx={{ width: '100%', ...sx }} {...other}>
+    <Box sx={{ width: '100%', ...sx }} {...other}>
       <Stack direction="row" spacing={2}>
         <Box width="30%">
           <FormControl fullWidth variant="outlined" error={!!error} required={required} disabled={disabled}>
@@ -170,6 +170,7 @@ const PhoneEntry = forwardRef<HTMLDivElement, PhoneEntryProps>((props, ref) => {
             helperText={errorMessage || error}
             required={required}
             disabled={disabled}
+            inputRef={ref}
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 1
