@@ -143,9 +143,9 @@ const Trust = ({ history }) => {
       <Typography variant='body1' color='textSecondary'>
         People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
       </Typography>
-      <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Trust Level</Typography>
+      <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Trust Threshold</Typography>
       <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
-        You’ve given out a total of <b>{totalTrustPoints} {totalTrustPoints === 1 ? 'point' : 'points'}</b>. Raise the Trust Level to only see people verified by your most trusted certifiers.
+        You've given out a total of <b>{totalTrustPoints} {totalTrustPoints === 1 ? 'point' : 'points'}</b>. Set the minimum points any counterparty must have across your trust network to be shown in any apps you use.
       </Typography>
       <Box className={classes.trust_threshold}>
         <Box className={classes.slider_label_grid}>
@@ -212,7 +212,7 @@ const Trust = ({ history }) => {
             Add Search Provider
           </Button>
         </Box>
-        <Box flex={1} sx={{ my: 3, mx: 3 }}>
+        <Box flex={1} sx={{ my: 3 }}>
           {shownTrustedEntities.map((entity, i) => (
             <Box key={`${entity.name}.${entity.description}.${entity.identityKey}`} sx={{ mb: 2 }}>
               <TrustedEntity

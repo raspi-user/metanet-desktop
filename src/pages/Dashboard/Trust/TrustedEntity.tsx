@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
-import { Typography, Button, Slider, DialogContent, DialogContentText, DialogActions, Hidden, IconButton } from '@mui/material'
+import { Typography, Box, Slider, DialogContent, DialogContentText, DialogActions, Hidden, IconButton, Button } from '@mui/material'
 import Delete from '@mui/icons-material/Close'
 import CustomDialog from '../../../components/CustomDialog'
 import { Certifier } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
@@ -29,28 +29,71 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
 
   return (
     <>
-      <div
-        className={classes.clickable_entity_icon_name_grid}
-        onClick={() => history.push(`/dashboard/counterparty/${entity.identityKey}`)} 
-        role='button'
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            history.push(`/dashboard/counterparty/${entity.identityKey}`)
-          }
+      <Box
+        sx={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'divider',
+          mb: 2,
+          overflow: 'hidden',
+          position: 'relative'
         }}
       >
-        <img src={entity.iconUrl} className={classes.entity_icon} />
-        <div>
-          <Typography><b>{entity.name}</b></Typography>
-          <Typography variant='caption' color='textSecondary'>{entity.description}</Typography>
-        </div>
-      </div>
-      <div className={classes.slider_label_delete_grid}>
-        <Typography><b>{trust}</b> / 10</Typography>
-        <Slider onChange={handleTrustChange} min={0} max={10} step={1} value={trust} />
-        <IconButton onClick={() => setDeleteOpen(true)}><Delete fontSize='small' color='secondary' /></IconButton>
-      </div>
+        {/* Delete Button - Positioned absolutely in the top right */}
+        <IconButton 
+          onClick={() => setDeleteOpen(true)}
+          size="small"
+          sx={{ 
+            position: 'absolute', 
+            top: 4, 
+            right: 4,
+            zIndex: 1
+          }}
+        >
+          <Delete fontSize='small' color='secondary' />
+        </IconButton>
+        
+        {/* Entity Information */}
+        <Box
+          sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            p: 1.5,
+            pb: 0.5,
+            pr: 5 // Add padding to the right to make space for the delete button
+          }}
+        >
+          <img src={entity.iconUrl} className={classes.entity_icon} alt={`${entity.name} icon`} />
+          <Box>
+            <Typography><b>{entity.name}</b></Typography>
+            <Typography variant='caption' color='textSecondary'>{entity.description}</Typography>
+          </Box>
+        </Box>
+        
+        {/* Trust Slider Controls */}
+        <Box 
+          sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            px: 2,
+            py: 1,
+            gap: 2
+          }}
+        >
+          <Typography sx={{ minWidth: '45px' }}><b>{trust}</b> / 10</Typography>
+          <Slider 
+            onChange={handleTrustChange} 
+            min={0} 
+            max={10} 
+            step={1} 
+            value={trust}
+            sx={{ flex: 1 }}
+          />
+        </Box>
+      </Box>
       <Hidden mdUp>
         <div style={{ minHeight: '0.1em' }} />
         <div />
@@ -59,7 +102,7 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
         <DialogContent>
           <DialogContentText>Do you want to delete this trust relationship?</DialogContentText>
           <div className={classes.entity_icon_name_grid}>
-            <img src={entity.iconUrl} className={classes.entity_icon} />
+            <img src={entity.iconUrl} className={classes.entity_icon} alt={`${entity.name} icon`} />
             <div>
               <Typography><b>{entity.name}</b></Typography>
               <Typography variant='caption' color='textSecondary'>{entity.description}</Typography>
