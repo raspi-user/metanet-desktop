@@ -306,8 +306,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                         const chain = selectedNetwork;
                         const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey));
                         const storageManager = new WalletStorageManager(keyDeriver.identityKey);
-                        const signer = new WalletSigner(chain as 'main' | 'test', keyDeriver, storageManager);
-                        const services = new Services(chain as 'main' | 'test');
+                        const signer = new WalletSigner(chain, keyDeriver, storageManager);
+                        const services = new Services(chain);
                         const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
                         
                         // Use user-selected storage provider
@@ -338,6 +338,9 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                         if (certificateAccessCallback) {
                             permissionsManager.bindCallback('onCertificateAccessRequested', certificateAccessCallback);
                         }
+
+                        // Store in window for debugging
+                        (window as any).permissionsManager = permissionsManager;
 
                         return permissionsManager;
                     } catch (error: any) {
@@ -377,8 +380,8 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                     recoveryKeySaver,
                     passwordRetriever,
                     // Type assertions needed due to interface mismatch between our WABClient and the expected SDK client
-                    wabClient as any, // TODO: Fix interface mismatch
-                    phoneInteractor as any // TODO: Fix interface mismatch
+                    wabClient,
+                    phoneInteractor
                 );
                 
                 // Store in window for debugging

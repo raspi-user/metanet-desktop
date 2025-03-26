@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import { Typography, Grid, Container, TextField, LinearProgress } from '@mui/material'
 import { makeStyles, useTheme } from '@mui/styles'
 import style from './style'
@@ -9,7 +9,6 @@ import isImageUrl from '../../../utils/isImageUrl'
 import Fuse from 'fuse.js'
 // import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
-import { useContext } from 'react'
 import { WalletContext } from '../../../UserInterface'
 
 const useStyles = makeStyles(style, {
