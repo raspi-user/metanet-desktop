@@ -9,7 +9,9 @@ import {
     OverlayUMPTokenInteractor,
     WalletSigner,
     Services,
-    StorageClient
+    StorageClient,
+    TwilioPhoneInteractor,
+    WABClient
 } from '@bsv/wallet-toolbox-client'
 import {
     KeyDeriver,
@@ -18,8 +20,6 @@ import {
     Utils,
     LookupResolver
 } from '@bsv/sdk'
-import { WABClient } from './services/WABClient'
-import { TwilioPhoneInteractor } from './services/PhoneInteractor'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import PasswordHandler from './components/PasswordHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
@@ -33,15 +33,6 @@ import { HashRouter as Router, Route, Switch } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { BreakpointProvider } from './utils/useBreakpoints'
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    Button,
-    CircularProgress
-} from '@mui/material'
-import SettingsIcon from '@mui/icons-material/Settings'
 
 import Greeter from './pages/Greeter'
 import LostPhone from './pages/Recovery/LostPhone'
@@ -51,7 +42,6 @@ import Dashboard from './pages/Dashboard'
 import Recovery from './pages/Recovery'
 import { STORAGE_URL, CHAIN } from './config'
 import packageJson from '../package.json'
-import WalletConfig from './components/WalletConfig'
 
 // Define a type for the config from WalletConfig component
 type WalletConfigType = {
