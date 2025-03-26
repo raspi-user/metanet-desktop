@@ -116,7 +116,7 @@ const Trust = ({ history }) => {
   return (
     <div className={classes.root}>
       <Typography variant='h1' color='textPrimary' sx={{ mb: 2 }}>
-        Trust Network
+        Trust
       </Typography>
       <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
         Give points to show which certifiers you trust the most to confirm the identity of counterparties. More points mean a higher priority.
@@ -142,8 +142,8 @@ const Trust = ({ history }) => {
       </Paper>
 
       <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper', mt: 3 }}>
-        <Typography variant='h4' sx={{ mb: 2 }}>Trust Network</Typography>
-        <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
+        <Typography variant='h4' sx={{ mb: 2 }}>Certifier Network</Typography>
+        <Typography variant='body1' color='textSecondary' sx={{ mb: 3 }}>
           People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
         </Typography>
         

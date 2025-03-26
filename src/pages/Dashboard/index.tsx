@@ -258,7 +258,7 @@ const Dashboard = () => {
                     variant="body1" 
                     fontWeight={history.location.pathname === '/dashboard/trust' ? 600 : 400}
                   >
-                    Certifiers
+                    Trust
                   </Typography>
                 }
               />
