@@ -164,7 +164,6 @@ const PhoneEntry = forwardRef<HTMLDivElement, PhoneEntryProps>((props, ref) => {
             fullWidth
             label="Phone Number"
             variant="outlined"
-            value={phoneNumber}
             onChange={handlePhoneChange}
             error={!isValid || !!error}
             helperText={errorMessage || error}

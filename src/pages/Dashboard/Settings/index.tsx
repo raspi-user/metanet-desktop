@@ -86,19 +86,21 @@ const Settings = () => {
     }
   }, [settings]);
 
-  const handleThemeChange = async (themeOption) => {
+  const handleThemeChange = async (themeOption: string) => {
+    console.log({ themeOption })
     if (selectedTheme === themeOption) return;
     
     try {
       setSettingsLoading(true);
-      setSelectedTheme(themeOption);
-      
+
       updateSettings({
         ...settings,
         theme: { 
           mode: themeOption 
         }
       });
+
+      setSelectedTheme(themeOption);
       
       toast.success('Theme updated!', {
         position: 'top-center'

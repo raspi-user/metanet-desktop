@@ -304,12 +304,14 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                     privilegedKeyManager: PrivilegedKeyManager
                 ): Promise<any> => {
                     try {
+                        const newManagers = {} as any;
                         const chain = selectedNetwork;
                         const keyDeriver = new KeyDeriver(new PrivateKey(primaryKey));
                         const storageManager = new WalletStorageManager(keyDeriver.identityKey);
                         const signer = new WalletSigner(chain, keyDeriver, storageManager);
                         const services = new Services(chain);
                         const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
+                        newManagers.settingsManager = wallet.settingsManager;
                         
                         // Use user-selected storage provider
                         const client = new StorageClient(wallet, selectedStorageUrl);
@@ -342,10 +344,9 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                         // Store in window for debugging
                         (window as any).permissionsManager = permissionsManager;
+                        newManagers.permissionsManager = permissionsManager;
 
-                        setManagers(managers => ({ ...managers,
-                            permissionsManager
-                        }))
+                        setManagers(m => ({ ...m, ...newManagers }));
 
                         return permissionsManager;
                     } catch (error: any) {
@@ -390,10 +391,10 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 );
                 
                 // Store in window for debugging
-                (window as any).authManager = exampleWalletManager;
+                (window as any).walletManager = exampleWalletManager;
 
                 // Set initial managers state to prevent null references
-                setManagers(prevManagers => ({ ...prevManagers, walletManager: exampleWalletManager }));
+                setManagers(m => ({ ...m, walletManager: exampleWalletManager }));
 
                 // Fire the parent callback to let parent components know
                 // that the wallet is ready

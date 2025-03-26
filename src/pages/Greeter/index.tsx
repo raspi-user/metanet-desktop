@@ -113,7 +113,6 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
       <form onSubmit={handleSubmitCode}>
         <TextField
           label="6-digit code"
-          value={code}
           onChange={(e) => setCode(e.target.value)}
           variant="outlined"
           fullWidth
@@ -172,7 +171,6 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
     <form onSubmit={handleSubmitPassword}>
       <TextField
         label="Password"
-        value={password}
         onChange={(e) => setPassword(e.target.value)}
         type={showPassword ? 'text' : 'password'}
         variant="outlined"
