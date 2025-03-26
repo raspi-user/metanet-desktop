@@ -1,4 +1,12 @@
 export default theme => ({
+  root: {
+    padding: theme.spacing(3),
+    maxWidth: '800px',
+    margin: '0 auto'
+  },
+  section: {
+    marginBottom: theme.spacing(4)
+  },
   oracle_link_container: {
     display: 'flex',
     padding: '6px 0px',

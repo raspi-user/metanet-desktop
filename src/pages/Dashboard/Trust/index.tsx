@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useContext, useEffect } from 'react'
 import { Prompt } from 'react-router-dom'
-import { Typography, Button, Slider, TextField, LinearProgress, Snackbar, Box } from '@mui/material'
+import { Typography, Button, Slider, TextField, LinearProgress, Snackbar, Box, Paper } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import style from './style.js'
 import AddIcon from '@mui/icons-material/Add'
@@ -114,7 +114,79 @@ const Trust = ({ history }) => {
   }
 
   return (
-    <Box className={classes.content_wrap}>
+    <div className={classes.root}>
+      <Typography variant='h1' color='textPrimary' sx={{ mb: 2 }}>
+        Trust Network
+      </Typography>
+      <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
+        Give points to show which certifiers you trust the most to confirm the identity of counterparties. More points mean a higher priority.
+      </Typography>
+
+      {settingsLoading && (
+        <Box sx={{ width: '100%', mb: 2 }}>
+          <LinearProgress />
+        </Box>
+      )}
+
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
+        <Typography variant='h4' sx={{ mb: 2 }}>Trust Threshold</Typography>
+        <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
+          You've given out a total of <b>{totalTrustPoints} {totalTrustPoints === 1 ? 'point' : 'points'}</b>. Set the minimum points any counterparty must have across your trust network to be shown in any apps you use.
+        </Typography>
+        <Box className={classes.trust_threshold}>
+          <Box className={classes.slider_label_grid}>
+            <Typography><b>{trustLevel}</b> / {totalTrustPoints}</Typography>
+            <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustLevel(v as number)} value={trustLevel} />
+          </Box>
+        </Box>
+      </Paper>
+
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper', mt: 3 }}>
+        <Typography variant='h4' sx={{ mb: 2 }}>Trust Network</Typography>
+        <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
+          People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
+        </Typography>
+        
+        {/* UI Controls - Search and Add Buttons */}
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+          <TextField
+            value={search}
+            onChange={(e => setSearch(e.target.value))}
+            label='Search'
+            placeholder='Filter providers...'
+            fullWidth
+            sx={{ flex: 1 }}
+            slotProps={{
+              input: {
+                startAdornment: <SearchIcon color='action' sx={{ mr: 1 }} />
+              }
+            }}
+          />
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={() => setAddEntityModalOpen(true)}
+            startIcon={<AddIcon />}
+            sx={{ minWidth: '200px' }}
+          >
+            Add Search Provider
+          </Button>
+        </Box>
+        <Box flex={1}>
+          {shownTrustedEntities.map((entity, i) => (
+            <Box key={`${entity.name}.${entity.description}.${entity.identityKey}`}>
+              <TrustedEntity
+                entity={entity}
+                trustedEntities={trustedEntities}
+                setTrustedEntities={setTrustedEntities}
+                classes={classes}
+                history={history}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Paper>
+
       <NavigationConfirmModal
         open={saveModalOpen}
         onConfirm={async () => {
@@ -139,96 +211,12 @@ const Trust = ({ history }) => {
           </div>
           : 'You have unsaved changes. Do you want to save them before leaving?'}
       </NavigationConfirmModal>
-      <Typography variant='h1' color='textPrimary' paddingBottom='0.5em'>Certifiers</Typography>
-      <Typography variant='body1' color='textSecondary'>
-        People, businesses, and websites will need endorsement by these certifiers to show up in your apps. Otherwise, you'll see them as "Unknown Identity".
-      </Typography>
-      <Typography variant='h2' color='textPrimary' padding='0.5em 0em 0.5em 0em'>Trust Threshold</Typography>
-      <Typography variant='body1' color='textSecondary' sx={{ mb: 2 }}>
-        You've given out a total of <b>{totalTrustPoints} {totalTrustPoints === 1 ? 'point' : 'points'}</b>. Set the minimum points any counterparty must have across your trust network to be shown in any apps you use.
-      </Typography>
-      <Box className={classes.trust_threshold}>
-        <Box className={classes.slider_label_grid}>
-          <Typography><b>{trustLevel}</b> / {totalTrustPoints}</Typography>
-          <Slider min={1} max={totalTrustPoints} step={1} onChange={(e, v) => setTrustLevel(v as number)} value={trustLevel} />
-        </Box>
-      </Box>
+
       <Prompt
         when={settingsNeedsUpdate}
         message="You have unsaved changes, are you sure you want to leave?"
       />
-      <Box>
-        <Typography variant='h2' color='textPrimary' padding='0em 0em 0.5em 0em'>Trust Network</Typography>
-        <Typography variant='body1' color='textSecondary'>Give points to show which certifiers you trust the most to confirm the identity of counterparties. More points mean a higher priority.</Typography>
-      </Box>
-      <Box sx={{ my: 3, display: 'flex', flexDirection: 'column' }}>
-        {/* UI Controls - Search and Add Buttons */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
-          <TextField
-            value={search}
-            onChange={(e => setSearch(e.target.value))}
-            sx={{
-              flexGrow: 1,
-              '& .MuiInputLabel-root': {
-                fontSize: '0.8rem'
-              },
-              '& .MuiOutlinedInput-root': {
-                height: '36px',
-                padding: '0 10px'
-              }
-            }}
-            label='Search'
-            placeholder='Filter providers...'
-            fullWidth
-            slotProps={{
-              input: {
-                startAdornment: <SearchIcon fontSize='small' sx={{ mr: 1 }} />
-              }
-            }}
-          />
 
-          {/* Add Provider Button - responsive visibility */}
-          <Button
-            variant='outlined'
-            startIcon={<AddIcon />}
-            onClick={() => setAddEntityModalOpen(true)}
-            sx={{ 
-              display: { xs: 'none', md: 'flex' },
-              minWidth: 'fit-content'
-            }}
-          >
-            Add Search Provider
-          </Button>
-          
-          <Button
-            variant='outlined'
-            startIcon={<AddIcon />}
-            onClick={() => setAddEntityModalOpen(true)}
-            sx={{ 
-              display: { xs: 'flex', md: 'none' },
-              width: '100%'
-            }}
-          >
-            Add Search Provider
-          </Button>
-        </Box>
-        <Box flex={1} sx={{ my: 3 }}>
-          {shownTrustedEntities.map((entity, i) => (
-            <Box key={`${entity.name}.${entity.description}.${entity.identityKey}`} sx={{ mb: 2 }}>
-              <TrustedEntity
-                entity={entity}
-                trustedEntities={trustedEntities}
-                setTrustedEntities={setTrustedEntities}
-                classes={classes}
-                history={history}
-              />
-            </Box>
-          ))}
-        </Box>
-      </Box>
-      {shownTrustedEntities.length === 0 && (
-        <Typography align='center' color='textSecondary' style={{ marginTop: '2em' }}>No Search Providers</Typography>
-      )}
       <AddEntityModal
         open={addEntityModalOpen}
         setOpen={setAddEntityModalOpen}
@@ -236,6 +224,7 @@ const Trust = ({ history }) => {
         setTrustedEntities={setTrustedEntities}
         classes={classes}
       />
+
       <Snackbar
         anchorOrigin={{
           vertical: 'bottom',
@@ -253,7 +242,7 @@ const Trust = ({ history }) => {
             </Button>
         }
       />
-    </Box>
+    </div>
   )
 }
 
