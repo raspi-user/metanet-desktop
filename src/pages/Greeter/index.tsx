@@ -1,9 +1,7 @@
 import { useContext, useState, useEffect, useRef } from 'react'
+import { open } from '@tauri-apps/plugin-shell'
 import style from './style'
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Typography,
   Button,
   TextField,
@@ -15,8 +13,6 @@ import {
   Box,
   Container,
   useTheme,
-  Card,
-  CardContent,
   Collapse,
   Stepper,
   Step,
@@ -258,7 +254,7 @@ const Greeter: React.FC<any> = ({ history }) => {
   const theme = useTheme()
 
   // We keep the same Accordion steps: phone, code, password
-  const [accordionView, setAccordionView] = useState('phone')
+  const [step, setStep] = useState('phone')
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
@@ -355,7 +351,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     try {
       setLoading(true)
       await walletManager.startAuth({ phoneNumber: phone })
-      setAccordionView('code')
+      setStep('code')
       toast.success('A code has been sent to your phone.')
       // Move focus to code field
       if (codeFieldRef.current) {
@@ -386,7 +382,7 @@ const Greeter: React.FC<any> = ({ history }) => {
         setAccountStatus('existing-user')
       }
 
-      setAccordionView('password')
+      setStep('password')
       if (passwordFieldRef.current) {
         passwordFieldRef.current.focus()
       }
@@ -637,7 +633,7 @@ const Greeter: React.FC<any> = ({ history }) => {
         </Box>
 
         {/* Authentication Stepper - replaces Accordions for clearer progression */}
-        <Stepper activeStep={viewToStepIndex[accordionView]} orientation="vertical">
+        <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
           {steps.map((step, index) => (
             <Step key={step.label}>
               <StepLabel 
@@ -723,6 +719,10 @@ const Greeter: React.FC<any> = ({ history }) => {
             href='https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt'
             target='_blank'
             rel='noopener noreferrer'
+            onClick={async e => {
+              e.preventDefault()
+              await open('https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt')
+            }}
             style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
             Software License
