@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material'
+import AppLogo from './AppLogo'
 
 export default () => <div style={{
   height: '100vh',
@@ -6,5 +6,5 @@ export default () => <div style={{
   display: 'grid',
   placeItems: 'center'
 }}>
-  <CircularProgress />
+  <AppLogo rotate size={100} />
 </div>

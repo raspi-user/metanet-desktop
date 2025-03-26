@@ -82,7 +82,7 @@ export interface WalletContextValue {
     adminOriginator: string;
     // Settings
     settings: WalletSettings;
-    updateSettings: (newSettings: WalletSettings) => void;
+    updateSettings: (newSettings: WalletSettings) => Promise<void>;
     network: 'mainnet' | 'testnet';
     // Logout
     logout: () => void;
@@ -98,7 +98,7 @@ export const WalletContext = createContext<WalletContextValue>({
     appName: 'Metanet Desktop',
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
-    updateSettings: () => {},
+    updateSettings: async () => {},
     network: 'mainnet',
     logout: () => {}
 })

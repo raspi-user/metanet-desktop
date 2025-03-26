@@ -31,8 +31,14 @@ const TrustedEntity = ({ entity, setTrustedEntities, classes, history }: { histo
     <>
       <div
         className={classes.clickable_entity_icon_name_grid}
+        onClick={() => history.push(`/dashboard/counterparty/${entity.identityKey}`)} 
         role='button'
-        onClick={() => history.push(`/dashboard/counterparty/${entity.identityKey}`)}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            history.push(`/dashboard/counterparty/${entity.identityKey}`)
+          }
+        }}
       >
         <img src={entity.iconUrl} className={classes.entity_icon} />
         <div>
