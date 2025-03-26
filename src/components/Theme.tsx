@@ -195,6 +195,17 @@ export function AppThemeProvider({ children }: ThemeProps) {
                   backgroundColor: mode === 'light' ? 'rgba(27, 54, 93, 0.04)' : 'rgba(255, 255, 255, 0.08)',
                   borderColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
                 }
+              },
+              '&.Mui-disabled': {
+                backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                color: mode === 'light' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)',
+                boxShadow: 'none',
+                '&.MuiButton-contained': {
+                  backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                },
+                '&.MuiButton-outlined': {
+                  borderColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                }
               }
             }
           }
