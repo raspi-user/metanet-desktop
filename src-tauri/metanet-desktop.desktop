@@ -6,4 +6,4 @@ Exec=metanet-desktop
 Icon=metanet-desktop
 Terminal=false
 Type=Application
-Categories=Utility;Network;Blockchain;
+Categories=Utility;Network;Development;
