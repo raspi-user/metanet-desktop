@@ -103,8 +103,10 @@ jobs:
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/applications
           mkdir -p AppDir/usr/share/icons/hicolor/128x128/apps
+          mkdir -p AppDir/usr/share/metainfo
           cp src-tauri/target/release/metanet-desktop AppDir/usr/bin/
           cp src-tauri/metanet-desktop.desktop AppDir/usr/share/applications/
+          cp src-tauri/metanet-desktop.appdata.xml AppDir/usr/share/metainfo/
           cp src-tauri/icons/128x128.png AppDir/usr/share/icons/hicolor/128x128/apps/metanet-desktop.png
           # Set executable permissions
           chmod +x AppDir/usr/bin/metanet-desktop
@@ -121,7 +123,7 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         run: |
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --icon-file=AppDir/usr/share/icons/hicolor/128x128/apps/metanet-desktop.png --desktop-file=AppDir/usr/share/applications/metanet-desktop.desktop
-          mv metanet-desktop*.AppImage metanet-desktop-x86_64.AppImage
+          mv Metanet-Desktop-x86_64.AppImage metanet-desktop-x86_64.AppImage
 
       - name: Import GPG Key for Linux Signing
         if: matrix.platform == 'ubuntu-22.04'
