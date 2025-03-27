@@ -101,7 +101,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           mkdir -p AppDir/usr/bin
-          cp target/release/metanet-desktop AppDir/usr/bin/
+          cp src-tauri/target/release/metanet-desktop AppDir/usr/bin/
           # Optionally copy additional resources into AppDir
 
       - name: Download linuxdeploy AppImage
