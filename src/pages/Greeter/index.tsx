@@ -4,36 +4,258 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  AccordionActions,
   Typography,
   Button,
   TextField,
   CircularProgress,
   Divider,
   InputAdornment,
-  IconButton
+  IconButton,
+  Paper,
+  Box,
+  Container,
+  useTheme,
+  Card,
+  CardContent,
+  Collapse,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
   CheckCircle as CheckCircleIcon,
   PermPhoneMsg as SMSIcon,
-  Lock as LockIcon
+  Lock as LockIcon,
+  Settings as SettingsIcon,
+  Restore as RestoreIcon,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
-import { makeStyles } from '@mui/styles'
-import { Link } from 'react-router-dom'
-import CWILogo from '../../components/Logo.js'
+import AppLogo from '../../components/AppLogo'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../UserInterface'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
+import { makeStyles } from '@mui/styles'
+import { Link as RouterLink } from 'react-router-dom'
 
 const useStyles = makeStyles(style as any, { name: 'Greeter' })
 
+// Helper functions for the Stepper
+const viewToStepIndex = {
+  'phone': 0,
+  'code': 1,
+  'password': 2
+};
+
+// Steps for the stepper
+const steps = [
+  {
+    label: 'Phone Number',
+    icon: <PhoneIcon />,
+    description: 'Enter your phone number for verification',
+  },
+  {
+    label: 'Verification Code',
+    icon: <SMSIcon />,
+    description: 'Enter the code you received via SMS',
+  },
+  {
+    label: 'Password',
+    icon: <LockIcon />,
+    description: 'Enter your password',
+  },
+];
+
+// Phone form component to reduce cognitive complexity
+const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneFieldRef }) => {
+  const theme = useTheme();
+  return (
+    <form onSubmit={handleSubmitPhone}>
+      <PhoneEntry
+        value={phone}
+        onChange={setPhone}
+        ref={phoneFieldRef}
+        sx={{
+          width: '100%',
+          mb: 2, 
+          '& .MuiOutlinedInput-root': {
+            borderRadius: theme.shape.borderRadius
+          }
+        }}
+      />
+      <Button
+        variant='contained'
+        type='submit'
+        disabled={loading || !phone || phone.length < 10}
+        fullWidth
+        sx={{ 
+          mt: 2,
+          borderRadius: theme.shape.borderRadius,
+          textTransform: 'none',
+          py: 1.2
+        }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Continue'}
+      </Button>
+    </form>
+  );
+};
+
+// Code verification form component
+const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeFieldRef }) => {
+  const theme = useTheme();
+  return (
+    <>
+      <form onSubmit={handleSubmitCode}>
+        <TextField
+          label="6-digit code"
+          onChange={(e) => setCode(e.target.value)}
+          variant="outlined"
+          fullWidth
+          disabled={loading}
+          slotProps={{
+            input: {
+              ref: codeFieldRef,
+              endAdornment: (
+                <InputAdornment position="end">
+                  {code.length === 6 && <CheckCircleIcon color='success' />}
+                </InputAdornment>
+              ),
+            }
+          }}
+          sx={{ 
+            mb: 2,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: theme.shape.borderRadius
+            }
+          }}
+        />
+        <Button
+          variant='contained'
+          type='submit'
+          disabled={loading || code.length !== 6}
+          fullWidth
+          sx={{ 
+            mt: 2,
+            borderRadius: theme.shape.borderRadius,
+            textTransform: 'none',
+            py: 1.2
+          }}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Verify Code'}
+        </Button>
+      </form>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Button
+          disabled={loading}
+          onClick={handleResendCode}
+          size="small"
+          color="secondary"
+          sx={{ textTransform: 'none' }}
+        >
+          Resend Code
+        </Button>
+      </Box>
+    </>
+  );
+};
+
+// Password form component
+const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordFieldRef }) => {
+  const theme = useTheme();
+  return (
+    <form onSubmit={handleSubmitPassword}>
+      <TextField
+        label="Password"
+        onChange={(e) => setPassword(e.target.value)}
+        type={showPassword ? 'text' : 'password'}
+        variant="outlined"
+        fullWidth
+        disabled={loading}
+        slotProps={{
+          input: {
+            ref: passwordFieldRef,
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }
+        }}
+        sx={{ 
+          mb: 2,
+          '& .MuiOutlinedInput-root': {
+            borderRadius: theme.shape.borderRadius
+          }
+        }}
+      />
+
+      {accountStatus === 'new-user' && (
+        <TextField
+          label="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          type={showPassword ? 'text' : 'password'}
+          variant="outlined"
+          fullWidth
+          disabled={loading}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
+          }}
+          sx={{ 
+            mb: 2,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: theme.shape.borderRadius
+            }
+          }}
+        />
+      )}
+
+      <Button
+        variant='contained'
+        type='submit'
+        disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
+        fullWidth
+        sx={{ 
+          mt: 2,
+          borderRadius: theme.shape.borderRadius,
+          textTransform: 'none',
+          py: 1.2
+        }}
+      >
+        {loading ? <CircularProgress size={24} /> : (accountStatus === 'new-user' ? 'Create Account' : 'Login')}
+      </Button>
+    </form>
+  );
+};
+
+// Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
   const { appVersion, appName, managers } = useContext(WalletContext)
   const classes = useStyles()
+  const theme = useTheme()
 
   // We keep the same Accordion steps: phone, code, password
   const [accordionView, setAccordionView] = useState('phone')
@@ -45,13 +267,66 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [pageLoaded, setPageLoaded] = useState(false)
+  
+  // Wallet configuration state
+  const [showWalletConfig, setShowWalletConfig] = useState(false)
+  const [wabUrl, setWabUrl] = useState<string>("https://wab.babbage.systems")
+  const [wabInfo, setWabInfo] = useState<{
+    supportedAuthMethods: string[];
+    faucetEnabled: boolean;
+    faucetAmount: number;
+  } | null>(null)
+  const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("")
+  const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>('main')
+  const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>("https://storage.babbage.systems")
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false)
 
-  const phoneField = useRef(null)
-  const codeField = useRef(null)
-  const passwordField = useRef(null)
+  const phoneFieldRef = useRef(null)
+  const codeFieldRef = useRef(null)
+  const passwordFieldRef = useRef(null)
 
   // Access the manager:
   const walletManager = managers.walletManager
+
+  // Auto-fetch wallet configuration info when component mounts
+  useEffect(() => {
+    if (!wabInfo && !walletManager?.authenticated) {
+      fetchWalletConfig()
+    }
+  }, [])
+
+  // Fetch wallet configuration info
+  const fetchWalletConfig = async () => {
+    setIsLoadingConfig(true)
+    try {
+      const res = await fetch(`${wabUrl}/info`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch info: ${res.status}`)
+      }
+      const info = await res.json()
+      setWabInfo(info)
+      
+      // Auto-select the first supported authentication method
+      if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
+        setSelectedAuthMethod(info.supportedAuthMethods[0])
+      }
+    } catch (error: any) {
+      console.error("Error fetching wallet config:", error)
+      toast.error("Could not fetch wallet configuration: " + error.message)
+    } finally {
+      setIsLoadingConfig(false)
+    }
+  }
+
+  // Apply wallet configuration
+  const applyWalletConfig = () => {
+    if (!wabInfo || !selectedAuthMethod) {
+      toast.error("Please select an authentication method")
+      return
+    }
+    setShowWalletConfig(false)
+    toast.success("Wallet configuration applied")
+  }
 
   useEffect(() => {
     (async () => {
@@ -71,7 +346,6 @@ const Greeter: React.FC<any> = ({ history }) => {
   }, [walletManager])
 
   // Step 1: The user enters a phone number, we call manager.startAuth(...)
-  // This replaces the old providePhoneNumber(...) approach:
   const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
@@ -80,14 +354,12 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
     try {
       setLoading(true)
-      // Typically we do manager.startAuth(...) with a Twilio payload
       await walletManager.startAuth({ phoneNumber: phone })
       setAccordionView('code')
       toast.success('A code has been sent to your phone.')
       // Move focus to code field
-      if (codeField.current) {
-        // MUI sub-layers: codeField.current.children[1].children[0].focus()
-        (codeField.current as any).children[1].children[0].focus()
+      if (codeFieldRef.current) {
+        codeFieldRef.current.focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -98,7 +370,6 @@ const Greeter: React.FC<any> = ({ history }) => {
   }
 
   // Step 2: The user enters the OTP code, we call manager.completeAuth(...)
-  // This replaces the old provideCode(...) approach:
   const handleSubmitCode = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
@@ -109,8 +380,6 @@ const Greeter: React.FC<any> = ({ history }) => {
       setLoading(true)
       await walletManager.completeAuth({ phoneNumber: phone, otp: code })
 
-      // manager.completeAuth(...) should set manager.authenticationFlow to either
-      // 'existing-user' or 'new-user' after retrieving the presentationKey from the WAB
       if (walletManager.authenticationFlow === 'new-user') {
         setAccountStatus('new-user')
       } else {
@@ -118,8 +387,8 @@ const Greeter: React.FC<any> = ({ history }) => {
       }
 
       setAccordionView('password')
-      if (passwordField.current) {
-        (passwordField.current as any).children[1].children[0].focus()
+      if (passwordFieldRef.current) {
+        passwordFieldRef.current.focus()
       }
     } catch (err: any) {
       console.error(err)
@@ -155,16 +424,13 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
 
     // If new-user, confirm password match
-    if (accountStatus === 'new-user') {
-      if (password !== confirmPassword) {
-        toast.error("Passwords don't match.")
-        return
-      }
+    if (accountStatus === 'new-user' && password !== confirmPassword) {
+      toast.error("Passwords don't match.")
+      return
     }
 
     setLoading(true)
     try {
-      // manager.providePassword(...) finalizes the creation or retrieval of the user’s primary key
       await walletManager.providePassword(password)
 
       if (walletManager.authenticated) {
@@ -188,228 +454,282 @@ const Greeter: React.FC<any> = ({ history }) => {
   }
 
   return (
-    <div className={classes.max_width}>
-      <div className={classes.content_wrap}>
-        <center>
-          <CWILogo
-            className={classes.logo}
-            rotate
-          />
-          <Typography variant='h2' paragraph fontFamily='Helvetica' fontSize='2em'>
+    <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <Paper 
+        elevation={4} 
+        sx={{ 
+          p: 4, 
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+          boxShadow: theme.shadows[3]
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ mb: 2, width: '100px', height: '100px' }}>
+            <AppLogo
+              rotate
+              size="100px"
+              color="#2196F3"
+            />
+          </Box>
+          <Typography 
+            variant='h2' 
+            fontFamily='Helvetica' 
+            fontSize='2em'
+            sx={{
+              mb: 1,
+              fontWeight: 'bold',
+              background: theme.palette.mode === 'dark' 
+                ? 'linear-gradient(90deg, #FFFFFF 0%, #F5F5F5 100%)'
+                : 'linear-gradient(90deg, #2196F3 0%, #4569E5 100%)',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
             {appName}
           </Typography>
-          <Typography variant='h4' paragraph fontFamily='Helvetica'>
-            Welcome!
+          <Typography 
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            sx={{ mb: 3 }}
+          >
+            Secure BSV Blockchain Wallet
           </Typography>
-          <Typography variant='body1' paragraph>
-            Please enter your phone number to login or sign up.
+          <Divider sx={{ width: '80%' }} />
+          <Typography 
+            variant="caption"
+            color="text.secondary"
+            align="center"
+            sx={{ mt: 1 }}
+          >
+            <i>v{appVersion}</i>
           </Typography>
-          <Divider />
-        </center>
-        {/* PHONE step */}
-        <Accordion expanded={accordionView === 'phone'}>
-          <AccordionSummary className={classes.panel_header}>
-            <PhoneIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Phone Number
-            </Typography>
-            {(accordionView === 'code' || accordionView === 'password') && (
-              <CheckCircleIcon className={classes.complete_icon} />
-            )}
-          </AccordionSummary>
-          <form onSubmit={handleSubmitPhone}>
-            <AccordionDetails className={classes.expansion_body}>
-              <PhoneEntry
-                value={phone}
-                onChange={setPhone}
-                placeholder='Enter phone number'
-                autoFocus
-                forewarRef={phoneField}
-              />
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='secondary'
-                style={{ fontWeight: 'bold' }}
-                type='submit'
-                disabled={loading}
-              >
-                {!loading ? 'Send Code' : <CircularProgress size={20} />}
-              </Button>
-            </AccordionActions>
-          </form>
-        </Accordion>
+        </Box>
 
-        {/* CODE step */}
-        <Accordion expanded={accordionView === 'code'}>
-          <AccordionSummary className={classes.panel_header}>
-            <SMSIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Enter code
-            </Typography>
-            {accordionView === 'password' && (
-              <CheckCircleIcon className={classes.complete_icon} />
-            )}
-          </AccordionSummary>
-          <form onSubmit={handleSubmitCode}>
-            <AccordionDetails className={classes.expansion_body}>
-              <TextField
-                onChange={e => setCode(e.target.value)}
-                label='Code'
-                fullWidth
-                autoFocus
-                ref={codeField}
-              />
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={handleResendCode}
-                size='small'
-                disabled={loading}
-              >
-                Resend Code
-              </Button>
-            </AccordionActions>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={() => setAccordionView('phone')}
-                disabled={loading}
-              >
-                Back
-              </Button>
-              <Button
+        {/* Wallet Configuration Card */}
+        <Box sx={{ mb: 3 }}>
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Button 
+                startIcon={<SettingsIcon />}
+                onClick={() => setShowWalletConfig(!showWalletConfig)}
+                variant="text"
                 color='secondary'
-                style={{ fontWeight: 'bold' }}
-                type='submit'
-                disabled={loading}
+                size="small"
               >
-                {!loading ? 'Next' : <CircularProgress size={20} />}
+                {showWalletConfig ? 'Hide Details' : 'Show Config'}
               </Button>
-            </AccordionActions>
-          </form>
-        </Accordion>
+            </Box>            
+            {isLoadingConfig ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <>
+                {wabInfo ? (            
+                  <Collapse in={showWalletConfig}>
+                    <Typography variant="h4" color="primary">
+                      Configuration
+                    </Typography>
+                    <Box sx={{ py: 2 }}>
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Authentication Backend (WAB) provides 2 of 3 backup and recovery functionality for your root key.
+                      </Typography>
+                      <TextField
+                        label="WAB URL"
+                        fullWidth
+                        variant="outlined"
+                        value={wabUrl}
+                        onChange={(e) => setWabUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <Button 
+                          variant="outlined" 
+                          size="small" 
+                          onClick={fetchWalletConfig}
+                          disabled={isLoadingConfig}
+                        >
+                          Refresh Info
+                        </Button>
+                      </Box>
+                      <Divider />
+                      {wabInfo.supportedAuthMethods && wabInfo.supportedAuthMethods.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="body2" gutterBottom>
+                            Service which will be used to verify your phone number:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {wabInfo.supportedAuthMethods.map((method) => (
+                              <Button
+                                key={method}
+                                variant={selectedAuthMethod === method ? "contained" : "outlined"}
+                                size="small"
+                                onClick={() => setSelectedAuthMethod(method)}
+                                sx={{ textTransform: 'none' }}
+                              >
+                                {method}
+                              </Button>
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                      
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" gutterBottom>
+                          BSV Network:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                          <Button
+                            variant={selectedNetwork === 'main' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('main')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Mainnet
+                          </Button>
+                          <Button
+                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('test')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Testnet
+                          </Button>
+                        </Box>
+                      </Box>
+                      
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Storage Provider to use for your transactions and metadata:
+                      </Typography>
+                      <TextField
+                        label="Storage URL"
+                        fullWidth
+                        variant="outlined"
+                        value={selectedStorageUrl}
+                        onChange={(e) => setSelectedStorageUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                          onClick={applyWalletConfig}
+                          disabled={!wabInfo || !selectedAuthMethod}
+                        >
+                          Apply Configuration
+                        </Button>
+                    </Box>
+                  </Collapse>
+                ) : (
+                  <Typography variant="body2" color="error">
+                    Failed to load wallet configuration
+                  </Typography>
+                )}
+              </>
+            )}
+          </Box>
+        </Box>
 
-        {/* PASSWORD step */}
-        <Accordion expanded={accordionView === 'password'}>
-          <AccordionSummary className={classes.panel_header}>
-            <LockIcon className={classes.expansion_icon} />
-            <Typography className={classes.panel_heading}>
-              Password
-            </Typography>
-          </AccordionSummary>
-          <form onSubmit={handleSubmitPassword}>
-            <AccordionDetails className={classes.expansion_body}>
-              <div
-                className={
-                  accountStatus === 'new-user'
-                    ? classes.new_password_grid
-                    : classes.password_grid
+        {/* Authentication Stepper - replaces Accordions for clearer progression */}
+        <Stepper activeStep={viewToStepIndex[accordionView]} orientation="vertical">
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel 
+                icon={step.icon}
+                optional={
+                  <Typography variant="caption" color="text.secondary">
+                    {step.description}
+                  </Typography>
                 }
               >
-                <TextField
-                  ref={passwordField}
-                  onChange={e => setPassword(e.target.value)}
-                  label='Password'
-                  fullWidth
-                  type={showPassword ? 'text' : 'password'}
-                  autoFocus
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          aria-label='toggle password visibility'
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge='end'
-                          style={{ color: 'inherit' }}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-                {accountStatus === 'new-user' && (
-                  <TextField
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    label='Retype Password'
-                    fullWidth
-                    type={showPassword ? 'text' : 'password'}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <IconButton
-                            aria-label='toggle password visibility'
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge='end'
-                            style={{ color: 'inherit' }}
-                          >
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
+                <Typography variant="body2" fontWeight={500}>
+                  {step.label}
+                </Typography>
+              </StepLabel>
+              <StepContent>
+                {index === 0 && (
+                  <PhoneForm 
+                    phone={phone}
+                    setPhone={setPhone}
+                    loading={loading}
+                    handleSubmitPhone={handleSubmitPhone}
+                    phoneFieldRef={phoneFieldRef}
                   />
                 )}
-              </div>
-            </AccordionDetails>
-            <AccordionActions>
-              <Button
-                color='primary'
-                onClick={() => setAccordionView('phone')}
-                disabled={loading}
-              >
-                Back
-              </Button>
-              <Button
-                variant='contained'
-                color='primary'
-                type='submit'
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  accountStatus === 'new-user' ? 'Create Account' : 'Log In'
+                
+                {index === 1 && (
+                  <CodeForm
+                    code={code}
+                    setCode={setCode}
+                    loading={loading}
+                    handleSubmitCode={handleSubmitCode}
+                    handleResendCode={handleResendCode}
+                    codeFieldRef={codeFieldRef}
+                  />
                 )}
-              </Button>
-            </AccordionActions>
-          </form>
-        </Accordion>
+                
+                {index === 2 && (
+                  <PasswordForm 
+                    password={password}
+                    setPassword={setPassword}
+                    confirmPassword={confirmPassword}
+                    setConfirmPassword={setConfirmPassword}
+                    showPassword={showPassword}
+                    setShowPassword={setShowPassword}
+                    loading={loading}
+                    handleSubmitPassword={handleSubmitPassword}
+                    accountStatus={accountStatus}
+                    passwordFieldRef={passwordFieldRef}
+                  />
+                )}
+              </StepContent>
+            </Step>
+          ))}
+        </Stepper>
 
-        <br />
-        <br />
-        <Link to='/recovery'>
-          <Button color='secondary' className={classes.recovery_link}>
-            Account Recovery?
-          </Button>
-        </Link>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+          <RouterLink to='/recovery' style={{ textDecoration: 'none' }}>
+            <Button 
+              variant="text" 
+              color='secondary'
+              size="small"
+              startIcon={<RestoreIcon />}
+            >
+              Account Recovery
+            </Button>
+          </RouterLink>
+        </Box>
+
         <Typography
-          align='center'
+          variant='caption'
           color='textSecondary'
-          className={classes.copyright_text}
-        >
-          <b>{appName} version {appVersion}</b>
-        </Typography>
-        <Typography
           align='center'
-          color='textSecondary'
-          className={classes.copyright_text}
+          sx={{ 
+            display: 'block',
+            mt: 3,
+            mb: 1,
+            fontSize: '0.75rem',
+            opacity: 0.7
+          }}
         >
-          Copyright &copy; 2020-2023 Peer-to-peer Privacy Systems Research, LLC.
-          All rights reserved. Redistribution of this software is strictly prohibited.
-          Use of this software is subject to the{' '}
+          By using this software, you acknowledge that you have read, understood and accepted the terms of the{' '}
           <a
-            href='https://projectbabbage.com/desktop/license'
+            href='https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt'
             target='_blank'
             rel='noopener noreferrer'
+            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
-            Babbage Software License Agreement
+            Software License
           </a>.
         </Typography>
-      </div>
-    </div>
+      </Paper>
+    </Container>
   )
 }
 

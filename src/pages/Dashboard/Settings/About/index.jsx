@@ -21,15 +21,6 @@ const About = () => {
         {appName} Version: {appVersion}
       </Typography>
       <br />
-      <Divider />
-      <br />
-      <Typography variant='h2' paragraph color='textPrimary'>
-        Legal
-      </Typography>
-      <Typography paragraph variant='body' color='textSecondary'>
-        After SOW E and SOW F are executed this will be licensed under the Open BSV License from BSV Association. Until then the wallet and all of its code is owned and solely proprietary within P2PPSR.
-      </Typography>
-      <br />
     </div>
   )
 }

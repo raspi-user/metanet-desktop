@@ -218,8 +218,6 @@ const RecoveryLostPhone: React.FC<any> = ({ history }) => {
             <PhoneEntry
               value={newPhone}
               onChange={setNewPhone}
-              placeholder='Enter phone number'
-              fullWidth
             />
           </AccordionDetails>
           <AccordionActions>

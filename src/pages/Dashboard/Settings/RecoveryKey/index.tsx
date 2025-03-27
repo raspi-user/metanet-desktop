@@ -8,10 +8,6 @@ import { WalletContext } from '../../../../UserInterface'
 import { Utils } from '@bsv/sdk'
 
 const useStyles = makeStyles(theme => ({
-  key: {
-    userSelect: 'all',
-    cursor: 'pointer'
-  },
   button_grid: {
     display: 'grid',
     gridTemplateColumns: 'auto 1fr auto',
@@ -19,7 +15,12 @@ const useStyles = makeStyles(theme => ({
   }
 }), { name: 'RecoveryKey' })
 
-const RecoveryKeySettings = ({ history }) => {
+interface RecoveryKeySettingsProps {
+  history: any;
+  onViewKey?: (key: string) => void;
+}
+
+const RecoveryKeySettings: React.FC<RecoveryKeySettingsProps> = ({ history, onViewKey }) => {
   const { managers } = useContext(WalletContext)
   const [recoveryKey, setRecoveryKey] = useState('')
   const [showLoading, setShowLoading] = useState(false)
@@ -33,9 +34,14 @@ const RecoveryKeySettings = ({ history }) => {
         return
       }
       setShowLoading(true)
-      setRecoveryKey(
-        Utils.toBase64(await managers.walletManager.getRecoveryKey())
-      )
+      const key = Utils.toBase64(await managers.walletManager.getRecoveryKey())
+      setRecoveryKey(key)
+      if (onViewKey) {
+        onViewKey(key)
+        setRecoveryKey('')
+      }
+    } catch (error) {
+      console.log(error)
     } finally {
       setShowLoading(false)
     }
@@ -57,13 +63,11 @@ const RecoveryKeySettings = ({ history }) => {
 
   return (
     <>
-      <Typography variant='h2' color='textPrimary' paragraph>Recovery Key</Typography>
-      <Typography variant='body1' color='textSecondary'>
-        You will need your recovery key if you ever forget your password or lose your phone.
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Recovery Key
       </Typography>
-      <Typography>
-        Current recovery key:{' '}
-        <b className={classes.key}>{recoveryKey || '••••••••••••'}</b>
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+        You will need your recovery key if you ever forget your password or lose your phone.
       </Typography>
       <br />
       <div className={classes.button_grid}>
@@ -74,7 +78,7 @@ const RecoveryKeySettings = ({ history }) => {
               color='primary'
               onClick={handleViewKey}
             >
-              {recoveryKey ? 'Hide' : 'View'}
+              View
             </Button>
           )}
         <div />
@@ -90,8 +94,6 @@ const RecoveryKeySettings = ({ history }) => {
             </Button>
           )}
       </div>
-      <br />
-      <br />
     </>
   )
 }

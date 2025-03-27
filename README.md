@@ -21,6 +21,11 @@ npm i
 npm run tauri dev
 ```
 
+Some platforms require this, so install if needed:
+```
+npm i -g @rollup/rollup-darwin-x64 
+```
+
 - Choose your network (mainnet/testnet), WAB and pick your Auth Method (Twiloo Phone for now)
 - Pick a Storage URL
 - Proceed to the wallet greeter, enter your phone, code, password, save recovery key

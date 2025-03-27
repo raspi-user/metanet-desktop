@@ -1,4 +1,12 @@
 export default theme => ({
+  root: {
+    padding: theme.spacing(3),
+    maxWidth: '800px',
+    margin: '0 auto'
+  },
+  section: {
+    marginBottom: theme.spacing(4)
+  },
   oracle_link_container: {
     display: 'flex',
     padding: '6px 0px',
@@ -40,9 +48,8 @@ export default theme => ({
     display: 'grid'
   },
   trust_threshold: {
-    maxWidth: '25em',
-    minWidth: '20em',
-    marginBottom: theme.spacing(5),
+    width: '100%',
+    marginBottom: theme.spacing(1),
     placeSelf: 'center'
   },
   master_grid: {

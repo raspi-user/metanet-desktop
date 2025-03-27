@@ -1,174 +1,207 @@
-import { useState, useContext } from 'react'
+import { useState, useContext } from 'react';
 import {
   Typography,
   Button,
-  Grid,
-  LinearProgress
-} from '@mui/material'
-import makeStyles from '@mui/styles/makeStyles'
-import { toast } from 'react-toastify'
-import style from './style.js'
-import { WalletContext } from '../../UserInterface.js'
-import UserTheme from '../../components/UserTheme.js'
-import DarkModeImage from '../../images/darkMode.jsx'
-import LightModeImage from '../../images/lightMode.jsx'
+  LinearProgress,
+  useTheme,
+  Box,
+  Paper
+} from '@mui/material';
+import Grid from '@mui/material/Grid2'; // Updated to Grid2
+import { makeStyles } from '@mui/styles';
+import { toast } from 'react-toastify';
+import { WalletContext } from "../../UserInterface.js";
+import DarkModeImage from "../../images/darkMode.jsx";
+import LightModeImage from "../../images/lightMode.jsx";
+import { Theme } from '@mui/material/styles';
 
-const useStyles = makeStyles(style, {
-  name: 'Welcome'
-})
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    padding: theme.spacing(3),
+    maxWidth: '800px',
+    margin: '0 auto'
+  },
+  section: {
+    marginBottom: theme.spacing(4)
+  },
+  themeButton: {
+    width: '120px',
+    height: '120px',
+    borderRadius: theme.shape.borderRadius,
+    border: `2px solid ${theme.palette.divider}`,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease-in-out',
+    '&.selected': {
+      borderColor: theme.palette.primary.main,
+      borderWidth: '2px',
+      boxShadow: theme.shadows[3]
+    }
+  },
+  currencyButton: {
+    width: '100px',
+    height: '80px',
+    margin: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease-in-out',
+    '&.selected': {
+      borderColor: theme.palette.primary.main,
+      borderWidth: '2px',
+      backgroundColor: theme.palette.action.selected
+    }
+  }
+}));
 
 const Welcome = ({ history }) => {
-  const { settings, updateSettings } = useContext(WalletContext)
-  const [settingsLoading, setSettingsLoading] = useState(false)
-  const classes = useStyles()
+  const { settings, updateSettings } = useContext(WalletContext);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const theme = useTheme();
+  const classes = useStyles();
 
   // Supported Defaults
   const currencies = {
-    USD: '$10',
     BSV: '0.033',
     SATS: '3,333,333',
+    USD: '$10',
     EUR: '€9.15',
-    GDP: '£7.86'
-  }
-  const themes = ['light', 'dark']
+    GBP: '£7.86'
+  };
 
-  const [selectedTheme, setSelectedTheme] = useState(themes[0].toLowerCase())
-  const [selectedCurrency, setSelectedCurrency] = useState('USD')
+  const themes = ['light', 'dark'];
+  const [selectedTheme, setSelectedTheme] = useState(settings?.theme?.mode || theme.palette.mode);
+  const [selectedCurrency, setSelectedCurrency] = useState(settings?.currency || 'BSV');
 
   // Handle updating defaults
   const handleThemeChange = (theme) => {
-    setSelectedTheme(theme.toLowerCase())
-  }
+    setSelectedTheme(theme.toLowerCase());
+  };
+
   const handleCurrencyChange = (currency) => {
-    setSelectedCurrency(currency)
-  }
+    setSelectedCurrency(currency);
+  };
 
   // Save user preferences
   const showDashboard = async () => {
-    // Save user preferences to settings
     try {
-      setSettingsLoading(true)
-
-      await updateSettings({
+      setSettingsLoading(true);
+      updateSettings({
         ...settings,
         theme: { mode: selectedTheme },
         currency: selectedCurrency
-      })
-      // toast.dark('Welcome! 🎉', { position: 'top-center' })
-      history.push('/dashboard/apps')
+      });
+      history.push('/dashboard/apps');
     } catch (e) {
-      toast.error(e.message)
+      toast.error(e.message);
     } finally {
-      setSettingsLoading(false)
+      setSettingsLoading(false);
     }
-  }
+  };
 
   return (
-    // <SettingsProvider>
-    <UserTheme>
-      <div
-        className={classes.content_wrap} style={{
-          backgroundColor: selectedTheme === 'light' ? 'White' : 'rgba(0,0,0,0)',
-          backgroundImage: selectedTheme === 'light'
-            ? 'linear-gradient(to bottom, rgba(255,255,255,1.0), rgba(255,255,255,0.85)), url(https://cdn.projectbabbage.com/media/pictures/mainBackground.jpg)'
-            : 'linear-gradient(to bottom, rgba(20,20,20,1.0), rgba(20,20,20,0.85)), url(https://cdn.projectbabbage.com/media/pictures/mainBackground.jpg)'
-        }}
-      >
-        <center className={classes.content}>
-          <Grid container direction='column' alignItems='center' spacing={2} padding='0.5em' style={{ color: selectedTheme === 'light' ? 'Black' : 'White' }}>
-            <Grid item xs={12}>
-              <Typography variant='h1' paragraph style={{ color: selectedTheme === 'light' ? 'Black' : 'White' }}>
-                Your portal to the Metanet — And beyond!
-              </Typography>
-              <Typography variant='h4'>
-                Let's start by setting your preferences.
-              </Typography>
-              <Typography paragraph paddingTop='2em'>
-                Default Theme
-              </Typography>
+    <div className={classes.root}>
+      <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
+        Your Portal to the Metanet
+      </Typography>
+      <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
+        Let's start by setting your preferences for the best experience.
+      </Typography>
+
+      {/* Theme Selection Section */}
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Choose Your Theme
+        </Typography>
+        <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+          Select a theme that's comfortable for your eyes.
+        </Typography>
+
+        <Grid container spacing={3} justifyContent="center">
+          {themes.map(themeOption => (
+            <Grid key={themeOption}>
+              <Button
+                onClick={() => handleThemeChange(themeOption)}
+                className={`${classes.themeButton} ${selectedTheme === themeOption ? 'selected' : ''}`}
+                sx={{
+                  color: themeOption === 'light' ? 'text.primary' : 'common.white',
+                  backgroundColor: themeOption === 'light' ? 'background.default' : 'grey.800',
+                }}
+              >
+                {themeOption === 'light' ? <LightModeImage /> : <DarkModeImage />}
+                <Typography variant="body2" sx={{ mt: 1, fontWeight: selectedTheme === themeOption ? 'bold' : 'normal' }}>
+                  {themeOption.charAt(0).toUpperCase() + themeOption.slice(1)}
+                </Typography>
+              </Button>
             </Grid>
-            <Grid item container spacing={1} justifyContent='center'>
-              {
-                themes.map(theme => (
-                  <Grid item key={theme}>
-                    <Button
-                      onClick={() => handleThemeChange(theme)}
-                      style={{
-                        width: 120,
-                        height: 120,
-                        borderRadius: 10,
-                        boxShadow: selectedTheme === theme ? '0px 0px 8px 2px #E04040' : 'none',
-                        color: theme === 'light' ? 'Black' : 'White',
-                        backgroundColor: theme === 'light' ? '#111111' : '#444444',
-                        marginRight: '10px'
-                      }}
-                    >
-                      {theme === 'light' ? <LightModeImage /> : <DarkModeImage />}
-                    </Button>
-                  </Grid>
-                ))
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Currency Selection Section */}
+      <Paper elevation={0} className={classes.section} sx={{ p: 3, bgcolor: 'background.paper' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Default Currency
+        </Typography>
+        <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+          How would you like to see your account balance?
+        </Typography>
+
+        <Grid container spacing={2} justifyContent="center">
+          {Object.keys(currencies).map(currency => (
+            <Grid key={currency}>
+              <Button
+                variant="outlined"
+                className={`${classes.currencyButton} ${selectedCurrency === currency ? 'selected' : ''}`}
+                onClick={() => handleCurrencyChange(currency)}
+                sx={{
+                  borderColor: selectedCurrency === currency ? 'primary.main' : 'divider',
+                  bgcolor: selectedCurrency === currency ? 'action.selected' : 'transparent',
+                }}
+              >
+                <Typography variant="body1" fontWeight="bold">
+                  {currency}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {currencies[currency]}
+                </Typography>
+              </Button>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Action Button Section */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        {settingsLoading ? (
+          <Box sx={{ width: '200px' }}>
+            <LinearProgress />
+          </Box>
+        ) : (
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={showDashboard}
+            sx={{ 
+              minWidth: '200px', 
+              py: 1.5,
+              borderRadius: 2,
+              boxShadow: 3,
+              '&:hover': {
+                boxShadow: 6,
               }
-            </Grid>
-            <Grid container spacing={1} justifyContent='center' padding='1em'>
-              <Grid item paddingBottom='1em'>
-                <Typography variant='h5' paddingTop='1em' paddingBottom='0.5em'>
-                  Default Currency
-                </Typography>
-                <Typography variant='body1'>
-                  How would you like to see your account balance?
-                </Typography>
-              </Grid>
-              <Grid item xs={12} container direction='row' justifyContent='center' alignItems='center' spacing={1}>
-                {
-                  Object.keys(currencies).map(currency => {
-                    return (
-                      <Grid item key={currency}>
-                        <Button
-                          variant={selectedCurrency === currency ? 'contained' : 'outlined'}
-                          style={{
-                            boxShadow: selectedCurrency === currency ? '0px 0px 8px 2px #E04040' : 'none',
-                            backgroundColor: selectedCurrency === currency ? '#444444' : (selectedTheme === 'light' ? '#EEEEEE' : 'Black'),
-                            color: selectedCurrency === currency ? 'white' : '#888888'
-                          }}
-                          onClick={() => handleCurrencyChange(currency)}
-                          color='primary'
-                        >
-                          <div>
-                            <div>{currency}</div>
-                            <div>{currencies[currency]}</div>
-                          </div>
-                        </Button>
-                      </Grid>
-                    )
-                  })
-                }
-              </Grid>
-            </Grid>
-            <Grid container paddingTop='2em'>
-              <Grid item xs={12}>
-                {settingsLoading
-                  ? (
-                    <LinearProgress />
-                  )
-                  : (
-                    <Button
-                      color='primary'
-                      variant='contained'
-                      size='large'
-                      onClick={showDashboard}
-                    >
-                      View Dashboard
-                    </Button>
-                  )}
-              </Grid>
-            </Grid>
+            }}
+          >
+            View Dashboard
+          </Button>
+        )}
+      </Box>
+    </div>
+  );
+};
 
-          </Grid>
-        </center>
-      </div>
-    </UserTheme>
-    // </SettingsProvider>
-  )
-}
-
-export default Welcome
+export default Welcome;

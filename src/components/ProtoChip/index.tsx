@@ -11,6 +11,7 @@ import { DEFAULT_APP_ICON } from '../../constants/popularApps'
 // import confederacyHost from '../../utils/confederacyHost'
 import CounterpartyChip from '../CounterpartyChip/index'
 import DataObject from '@mui/icons-material/DataObject'
+import { toast } from 'react-toastify'
 // import { SettingsContext } from '../../context/SettingsContext'
 
 const useStyles = makeStyles(style as any, {
@@ -51,9 +52,6 @@ const ProtoChip: React.FC<ProtoChipProps> = ({
   iconURL,
   backgroundColor = 'transparent'
 }) => {
-  if (typeof protocolID !== 'string') {
-    throw new Error('ProtoChip requires protocolID to be a string')
-  }
   const classes = useStyles()
   const theme: any = useTheme()
   // const { settings } = useContext(SettingsContext)
@@ -130,134 +128,66 @@ const ProtoChip: React.FC<ProtoChipProps> = ({
   //   fetchAndCacheData()
   // }, [protocolID, securityLevel, settings])
 
+  const chipStyle = theme.templates.chip({ size, backgroundColor })
+
+
+  if (typeof protocolID !== 'string') {
+    console.log('ProtoChip: protocolID must be a string. Received:', protocolID)
+    return null
+  }
+
   return (
     <div className={classes.chipContainer}>
       <Chip
-        style={theme.templates.chip({ size, backgroundColor })}
-        sx={{
-          '& .MuiChip-label': {
-            width: '100% !important'
-          }
-        }}
-        label={
-          <div style={theme.templates.chipLabel}>
-            <span style={theme.templates.chipLabelTitle({ size })}>
-              <b>{protocolName}</b>
-            </span>
-            <br />
-            <span style={theme.templates.chipLabelSubtitle}>
-              {lastAccessed || descriptionState}
-            </span>
-            <span>
-              {counterparty && counterparty !== 'self'
-                ? <div>
-                  <Grid container alignContent='center' style={{ alignItems: 'center' }}>
-                    <Grid item>
-                      <p style={{ fontSize: '0.9em', fontWeight: 'normal', marginRight: '1em' }}>with:</p>
-                    </Grid>
-                    <Grid item>
-                      <CounterpartyChip
-                        counterparty={counterparty}
-                      // onClick={onCounterpartyClick}
-                      />
-                    </Grid>
-                  </Grid>
-                </div>
-                : ''}
-            </span>
-          </div>
-        }
-        icon={
+        style={chipStyle}
+        avatar={
           <Badge
-            overlap='circular'
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right'
-            }}
+            overlap="circular"
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             badgeContent={
-              <Tooltip
-                arrow
-                title='Data Protocol (click to learn more about protocols)'
-                onClick={e => {
-                  e.stopPropagation()
-                  window.open(
-                    'https://projectbabbage.com/docs/babbage-sdk/concepts/ppm',
-                    '_blank'
-                  )
+              <Avatar
+                sx={{
+                  width: 22,
+                  height: 22,
+                  bgcolor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText
                 }}
               >
-                <Avatar
-                  sx={{
-                    backgroundColor: theme.palette.badgeIcon,
-                    width: 20,
-                    height: 20,
-                    borderRadius: '10px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontSize: '1.2em',
-                    marginRight: '0.25em',
-                    marginBottom: '0.3em'
-                  }}
-                >
-                  <DataObject style={{ width: 16, height: 16 }} />
-                </Avatar>
-              </Tooltip>
+                <DataObject fontSize="small" />
+              </Avatar>
             }
           >
             <Avatar
-              variant='square'
-              sx={{
-                width: '2.2em',
-                height: '2.2em',
-                borderRadius: '4px',
-                backgroundColor: '#000000AF',
-                marginRight: '0.5em'
-              }}
-            >
-              <img // TODO (UHRP)
-                src={iconURLState}
-                style={{ width: '75%', height: '75%' }}
-                className={classes.table_picture}
-              // confederacyHost={confederacyHost()}
-              />
-            </Avatar>
+              src={iconURLState}
+              alt={protocolName}
+              sx={{ width: size * 32, height: size * 32 }}
+            />
           </Badge>
         }
-        onDelete={() => {
-          if (canRevoke) {
-            onCloseClick()
-          }
-        }}
-        deleteIcon={
-          canRevoke ? <CloseIcon /> : <></>
+        label={
+          <Grid container spacing={1} alignItems="center">
+            <Grid item xs>
+              <div className={classes.chipLabel}>
+                {protocolName}
+                {counterparty && (
+                  <CounterpartyChip
+                    size={size * 0.8}
+                    counterparty={counterparty}
+                  />
+                )}
+              </div>
+            </Grid>
+          </Grid>
         }
-        // disableRipple={!clickable}
-        onClick={e => {
-          if (clickable) {
-            if (typeof onClick === 'function') {
-              onClick(e)
-            } else {
-              e.stopPropagation()
-              history.push({
-                pathname: `/dashboard/protocol/${encodeURIComponent(`${securityLevel}-${protocolID}`)}`,
-                state: {
-                  protocolName,
-                  iconURL: iconURLState,
-                  securityLevel,
-                  protocolID,
-                  counterparty,
-                  lastAccessed,
-                  description: descriptionState,
-                  documentationURL,
-                  originator
-                }
-              })
-            }
-          }
-        }}
+        onClick={clickable ? onClick : undefined}
+        onDelete={canRevoke ? onCloseClick : undefined}
+        deleteIcon={canRevoke ? <CloseIcon /> : undefined}
       />
-      <span className={classes.expires}>{expires}</span>
+      {expires && (
+        <div className={classes.expires}>
+          Expires {expires}
+        </div>
+      )}
     </div>
   )
 }

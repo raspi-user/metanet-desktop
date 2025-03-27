@@ -1,206 +1,336 @@
-import React from 'react';
+import { ReactNode, useMemo, useContext } from 'react';
 import {
-  createTheme,
   ThemeProvider,
-  StyledEngineProvider,
-  adaptV4Theme,
-  Theme
-} from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
-// import { ExchangeRateContextProvider } from './AmountDisplay/ExchangeRateContextProvider';
+  createTheme,
+  CssBaseline,
+  useMediaQuery,
+  PaletteMode
+} from '@mui/material';
+import { WalletContext } from '../UserInterface';
 
-const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-
-if (prefersDarkScheme.matches) {
-  console.log('User prefers a dark theme');
-} else {
-  console.log('User prefers a light theme');
+// Define custom theme types
+declare module '@mui/material/styles' {
+  interface Theme {
+    templates: {
+      page_wrap: {
+        maxWidth: string;
+        margin: string;
+        boxSizing: string;
+        padding: string | number;
+      };
+      subheading: {
+        textTransform: string;
+        letterSpacing: string;
+        fontWeight: string;
+      };
+      boxOfChips: {
+        display: string;
+        justifyContent: string;
+        flexWrap: string;
+        gap: string | number;
+      };
+      chip: (props: { size: number; backgroundColor?: string }) => {
+        height: string | number;
+        minHeight: string | number;
+        backgroundColor: string;
+        borderRadius: string;
+        padding: string | number;
+        margin: string | number;
+      };
+      chipLabel: {
+        display: string;
+        flexDirection: string;
+      };
+      chipLabelTitle: (props: { size: number }) => {
+        fontSize: string | number;
+        fontWeight: string;
+      };
+      chipLabelSubtitle: {
+        fontSize: string;
+        opacity: number;
+      };
+      chipContainer: {
+        position: string;
+        display: string;
+        alignItems: string;
+      };
+    }
+  }
+  interface ThemeOptions {
+    templates?: {
+      page_wrap?: {
+        maxWidth?: string;
+        margin?: string;
+        boxSizing?: string;
+        padding?: string | number;
+      };
+      subheading?: {
+        textTransform?: string;
+        letterSpacing?: string;
+        fontWeight?: string;
+      };
+      boxOfChips?: {
+        display?: string;
+        justifyContent?: string;
+        flexWrap?: string;
+        gap?: string | number;
+      };
+      chip?: (props: { size: number; backgroundColor?: string }) => {
+        height?: string | number;
+        minHeight?: string | number;
+        backgroundColor?: string;
+        borderRadius?: string;
+        padding?: string | number;
+        margin?: string | number;
+      };
+      chipLabel?: {
+        display?: string;
+        flexDirection?: string;
+      };
+      chipLabelTitle?: (props: { size: number }) => {
+        fontSize?: string | number;
+        fontWeight?: string;
+      };
+      chipLabelSubtitle?: {
+        fontSize?: string;
+        opacity?: number;
+      };
+      chipContainer?: {
+        position?: string;
+        display?: string;
+        alignItems?: string;
+      };
+    }
+  }
 }
 
-const baseTheme = createTheme(
-  adaptV4Theme({
-    spacing: 8,
-    // maxContentWidth: '1440px',
-    typography: {
-      h1: {
-        fontWeight: 'bold',
-        fontSize: '2.5em'
-      },
-      h2: {
-        fontWeight: 'bold',
-        fontSize: '1.7em'
-      },
-      h3: {
-        fontSize: '1.4em'
-      },
-      h4: {
-        fontSize: '1.25em'
-      },
-      h5: {
-        fontSize: '1.1em'
-      },
-      h6: {
-        fontSize: '1em'
-      }
-    },
-    palette: {
-      primary: {
-        main: '#424242'
-      },
-      secondary: {
-        main: '#FC433F'
-      }
-    },
-    overrides: {}
-  })
-);
+const backgroundImage = "https://images.pexels.com/photos/18857526/pexels-photo-18857526/free-photo-of-larch-heaven.jpeg";
 
-const extendedTheme = (theme: Theme) => ({
-  ...theme,
-  typography: {
-    ...theme.typography,
-    h1: {
-      ...theme.typography.h1,
-      [theme.breakpoints.down('md')]: {
-        fontSize: '1.8em'
+interface ThemeProps {
+  children: ReactNode;
+}
+
+export function AppThemeProvider({ children }: ThemeProps) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const { settings } = useContext(WalletContext);
+
+  const theme = useMemo(() => {
+    // Determine the mode based on user settings or system preferences
+    let mode: PaletteMode = 'light';
+    
+    // Check if user has explicitly set a theme preference
+    if (settings?.theme?.mode) {
+      if (settings.theme.mode === 'system') {
+        // Use system preference when set to 'system'
+        mode = prefersDarkMode ? 'dark' : 'light';
+      } else if (settings.theme.mode === 'dark' || settings.theme.mode === 'light') {
+        // Use explicit user preference (ensuring it's a valid PaletteMode)
+        mode = settings.theme.mode;
       }
-    },
-    h2: {
-      ...theme.typography.h2,
-      [theme.breakpoints.down('md')]: {
-        fontSize: '1.6em'
-      }
+    } else {
+      // Fall back to system preference if no setting exists
+      mode = prefersDarkMode ? 'dark' : 'light';
     }
-  },
-  templates: {
-    page_wrap: {
-      maxWidth: `min(${(theme as any).maxContentWidth || '1440px'}, 100vw)`,
-      margin: 'auto',
-      boxSizing: 'border-box',
-      padding: theme.spacing(7),
-      [theme.breakpoints.down('lg')]: {
-        padding: theme.spacing(5)
-      }
-    },
-    subheading: {
-      textTransform: 'uppercase',
-      letterSpacing: '6px',
-      fontWeight: '700'
-    },
-    boxOfChips: {
-      display: 'flex',
-      justifyContent: 'left',
-      flexWrap: 'wrap'
-    },
-    chipContainer: {
-      fontSize: '0.95em',
-      display: 'flex',
-      flexDirection: 'column',
-      alignContent: 'center',
-      alignItems: 'center',
-      '&:hover $expiryHoverText': {
-        visibility: 'visible',
-        opacity: 1
+    
+    return createTheme({
+      palette: {
+        mode,
+        ...(mode === 'light' ? {
+          primary: {
+            main: '#1B365D', // Navy
+          },
+          secondary: {
+            main: '#2C5282', // Teal
+          },
+          background: {
+            default: '#FFFFFF',
+            paper: '#F6F6F6',
+          },
+          text: {
+            primary: '#4A4A4A', // Dark Gray
+            secondary: '#4A5568', // Gray
+          }
+        } : {
+          primary: {
+            main: '#FFFFFF',
+          },
+          secondary: {
+            main: '#487dbf', // Keep teal for dark mode accents
+          },
+          background: {
+            default: '#1D2125',
+            paper: '#1D2125',
+          },
+          text: {
+            primary: '#FFFFFF',
+            secondary: '#888888', // Gray
+          }
+        })
       },
-      marginLeft: '0.4em'
-    },
-    expiryHoverText: {
-      fontSize: '0.95em',
-      color: theme.palette.text.primary,
-      textAlign: 'center',
-      visibility: 'hidden',
-      opacity: 0,
-      transition: 'all 0.3301s'
-    },
-    chip: (
-      { size = 1, backgroundColor }: { size?: number; backgroundColor?: string } = {}
-    ) => {
-      const base = {
-        height: '100%',
-        width: '100%',
-        paddingTop: `${8 * size}px`,
-        paddingBottom: `${8 * size}px`,
-        paddingLeft: `${3 * size}px`,
-        paddingRight: `${3 * size}px`
-      };
-      if (typeof backgroundColor === 'string') {
-        (base as any).backgroundColor = backgroundColor;
-      }
-      return base;
-    },
-    chipLabel: {
-      maxWidth: '40em',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textAlign: 'left'
-    },
-    chipLabelTitle: ({ size = 1 }: { size?: number } = {}) => ({
-      fontSize: `${size}em`,
-      maxWidth: '49em',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap'
-    }),
-    chipLabelSubtitle: {
-      fontSize: '0.9em',
-      maxWidth: '49em',
-      wordWrap: 'break-word',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textAlign: 'left'
-    }
-  }
-});
+      typography: {
+        fontFamily: '"Helvetica", "Arial", sans-serif',
+        h1: {
+          fontWeight: 700,
+          fontSize: '2.5rem',
+          '@media (max-width:900px)': {
+            fontSize: '1.8rem',
+          },
+        },
+        h2: {
+          fontWeight: 700,
+          fontSize: '1.7rem',
+          '@media (max-width:900px)': {
+            fontSize: '1.6rem',
+          },
+        },
+        h3: {
+          fontSize: '1.4rem',
+        },
+        h4: {
+          fontSize: '1.25rem',
+        },
+        h5: {
+          fontSize: '1.1rem',
+        },
+        h6: {
+          fontSize: '1rem',
+        },
+      },
+      components: {
+        MuiCssBaseline: {
+          styleOverrides: {
+            body: {
+              backgroundColor: mode === 'light' ? '#FFFFFF' : '#1D2125',
+              backgroundImage: mode === 'light' 
+                ? `linear-gradient(45deg, rgba(27, 54, 93, 0.05), rgba(44, 82, 130, 0.05))`
+                : `linear-gradient(45deg, rgba(27, 54, 93, 0.1), rgba(44, 82, 130, 0.1))`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed',
+            },
+          },
+        },
+        MuiButton: {
+          styleOverrides: {
+            root: {
+              textTransform: 'none',
+              borderRadius: 8,
+              '&.MuiButton-contained': {
+                backgroundColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
+                color: mode === 'light' ? '#FFFFFF' : '#1B365D',
+                '&:hover': {
+                  backgroundColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
+                }
+              },
+              '&.MuiButton-outlined': {
+                borderColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
+                color: mode === 'light' ? '#1B365D' : '#FFFFFF',
+                '&:hover': {
+                  backgroundColor: mode === 'light' ? 'rgba(27, 54, 93, 0.04)' : 'rgba(255, 255, 255, 0.08)',
+                  borderColor: mode === 'light' ? '#2C5282' : '#F6F6F6',
+                }
+              },
+              '&.Mui-disabled': {
+                backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                color: mode === 'light' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)',
+                boxShadow: 'none',
+                '&.MuiButton-contained': {
+                  backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                },
+                '&.MuiButton-outlined': {
+                  borderColor: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                }
+              }
+            }
+          }
+        },
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              backgroundImage: 'none',
+              backgroundColor: mode === 'light' ? '#FFFFFF' : '#1D2125',
+            }
+          }
+        },
+        MuiAppBar: {
+          styleOverrides: {
+            root: {
+              backgroundColor: mode === 'light' ? '#1B365D' : '#1D2125',
+              color: mode === 'light' ? '#FFFFFF' : '#FFFFFF',
+            }
+          }
+        },
+        MuiCard: {
+          styleOverrides: {
+            root: {
+              borderRadius: 12,
+              border: `1px solid ${mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)'}`,
+            }
+          }
+        },
+        MuiChip: {
+          styleOverrides: {
+            root: {
+              borderRadius: 8,
+            }
+          }
+        }
+      },
+      shape: {
+        borderRadius: 8
+      },
+      templates: {
+        page_wrap: {
+          maxWidth: 'min(1440px, 100vw)',
+          margin: 'auto',
+          boxSizing: 'border-box',
+          padding: '56px',
+        },
+        subheading: {
+          textTransform: 'uppercase',
+          letterSpacing: '6px',
+          fontWeight: '700',
+        },
+        boxOfChips: {
+          display: 'flex',
+          justifyContent: 'left',
+          flexWrap: 'wrap',
+          gap: '8px',
+        },
+        chip: ({ size, backgroundColor }) => ({
+          height: `${size * 32}px`,
+          minHeight: `${size * 32}px`,
+          backgroundColor: backgroundColor || 'transparent',
+          borderRadius: '16px',
+          padding: '8px',
+          margin: '4px'
+        }),
+        chipLabel: {
+          display: 'flex',
+          flexDirection: 'column',
+        },
+        chipLabelTitle: ({ size }) => ({
+          fontSize: `${Math.max(size * 0.8, 0.8)}rem`,
+          fontWeight: '500',
+        }),
+        chipLabelSubtitle: {
+          fontSize: '0.7rem',
+          opacity: 0.7,
+        },
+        chipContainer: {
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+        }
+      },
+      spacing: 8,
+    });
+  }, [prefersDarkMode, settings?.theme?.mode]);
 
-// Define the props for our global styles component
-// interface GlobalStylesProps {
-//   children?: React.ReactNode;
-// }
-
-const GlobalStyles = withStyles({
-  '@global html': {
-    padding: '0px',
-    margin: '0px'
-  },
-  '@global body': {
-    padding: '0px',
-    margin: '0px',
-    fontFamily: 'helvetica'
-  },
-  '@global a': {
-    textDecoration: 'none',
-    color: '#424242'
-  },
-  '@global h1': {
-    fontWeight: 'bold',
-    fontSize: '2.5em'
-  },
-  '@global h2': {
-    fontWeight: 'bold',
-    fontSize: '1.7em'
-  },
-  '@global h3': {
-    fontSize: '1.4em'
-  },
-  '@global h4': {
-    fontSize: '1.25em'
-  },
-  '@global h5': {
-    fontSize: '1.1em'
-  },
-  '@global h6': {
-    fontSize: '1em'
-  }
-})(({ children }: { children?: React.ReactNode }) => (
-  <StyledEngineProvider injectFirst>
-    <ThemeProvider theme={baseTheme}>
-      <ThemeProvider theme={extendedTheme(baseTheme)}>
-        {children}
-      </ThemeProvider>
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {children}
     </ThemeProvider>
-  </StyledEngineProvider>
-));
-
-export default GlobalStyles;
+  );
+}

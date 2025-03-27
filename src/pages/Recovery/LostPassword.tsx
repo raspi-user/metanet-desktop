@@ -178,7 +178,6 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
             <PhoneEntry
               value={phone}
               onChange={setPhone}
-              placeholder='Enter phone number'
             />
           </AccordionDetails>
           <AccordionActions>

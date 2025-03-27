@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { SetStateAction, useState } from 'react'
-import { Typography, Button, TextField, InputAdornment, DialogContent, DialogContentText, DialogActions, LinearProgress } from '@mui/material'
+import { Typography, Button, TextField, DialogContent, DialogContentText, DialogActions, LinearProgress, InputAdornment } from '@mui/material'
 import DomainIcon from '@mui/icons-material/Public'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import ExpandLess from '@mui/icons-material/ExpandLess'
@@ -143,13 +143,15 @@ const AddEntityModal = ({
                 fullWidth
                 error={!!domainError}
                 helperText={domainError}
-                variant='filled'
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position='start'>
-                      <DomainIcon />
-                    </InputAdornment>
-                  )
+                variant='outlined'
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <DomainIcon />
+                      </InputAdornment>
+                    )
+                  }
                 }}
               />
               <br />
@@ -183,13 +185,15 @@ const AddEntityModal = ({
               fullWidth
               error={!!nameError}
               helperText={nameError}
-              variant='filled'
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position='start'>
-                    <NameIcon />
-                  </InputAdornment>
-                )
+              variant='outlined'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <NameIcon />
+                    </InputAdornment>
+                  )
+                }
               }}
             />
             <br />
@@ -206,13 +210,15 @@ const AddEntityModal = ({
               fullWidth
               error={!!iconError}
               helperText={iconError}
-              variant='filled'
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position='start'>
-                    <PictureIcon />
-                  </InputAdornment>
-                )
+              variant='outlined'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <PictureIcon />
+                    </InputAdornment>
+                  )
+                }
               }}
             />
             <br />
@@ -229,13 +235,15 @@ const AddEntityModal = ({
               fullWidth
               error={!!publicKeyError}
               helperText={publicKeyError}
-              variant='filled'
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position='start'>
-                    <PublicKeyIcon />
-                  </InputAdornment>
-                )
+              variant='outlined'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <PublicKeyIcon />
+                    </InputAdornment>
+                  )
+                }
               }}
             />
             <br />
@@ -279,6 +287,16 @@ const AddEntityModal = ({
               fullWidth
               error={description.length < 5 || description.length > 50}
               helperText={description.length < 5 || description.length > 50 ? 'description must be between 5 and 50 characters' : null}
+              variant='outlined'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <NameIcon />
+                    </InputAdornment>
+                  )
+                }
+              }}
             />
           </div>
         )}
