@@ -90,7 +90,7 @@ jobs:
           APPLE_SIGNING_IDENTITY: ${{ steps.verify_certificate.outputs.cert_id }}
         with:
           tagName: metanet-desktop-v__VERSION__
-          releaseName: "Metanet Desktop v__VERSION__"
+          releaseName: "Metanet-Desktop-v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
@@ -166,9 +166,9 @@ jobs:
       #   run: |
       #     signtool verify /pa /v path\to\metanet-desktop-setup.exe
 
-      # - name: Upload Windows Artifact
-      #   if: matrix.platform == 'windows-latest'
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: windows-artifact
-      #     path: path\to\metanet-desktop-setup.exe
+      - name: Upload Windows Artifact
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifact
+          path: src-tauri/target/release/bundle/windows/*.exe
