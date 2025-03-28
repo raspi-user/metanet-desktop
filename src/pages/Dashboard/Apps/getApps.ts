@@ -14,10 +14,13 @@ export const getApps = async ({
   adminOriginator
 }: GetAppsParams): Promise<string[]> => {
   try {
+    console.log("GETTING APPS....")
     // Fetch transaction outputs from the specified basket.
     const { outputs } = await permissionsManager.listOutputs({
-      basket: 'babbage-protocol-permission',
-      include: 'locking scripts'
+      basket: 'admin protocol-permission',
+      include: 'locking scripts',
+      includeTags: true,
+      includeLabels: true
     }, adminOriginator)
 
     // Collect unique originator names from the outputs.
@@ -25,11 +28,11 @@ export const getApps = async ({
     outputs.forEach(output => {
       if (output.tags && Array.isArray(output.tags)) {
         const originatorTag = output.tags.find(tag =>
-          tag.startsWith('babbage_originator')
+          tag.startsWith('originator')
         )
         if (originatorTag) {
           originatorNames.add(
-            originatorTag.substring('babbage_originator '.length)
+            originatorTag.substring('originator '.length)
           )
         }
       }
@@ -37,7 +40,7 @@ export const getApps = async ({
 
     // Fetch actions that include labels.
     const { actions } = await permissionsManager.listActions({
-      labels: ['action'],
+      labels: [],
       labelQueryMode: 'any',
       includeLabels: true
     }, adminOriginator)
@@ -47,16 +50,16 @@ export const getApps = async ({
     actions.forEach(action => {
       if (action.labels && Array.isArray(action.labels)) {
         action.labels.forEach(label => {
-          if (label.startsWith('app_')) {
-            const cleanedLabel = label.substring('app_'.length)
-            if (cleanedLabel !== 'projectbabbage.com') {
-              appLabels.add(cleanedLabel)
-            }
+          if (label.startsWith('admin originator ')) { // app_
+            const cleanedLabel = label.substring('admin originator '.length)
+            // if (cleanedLabel !== 'projectbabbage.com') {
+            appLabels.add(cleanedLabel)
+            // }
           }
         })
       }
     })
-
+    debugger
     // Identify any apps that appear in originator names but not in appLabels.
     const missingApps = new Set(
       [...originatorNames].filter(app => !appLabels.has(app))

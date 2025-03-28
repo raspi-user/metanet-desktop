@@ -4,8 +4,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import isImageUrl from '../utils/isImageUrl'
 import { useTheme } from '@mui/styles'
 import { DEFAULT_APP_ICON } from '../constants/popularApps'
-// import confederacyHost from '../utils/confederacyHost'
-// import { Img } from 'uhrp-react'
+import { Img } from '@bsv/uhrp-react'
 
 interface MetanetAppProps extends RouteComponentProps {
   iconImageUrl?: string
@@ -68,7 +67,7 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
     >
       <CardContent>
         <div>
-          <img
+          <Img
             src={isImageUrl(iconImageUrl) ? iconImageUrl : DEFAULT_APP_ICON}
             alt={displayName}
             style={{ height: '4.25em', paddingTop: '0.4em' }}
