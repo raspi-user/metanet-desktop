@@ -6,7 +6,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { Img } from 'uhrp-react'
 import makeStyles from '@mui/styles/makeStyles'
 import style from './style'
-import { DEFAULT_APP_ICON } from '../../constants/popularApps'
+import { generateDefaultIcon } from '../../constants/popularApps'
 // import confederacyHost from '../../utils/confederacyHost'
 // import registryOperator from '../../utils/registryOperator'
 import { useTheme } from '@mui/styles'
@@ -60,7 +60,7 @@ const BasketChip: React.FC<BasketChipProps> = ({
   // basketmap.config.confederacyHost = confederacyHost()
 
   const [basketName, setBasketName] = useState(basketId)
-  const [iconURL, setIconURL] = useState(DEFAULT_APP_ICON)
+  const [iconURL, setIconURL] = useState(generateDefaultIcon(basketId))
   const [description, setDescription] = useState('Basket description not found.')
   const [documentationURL, setDocumentationURL] = useState('https://projectbabbage.com')
 
