@@ -158,14 +158,21 @@ const BasketAccessHandler: FC<{
 
                     {/* Reason section */}
                     {reason && (
-                        <Box sx={{ mt: 1 }}>
-                            <Typography variant="body2" fontWeight="bold">
-                                Reason:
-                            </Typography>
-                            <Typography variant="body2">
-                                {reason}
-                            </Typography>
-                        </Box>
+                        <>
+                         <Divider />
+                            <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between" sx={{
+                                height: '3em', width: '100%'
+                            }}>
+                                <Typography variant="body1" fontWeight="bold">
+                                    Reason:
+                                </Typography>
+                                <Stack px={3}>
+                                    <Typography variant="body1">
+                                        {reason}
+                                    </Typography>
+                                </Stack>
+                            </Stack>
+                        </>
                     )}
                 </Stack>
             </DialogContent>
