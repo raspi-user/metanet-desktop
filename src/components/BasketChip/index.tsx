@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Chip, Badge, Avatar, Tooltip } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -11,7 +11,8 @@ import { DEFAULT_APP_ICON } from '../../constants/popularApps'
 // import registryOperator from '../../utils/registryOperator'
 import { useTheme } from '@mui/styles'
 import ShoppingBasket from '@mui/icons-material/ShoppingBasket'
-// import { WalletContext } from '../../UserInterface'
+import { WalletContext } from '../../UserInterface'
+import { RegistryClient } from '@bsv/sdk'
 
 const useStyles = makeStyles(style as any, {
   name: 'BasketChip'
@@ -41,6 +42,11 @@ const BasketChip: React.FC<BasketChipProps> = ({
   onCloseClick = () => { },
   canRevoke = false
 }) => {
+  const {
+    managers,
+    settings,
+  } = useContext(WalletContext)
+
   if (typeof basketId !== 'string') {
     throw new Error('BasketChip was initialized without a valid basketId')
   }
@@ -50,77 +56,72 @@ const BasketChip: React.FC<BasketChipProps> = ({
   // const { settings } = useContext(SettingsContext)
 
   // Initialize BasketMap
-  // const basketmap = new BasketMap()
+  const registrant = new RegistryClient(managers.permissionsManager) // ?
   // basketmap.config.confederacyHost = confederacyHost()
 
-  const [basketName,
-    // setBasketName
-  ] = useState(basketId)
-  const [iconURL,
-    // setIconURL
-  ] = useState(
-    DEFAULT_APP_ICON
-  )
-  const [description,
-    // setDescription
-  ] = useState(
-    'Basket description not found.'
-  )
-  const [documentationURL,
-    // setDocumentationURL
-  ] = useState('https://projectbabbage.com')
+  const [basketName, setBasketName] = useState(basketId)
+  const [iconURL, setIconURL] = useState(DEFAULT_APP_ICON)
+  const [description, setDescription] = useState('Basket description not found.')
+  const [documentationURL, setDocumentationURL] = useState('https://projectbabbage.com')
 
-  // useEffect(() => {
-  //   const cacheKey = `basketInfo_${basketId}`
+  useEffect(() => {
+    // const cacheKey = `basketInfo_${basketId}`
 
-  //   const fetchAndCacheData = async () => {
-  //     // Try to load data from cache
-  //     const cachedData = window.localStorage.getItem(cacheKey)
-  //     if (cachedData) {
-  //       const { name, iconURL, description, documentationURL } = JSON.parse(cachedData)
-  //       setBasketName(name)
-  //       setIconURL(iconURL)
-  //       setDescription(description)
-  //       setDocumentationURL(documentationURL)
-  //     }
-  //     try {
-  //       // Fetch basket info by ID and trusted entities' public keys
-  //       const trustedEntities = settings.trustedEntities.map(x => x.publicKey)
-  //       const results = await basketmap.resolveBasketById(basketId, trustedEntities)
-  //       if (results && results.length > 0) {
-  //         // Compute the most trusted of the results
-  //         let mostTrustedIndex = 0
-  //         let maxTrustPoints = 0
-  //         for (let i = 0; i < results.length; i++) {
-  //           const resultTrustLevel = settings.trustedEntities.find(x => x.publicKey === results[i].registryOperator)?.trust || 0
-  //           if (resultTrustLevel > maxTrustPoints) {
-  //             mostTrustedIndex = i
-  //             maxTrustPoints = resultTrustLevel
-  //           }
-  //         }
-  //         const basket = results[mostTrustedIndex]
+    const fetchAndCacheData = async () => {
+      // Try to load data from cache
+      // const cachedData = window.localStorage.getItem(cacheKey)
+      // if (cachedData) {
+      //   const { name, iconURL, description, documentationURL } = JSON.parse(cachedData)
+      //   setBasketName(name)
+      //   setIconURL(iconURL)
+      //   setDescription(description)
+      //   setDocumentationURL(documentationURL)
+      // }
+      try {
+        // Fetch basket info by ID and trusted entities' public keys
+        const trustedEntities = settings.trustSettings.trustedCertifiers.map(x => x.identityKey)
+        console.log('FETCHING BASKET INFO....')
+        const results = await registrant.resolve('basket', {
+          basketID: basketId,
+          registryOperators: trustedEntities
+        })
+        console.log('ANY LUCK?', results)
+        debugger
+        if (results && results.length > 0) {
+          // Compute the most trusted of the results
+          let mostTrustedIndex = 0
+          let maxTrustPoints = 0
+          for (let i = 0; i < results.length; i++) {
+            const resultTrustLevel = settings.trustSettings.trustedCertifiers.find(x => x.identityKey === results[i].registryOperator)?.trust || 0
+            if (resultTrustLevel > maxTrustPoints) {
+              mostTrustedIndex = i
+              maxTrustPoints = resultTrustLevel
+            }
+          }
+          const basket = results[mostTrustedIndex]
+          console.log('BASKET', basket)
 
-  //         // Update state and cache the results
-  //         setBasketName(basket.name)
-  //         setIconURL(basket.iconURL)
-  //         setDescription(basket.description)
-  //         setDocumentationURL(basket.documentationURL)
+          // Update state and cache the results
+          setBasketName(basket.name)
+          setIconURL(basket.iconURL)
+          setDescription(basket.description)
+          setDocumentationURL(basket.documentationURL)
 
-  //         // Store data in local storage
-  //         window.localStorage.setItem(cacheKey, JSON.stringify({
-  //           name: basket.name,
-  //           iconURL: basket.iconURL,
-  //           description: basket.description,
-  //           documentationURL: basket.documentationURL
-  //         }))
-  //       }
-  //     } catch (error) {
-  //       console.error(error)
-  //     }
-  //   }
+          // TODO: Store data in local storage
+          // window.localStorage.setItem(cacheKey, JSON.stringify({
+          //   name: basket.name,
+          //   iconURL: basket.iconURL,
+          //   description: basket.description,
+          //   documentationURL: basket.documentationURL
+          // }))
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
 
-  //   fetchAndCacheData()
-  // }, [basketId, settings])
+    fetchAndCacheData()
+  }, [basketId, settings])
 
   return (
     <div style={(theme as any).templates.chipContainer}>

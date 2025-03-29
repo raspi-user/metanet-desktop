@@ -10,6 +10,7 @@ import Fuse from 'fuse.js'
 // import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
 import { WalletContext } from '../../../UserInterface'
+import BasketChip from '../../../components/BasketChip'
 
 const Apps = () => {
   const theme = useTheme()
@@ -160,7 +161,7 @@ const Apps = () => {
       <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
         Browse and manage your application permissions.
       </Typography>
-
+      <BasketChip basketId='todo tokens' />
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <TextField
           variant="outlined"
@@ -173,9 +174,9 @@ const Apps = () => {
           inputRef={inputRef}
           InputProps={{
             startAdornment: (
-              <SearchIcon 
-                onClick={handleIconClick} 
-                sx={{ mr: 1, cursor: 'pointer' }} 
+              <SearchIcon
+                onClick={handleIconClick}
+                sx={{ mr: 1, cursor: 'pointer' }}
               />
             ),
             sx: {
@@ -196,10 +197,10 @@ const Apps = () => {
           <Typography variant="h4" sx={{ mb: 2 }}>
             Recent Applications
           </Typography>
-          
+
           <Grid container spacing={2}>
             {recentApps.map((app, index) => (
-              <Grid 
+              <Grid
                 key={index}
                 xs={12} sm={6} md={3}
               >
@@ -220,7 +221,7 @@ const Apps = () => {
         </Typography>
 
         {loading && <LinearProgress sx={{ mt: 1, mb: 2 }} />}
-        
+
         {(filteredApps.length === 0 && !loading) && (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <Typography variant="h5" color="textSecondary">
@@ -228,10 +229,10 @@ const Apps = () => {
             </Typography>
           </Box>
         )}
-        
+
         <Grid container spacing={2}>
           {filteredApps.map((app, index) => (
-            <Grid 
+            <Grid
               key={index}
               xs={12} sm={6} md={3}
             >
