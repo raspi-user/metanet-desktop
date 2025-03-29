@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { Chip, Badge, Avatar, Tooltip } from '@mui/material'
+import { Chip, Badge, Avatar, Tooltip, Stack, Typography, Divider } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 // import { BasketMap } from 'basketmap'
@@ -122,8 +122,12 @@ const BasketChip: React.FC<BasketChipProps> = ({
   }, [basketId, settings])
 
   return (
-    <div style={(theme as any).templates.chipContainer}>
-      <Chip
+    <Stack direction="column" spacing={1} alignItems="space-between">
+      <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between" sx={{
+        height: '3em', width: '100%'
+      }}>
+        <Typography variant="body1" fontWeight="bold">Protocol:</Typography>
+        <Chip
         style={(theme as any).templates.chip({ size })}
         sx={{
           '& .MuiChip-label': {
@@ -135,7 +139,6 @@ const BasketChip: React.FC<BasketChipProps> = ({
             <span style={(theme as any).templates.chipLabelTitle({ size })}>
               <b>{basketName}</b>
             </span>
-            <br />
             <span style={(theme as any).templates.chipLabelSubtitle}>
               {lastAccessed || description}
             </span>
@@ -223,9 +226,17 @@ const BasketChip: React.FC<BasketChipProps> = ({
           }
         }}
       />
-      <span className={classes.expires}>{expires}</span>
-    </div>
-  )
-}
+    </Stack>
+    {expires && 
+      <>
+        <Divider />
+        <Stack sx={{
+          height: '3em', width: '100%'
+        }}>
+          {expires}
+        </Stack>
+      </>}
+  </Stack>
+)}
 
 export default withRouter(BasketChip)

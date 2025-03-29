@@ -50,7 +50,7 @@ const CustomDialog: React.FC<CustomDialogProps> = ({
       className={`${classes.root} ${className}`}
       {...props}
     >
-      <DialogTitle component="div" className={classes.title} sx={{ backgroundColor: color, color: theme.palette.common.black }}>
+      <DialogTitle className={classes.title} sx={{ color: theme.palette.getContrastText(theme.palette.secondary.main), backgroundColor: theme.palette.secondary.main }}>
         <Stack direction="row" spacing={1} alignItems="center">
           {icon} <Typography variant="h5" fontWeight="bold">{title}</Typography>
         </Stack>

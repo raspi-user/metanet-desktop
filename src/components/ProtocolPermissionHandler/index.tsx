@@ -150,24 +150,20 @@ const ProtocolPermissionHandler: React.FC<{
     identity: {
       title: 'Trusted Entities Access Request',
       description: 'An app is requesting access to lookup identity information using the entities you trust.',
-      color: theme.approvals.identity,
       icon: <VerifiedUserIcon fontSize="medium" />
     },
     renewal: {
       title: 'Protocol Access Renewal',
       description: 'An app is requesting to renew its previous access to a protocol.',
-      color: theme.approvals.renewal,
       icon: <CachedIcon fontSize="medium" />
     },
     basket: {
       title: 'Basket Access Request',
       description: 'An app wants to view your tokens within a specific basket.',
-      color: theme.approvals.basket,
       icon: <ShoppingBasketIcon fontSize="medium" />
     },
     protocol: {
       title: 'Protocol Access Request',
-      color: theme.approvals.protocol,
       icon: <CodeIcon fontSize="medium" />
     }
   };
@@ -182,7 +178,6 @@ const ProtocolPermissionHandler: React.FC<{
   const getIconAvatar = () => (
     <Avatar 
       sx={{ 
-        bgcolor: theme.approvals.protocol,
         width: 40,
         height: 40,
         display: 'flex',
@@ -198,7 +193,6 @@ const ProtocolPermissionHandler: React.FC<{
     <CustomDialog
       open={open}
       title={getPermissionTypeDoc().title}
-      color={getPermissionTypeDoc().color}
       icon={getPermissionTypeDoc().icon}
     >
       <DialogContent>

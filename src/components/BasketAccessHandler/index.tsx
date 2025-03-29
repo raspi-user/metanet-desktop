@@ -1,10 +1,14 @@
 import { Dispatch, SetStateAction, useState, useEffect, useContext, FC } from 'react'
-import { DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
+import { DialogContent, DialogActions, Button, Typography, Divider, Box, Stack, Tooltip, Grid } from '@mui/material'
 import CustomDialog from '../CustomDialog'
 import { WalletContext, WalletContextValue } from '../../UserInterface'
 import AppChip from '../AppChip/index'
 import BasketChip from '../BasketChip/index'
 import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
+import { useTheme } from '@mui/material/styles'
+import Avatar from '@mui/material/Avatar'
+import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket'
+import deterministicColor from '../../utils/deterministicColor'
 
 type BasketAccessRequest = {
     requestID: string
@@ -23,6 +27,7 @@ const BasketAccessHandler: FC<{
         isFocused,
         managers
     } = useContext<WalletContextValue>(WalletContext)
+    const theme = useTheme()
 
     // Whether our dialog is open
     const [open, setOpen] = useState(false)
@@ -113,61 +118,77 @@ const BasketAccessHandler: FC<{
     // Current (top) request in the queue
     const { basket, originator, reason, renewal } = requests[0]
 
+    // Get avatar and icon
+    const getIconAvatar = () => (
+        <Avatar 
+            sx={{ 
+                bgcolor: theme.approvals?.basket || '#2e7d32',
+                width: 40,
+                height: 40,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}
+        >
+            <ShoppingBasketIcon fontSize="medium" />
+        </Avatar>
+    );
+
     return (
         <CustomDialog
             open={open}
             title={renewal ? 'Basket Access Renewal' : 'Basket Access Request'}
             onClose={handleDeny} // If the user closes via the X, treat as "deny"
+            icon={<ShoppingBasketIcon fontSize="medium" />}
         >
-            <DialogContent style={{ textAlign: 'center', padding: '1em', flex: 'none' }}>
-                <DialogContentText>
-                    An app is requesting to access some tokens (“things”) stored in one of your baskets.
-                </DialogContentText>
-                <br />
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 1fr',
-                    gridGap: '2em',
-                    alignItems: 'center',
-                    marginBottom: '1em'
-                }}>
-                    <span>App:</span>
-                    {originator && (
-                        <AppChip
-                            size={2.5}
-                            showDomain
-                            label={originator}
-                            clickable={false}
-                        />
-                    )}
-                </div>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 1fr',
-                    gridGap: '2em',
-                    alignItems: 'center',
-                    marginBottom: '1em'
-                }}>
-                    <span>Basket:</span>
+            <DialogContent>
+                <Stack spacing={1}>
+                    {/* App section */}
+                    <AppChip
+                        size={1.5}
+                        showDomain
+                        label={originator || 'unknown'}
+                        clickable={false}
+                    />
+                    
+                    <Divider />
+
+                    {/* Basket section */}
                     <BasketChip basketId={basket} />
-                </div>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 1fr',
-                    gridGap: '2em',
-                    alignItems: 'center',
-                    margin: '0 1.5em'
-                }}>
-                    <span>Reason:</span>
-                    <DialogContentText>{reason}</DialogContentText>
-                </div>
+
+                    {/* Reason section */}
+                    {reason && (
+                        <Box sx={{ mt: 1 }}>
+                            <Typography variant="body2" fontWeight="bold">
+                                Reason:
+                            </Typography>
+                            <Typography variant="body2">
+                                {reason}
+                            </Typography>
+                        </Box>
+                    )}
+                </Stack>
             </DialogContent>
-            <DialogActions style={{ justifyContent: 'space-around', padding: '1em', flex: 'none' }}>
-                <Button color='primary' onClick={handleDeny}>
+
+            {/* Visual signature */}
+            <Tooltip title="Unique visual signature for this request" placement="top">
+                <Box sx={{ mb: 3, py: 0.5, background: deterministicColor(JSON.stringify(requests[0])) }} />
+            </Tooltip>
+
+            <DialogActions sx={{ justifyContent: 'space-between' }}>
+                <Button 
+                    onClick={handleDeny}
+                    variant="outlined"
+                    color="inherit"
+                >
                     Deny
                 </Button>
-                <Button color='primary' onClick={handleGrant}>
-                    Grant
+                <Button 
+                    onClick={handleGrant}
+                    variant="contained"
+                    color="primary"
+                >
+                    Grant Access
                 </Button>
             </DialogActions>
         </CustomDialog>

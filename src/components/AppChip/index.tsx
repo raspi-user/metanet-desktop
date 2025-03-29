@@ -110,7 +110,7 @@ const AppChip: React.FC<AppChipProps> = ({
     <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{
       height: '3em', width: '100%'
     }}>
-      <Typography variant="body1" fontWeight="bold">App:</Typography>
+      <Typography variant="body1" fontWeight="bold">Application:</Typography>
         <div className={classes.chipContainer}>
         <Chip
           style={(theme as any).templates.chip({ size, backgroundColor })}
