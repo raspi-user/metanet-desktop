@@ -56,7 +56,7 @@ const BasketChip: React.FC<BasketChipProps> = ({
   // const { settings } = useContext(SettingsContext)
 
   // Initialize BasketMap
-  const registrant = new RegistryClient(managers.permissionsManager) // ?
+  const registrant = new RegistryClient(managers.walletManager) // ?
   // basketmap.config.confederacyHost = confederacyHost()
 
   const [basketName, setBasketName] = useState(basketId)
@@ -65,28 +65,26 @@ const BasketChip: React.FC<BasketChipProps> = ({
   const [documentationURL, setDocumentationURL] = useState('https://projectbabbage.com')
 
   useEffect(() => {
-    // const cacheKey = `basketInfo_${basketId}`
+    const cacheKey = `basketInfo_${basketId}`
 
     const fetchAndCacheData = async () => {
       // Try to load data from cache
-      // const cachedData = window.localStorage.getItem(cacheKey)
-      // if (cachedData) {
-      //   const { name, iconURL, description, documentationURL } = JSON.parse(cachedData)
-      //   setBasketName(name)
-      //   setIconURL(iconURL)
-      //   setDescription(description)
-      //   setDocumentationURL(documentationURL)
-      // }
+      const cachedData = window.localStorage.getItem(cacheKey)
+      if (cachedData) {
+        const { name, iconURL, description, documentationURL } = JSON.parse(cachedData)
+        setBasketName(name)
+        setIconURL(iconURL)
+        setDescription(description)
+        setDocumentationURL(documentationURL)
+      }
       try {
         // Fetch basket info by ID and trusted entities' public keys
         const trustedEntities = settings.trustSettings.trustedCertifiers.map(x => x.identityKey)
-        console.log('FETCHING BASKET INFO....')
         const results = await registrant.resolve('basket', {
           basketID: basketId,
           registryOperators: trustedEntities
         })
-        console.log('ANY LUCK?', results)
-        debugger
+
         if (results && results.length > 0) {
           // Compute the most trusted of the results
           let mostTrustedIndex = 0
@@ -108,12 +106,12 @@ const BasketChip: React.FC<BasketChipProps> = ({
           setDocumentationURL(basket.documentationURL)
 
           // TODO: Store data in local storage
-          // window.localStorage.setItem(cacheKey, JSON.stringify({
-          //   name: basket.name,
-          //   iconURL: basket.iconURL,
-          //   description: basket.description,
-          //   documentationURL: basket.documentationURL
-          // }))
+          window.localStorage.setItem(cacheKey, JSON.stringify({
+            name: basket.name,
+            iconURL: basket.iconURL,
+            description: basket.description,
+            documentationURL: basket.documentationURL
+          }))
         }
       } catch (error) {
         console.error(error)
