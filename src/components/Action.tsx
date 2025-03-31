@@ -180,7 +180,7 @@ const Action: FC<ActionProps> = ({
         <div>
           <Typography>TXID</Typography>
           <Grid container direction="row">
-            <Grid item sx={9} style={{ paddingRight: '0.5em' }}>
+            <Grid item sx={{ flex: 9 }} style={{ paddingRight: '0.5em' }}>
               <div>
                 <Typography variant="body1" className={classes.txid}>
                   {firstLine}
@@ -192,7 +192,7 @@ const Action: FC<ActionProps> = ({
                 </Typography>
               </div>
             </Grid>
-            <Grid item sx={3}>
+            <Grid item sx={{ flex: 3 }}>
               <IconButton onClick={handleCopy} disabled={copied}>
                 {copied ? <CheckIcon /> : <FileCopyIcon />}
               </IconButton>

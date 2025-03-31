@@ -1,12 +1,13 @@
 /* eslint-disable react/prop-types */
 import React, { FC } from 'react'
-import { Typography, Button, IconButton } from '@mui/material'
+import { Typography, Button, IconButton, Theme } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 import makeStyles from '@mui/styles/makeStyles'
 import style from './style'
 import { Img } from '@bsv/uhrp-react'
+import { Styles } from '@mui/styles'
 
-const useStyles = makeStyles(style, { name: 'pageHeader' })
+const useStyles = makeStyles(style as Styles<Theme, {}, keyof typeof style>, { name: 'pageHeader' })
 
 interface History {
   go: (n: number) => void
@@ -39,11 +40,11 @@ const PageHeader: FC<PageHeaderProps> = ({
 
   return (
     <div>
-      <div className={classes.top_grid}>
+      <div className={(classes as any).top_grid}>
         {showBackButton && (
           <div>
             <IconButton
-              className={classes.back_button}
+              className={(classes as any).back_button}
               onClick={() => history.go(-1)}
               size="large"
             >
@@ -53,7 +54,7 @@ const PageHeader: FC<PageHeaderProps> = ({
         )}
         <div>
           <Img
-            className={classes.app_icon}
+            className={(classes as any).app_icon}
             src={icon}
             alt={title}
           // poster={title}
@@ -72,7 +73,7 @@ const PageHeader: FC<PageHeaderProps> = ({
         <div>
           {showButton && (
             <Button
-              className={classes.action_button}
+              className={(classes as any).action_button}
               variant="contained"
               color="primary"
               size="large"
