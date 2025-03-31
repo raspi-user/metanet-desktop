@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Metanet Desktop",
-        "width": 1800,
-        "height": 1112
+        "width": 1280,
+        "height": 790
       }
     ],
     "security": {
