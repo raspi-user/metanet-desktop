@@ -1,18 +1,13 @@
 import { useState } from 'react'
-import { Avatar, Badge, Grid, Chip, Tooltip } from '@mui/material'
+import { Avatar, Badge, Chip, Tooltip, Box, Typography } from '@mui/material'
+import Grid from '@mui/material/Grid2'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-// import { CertMap } from 'certmap'
-// import { Img } from 'uhrp-react'
 import { useTheme, makeStyles } from '@mui/styles'
 import style from './style'
 import CloseIcon from '@mui/icons-material/Close'
 import { DEFAULT_APP_ICON } from '../../constants/popularApps'
-// import confederacyHost from '../../utils/confederacyHost'
-// import registryOperator from '../../utils/registryOperator'
-// import YellowCautionIcon from '../../images/cautionIcon'
 import CounterpartyChip from '../CounterpartyChip'
 import ArtTrack from '@mui/icons-material/ArtTrack'
-// import { SettingsContext } from '../../context/SettingsContext'
 
 const useStyles = makeStyles(style, {
   name: 'CertificateChip'
@@ -59,155 +54,140 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
   if (typeof certType !== 'string') {
     throw new Error('The certType prop in CertificateChip is not a string')
   }
-  // const certmap = new CertMap()
-  // certmap.config.confederacyHost = confederacyHost()
-  // const { settings } = useContext(SettingsContext)
 
   const classes = useStyles()
   const theme = useTheme()
 
-  const [certName,
-    // setCertName
-  ] = useState('Unknown Cert')
-  const [iconURLState,
-    // setIconUR
-  ] = useState(
+  const [certName] = useState('Unknown Cert')
+  const [iconURLState] = useState(
     iconURL || DEFAULT_APP_ICON
   )
-  const [descriptionState,
-    // setDescription
-  ] = useState(description || `${certType.substr(0, 12)}...`)
-  // const [documentationURL, setDocumentationURL] = useState('unknown')
-  const [fields,
-    // setFields
-  ] = useState({})
-
-  // useEffect(() => {
-  //   const fetchAndCacheData = async () => {
-  //     const registryOperators = settings.trustedEntities.map(x => x.publicKey)
-  //     const cacheKey = `certData_${certType}_${registryOperators.join('_')}`
-  //     const cachedData = window.localStorage.getItem(cacheKey)
-
-  //     if (cachedData) {
-  //       const cachedCert = JSON.parse(cachedData)
-  //       setCertName(cachedCert.name)
-  //       setIconURL(cachedCert.iconURL)
-  //       setDescription(cachedCert.description)
-  //       setDocumentationURL(cachedCert.documentationURL)
-  //       setFields(cachedCert.fields)
-  //     }
-
-  //     try {
-  //       const results = await certmap.resolveCertificateByType(certType, registryOperators)
-  //       if (results && results.length > 0) {
-  //         // Compute the most trusted of the results
-  //         let mostTrustedIndex = 0
-  //         let maxTrustPoints = 0
-  //         for (let i = 0; i < results.length; i++) {
-  //           const resultTrustLevel = settings.trustedEntities.find(x => x.publicKey === results[i].registryOperator)?.trust || 0
-  //           if (resultTrustLevel > maxTrustPoints) {
-  //             mostTrustedIndex = i
-  //             maxTrustPoints = resultTrustLevel
-  //           }
-  //         }
-  //         const mostTrustedCert = results[mostTrustedIndex]
-  //         setCertName(mostTrustedCert.name)
-  //         setIconURL(mostTrustedCert.iconURL)
-  //         setDescription(mostTrustedCert.description)
-  //         setDocumentationURL(mostTrustedCert.documentationURL)
-  //         setFields(JSON.parse(mostTrustedCert.fields))
-
-  //         // Cache the fetched data
-  //         window.localStorage.setItem(cacheKey, JSON.stringify(mostTrustedCert))
-  //       } else {
-  //         console.log('No certificates found.')
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to fetch certificate details:', error)
-  //     }
-  //   }
-
-  //   fetchAndCacheData()
-  // }, [settings, certType, setCertName, setIconURL, setDescription, setDocumentationURL, setFields])
+  const [descriptionState] = useState(description || `${certType.substr(0, 12)}...`)
+  const [fields] = useState({})
 
   return (
-    <div>
+    <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <Chip
-        style={(theme as any).templates.chip({ size })}
+        sx={{
+          ...(theme as any).templates.chip({ size }),
+          width: '100%',
+          height: 'auto',
+          '& .MuiChip-label': {
+            overflow: 'hidden',
+            whiteSpace: 'normal',
+            textOverflow: 'ellipsis',
+            padding: '8px'
+          }
+        }}
         label={
-          <div>
-            <span style={(theme as any).templates.chipLabelTitle({ size })}>
-              <b>{certName}</b>
-            </span>
-            <br />
-            <span style={(theme as any).templates.chipLabelSubtitle}>
+          <Box sx={{ 
+            width: '100%',
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 1 
+          }}>
+            <Typography sx={(theme as any).templates.chipLabelTitle({ size })} fontWeight="bold">
+              {certName}
+            </Typography>
+            
+            <Typography sx={(theme as any).templates.chipLabelSubtitle}>
               {lastAccessed || descriptionState}
-            </span>
-            <span>
-              {Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0
-                ? <div style={(theme as any).templates.boxOfChips}>
-                  <p style={{ fontSize: '0.9em', fontWeight: 'normal', marginRight: '1em' }}>fields:</p>
+            </Typography>
+
+            {/* Fields display section */}
+            {Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0 && (
+              <Box sx={{ 
+                ...(theme as any).templates.boxOfChips,
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                maxWidth: '100%'
+              }}>
+                <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
+                  fields:
+                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: 0.5,
+                  maxWidth: '100%',
+                  overflow: 'hidden'
+                }}>
                   {fieldsToDisplay.map((y, j) => (
                     <Chip
-                      style={{ margin: '0.4em 0.25em' }}
+                      sx={{ margin: '0.4em 0.25em' }}
                       key={j}
                       label={y}
+                      size="small"
                     />
                   ))}
-                </div>
-                : ''}
-              {typeof fieldsToDisplay === 'object' && !Array.isArray(fieldsToDisplay) && Object.values(fieldsToDisplay).length > 0
-                ? <div style={(theme as any).templates.boxOfChips}>
-                  <p style={{ fontSize: '0.9em', fontWeight: 'normal', marginRight: '1em' }}>fields:</p>
+                </Box>
+              </Box>
+            )}
+
+            {typeof fieldsToDisplay === 'object' && !Array.isArray(fieldsToDisplay) && Object.values(fieldsToDisplay).length > 0 && (
+              <Box sx={{ 
+                ...(theme as any).templates.boxOfChips,
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                maxWidth: '100%'
+              }}>
+                <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
+                  fields:
+                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: 0.5,
+                  maxWidth: '100%',
+                  overflow: 'hidden'
+                }}>
                   {Object.entries(fieldsToDisplay).map(([k, v], j) => (
                     <Chip
-                      style={{ margin: '0.4em 0.25em' }}
+                      sx={{ margin: '0.4em 0.25em' }}
                       key={j}
                       label={`${(fields as any)[k] || k}: ${v}`}
+                      size="small"
                     />
                   ))}
-                </div>
-                : ''}
-            </span>
-            <span>
-              {issuer
-                ? <div>
-                  <Grid container alignContent='center' style={{ alignItems: 'center' }}>
-                    <Grid item>
-                      <p style={{ fontSize: '0.9em', fontWeight: 'normal', marginRight: '1em' }}>issuer:</p>
-                    </Grid>
-                    <Grid item>
-                      <CounterpartyChip
-                        counterparty={issuer}
-                        onClick={onIssuerClick}
-                      />
-                    </Grid>
+                </Box>
+              </Box>
+            )}
+
+            {/* Issuer section */}
+            {issuer && (
+              <Box sx={{ width: '100%', mt: 1 }}>
+                <Grid container spacing={1} alignItems="center">
+                  <Grid>
+                    <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
+                      issuer:
+                    </Typography>
                   </Grid>
-                </div>
-                : ''}
-            </span>
-            <span>
-              {verifier
-                ? <div style={(theme as any).templates.boxOfChips}>
-                  <p style={{ fontSize: '0.9em', fontWeight: 'normal', marginRight: '1em' }}>verifier:</p>
+                  <Grid>
+                    <CounterpartyChip
+                      counterparty={issuer}
+                      onClick={onIssuerClick}
+                      label="Issuer"
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
 
-                  <CounterpartyChip
-                    counterparty={verifier}
-                    onClick={onVerifierClick}
-                    clickable
-                    size={0.85}
-                  />
-
-                </div>
-                : ''}
-            </span>
-          </div>
+            {/* Verifier section */}
+            {verifier && 
+              <CounterpartyChip
+                counterparty={verifier}
+                onClick={onVerifierClick}
+                clickable
+                size={0.85}
+                label="Verifier"
+              />}
+          </Box>
         }
-        onDelete={() => {
-          onCloseClick()
-        }}
+        onDelete={onCloseClick ? () => onCloseClick() : undefined}
         deleteIcon={canRevoke ? <CloseIcon /> : <></>}
-        // disableRipple={!clickable}
         icon={
           <Badge
             overlap='circular'
@@ -256,11 +236,10 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
                 backgroundColor: '#000000AF'
               }}
             >
-              <img // TODO: UHRP
+              <img 
                 src={iconURLState}
                 style={{ width: '75%', height: '75%' }}
                 className={classes.table_picture}
-              // confederacyHost={confederacyHost()}
               />
             </Avatar>
           </Badge>
@@ -278,9 +257,11 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
           }
         }}
       />
-      <span className={classes.expires}>{expires}</span>
-    </div>
+      {expires && (
+        <Typography className={classes.expires}>{expires}</Typography>
+      )}
+    </Box>
   )
 }
 
-export default withRouter(CertificateChip)
+  export default withRouter(CertificateChip)

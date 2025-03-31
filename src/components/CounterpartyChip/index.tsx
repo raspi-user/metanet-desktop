@@ -27,6 +27,7 @@ interface CounterpartyChipProps extends RouteComponentProps {
   expires?: string
   onCloseClick?: () => void
   canRevoke?: boolean
+  label?: string
 }
 
 const CounterpartyChip: React.FC<CounterpartyChipProps> = ({
@@ -37,7 +38,8 @@ const CounterpartyChip: React.FC<CounterpartyChipProps> = ({
   onClick,
   expires,
   onCloseClick = () => { },
-  canRevoke = false
+  canRevoke = false,
+  label = 'Counterparty'
 }) => {
   // const signia = new Signia()
   // signia.config.confederacyHost = confederacyHost()
@@ -73,7 +75,7 @@ const CounterpartyChip: React.FC<CounterpartyChipProps> = ({
         height: '3em', width: '100%'
       }}>
         <Typography variant="body1" fontWeight="bold">
-          Counterparty:
+          {label}:
         </Typography>
         <Chip
           component="div"
