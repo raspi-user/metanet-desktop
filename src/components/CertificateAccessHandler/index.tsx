@@ -29,21 +29,8 @@ const CertificateAccessHandler: FC<{
     managers
   } = useContext(WalletContext)
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
-  const [open, setOpen] = useState(true)
-  const [perms, setPerms] = useState<CertificateAccessRequest[]>([{
-    requestID: '5464366763',
-    originator: 'deggen.com',
-    certificateType: 'person',
-    fields: {
-      name: 'peter',
-      age: 30,
-      height: 180
-    },
-    fieldsArray: ['name', 'age', 'height'],
-    verifierPublicKey: 'self',
-    description: 'This is a person certificate',
-    renewal: false
-  }])
+  const [open, setOpen] = useState(false)
+  const [perms, setPerms] = useState<CertificateAccessRequest[]>([])
 
   const handleGrant = async () => {
     managers.permissionsManager!.grantPermission({
