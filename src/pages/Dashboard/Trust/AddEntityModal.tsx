@@ -48,11 +48,13 @@ const AddEntityModal = ({
       if (!json.babbage || !json.babbage.trust || typeof json.babbage.trust !== 'object') {
         throw new Error('This domain does not support importing a trust relationship (it needs to follow the BRC-68 protocol)')
       }
+      debugger
+      console.log('JSON', json)
       await validateTrust(json.babbage.trust)
       setName(json.babbage.trust.name)
-      setDescription(json.babbage.trust.description)
+      setDescription(json.babbage.trust.note)
       setIcon(json.babbage.trust.icon)
-      setIdentityKey(json.babbage.trust.identityKey)
+      setIdentityKey(json.babbage.trust.publicKey)
       setFieldsValid(true)
     } catch (e) {
       setFieldsValid(false)

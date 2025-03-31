@@ -20,8 +20,8 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  IconButton, 
-  Drawer, 
+  IconButton,
+  Drawer,
   Toolbar,
   Box,
   Divider,
@@ -31,6 +31,7 @@ import Profile from '../../components/Profile.jsx'
 import { WalletContext } from '../../UserInterface'
 import PageLoading from '../../components/PageLoading.js'
 import Apps from './Apps'
+import App from './App/Index.js'
 
 // pages
 import Trust from './Trust/index.js'
@@ -112,7 +113,7 @@ const Dashboard = () => {
         setPageLoading(false)
         const { publicKey } = await managers.walletManager!.getPublicKey({ identityKey: true })
         setMyIdentityKey(publicKey)
-        
+
         // Check if this is a first-time login
         const isFirstTime = !localStorage.getItem('hasCompletedSetup');
         if (isFirstTime) {
@@ -127,7 +128,7 @@ const Dashboard = () => {
   if (pageLoading) {
     return <PageLoading />
   }
-  
+
   // Custom styling for menu items
   const menuItemStyle = (isSelected) => ({
     borderRadius: '8px',
@@ -143,20 +144,20 @@ const Dashboard = () => {
       },
     }),
   });
-  
+
   return (
     <div className={classes.content_wrap} style={{ marginLeft: getMargin(), transition: 'margin 0.3s ease' }}>
-      <div style={{ 
-        marginLeft: 0, 
-        width: menuOpen ? `calc(100vw - ${getMargin()})` : '100vw', 
-        transition: 'width 0.3s ease, margin 0.3s ease' 
+      <div style={{
+        marginLeft: 0,
+        width: menuOpen ? `calc(100vw - ${getMargin()})` : '100vw',
+        transition: 'width 0.3s ease, margin 0.3s ease'
       }}>
         {(breakpoints as any).sm &&
           <div style={{ padding: '0.5em 0 0 0.5em' }} ref={menuRef}>
             <Toolbar>
-              <IconButton 
-                edge='start' 
-                onClick={handleDrawerToggle} 
+              <IconButton
+                edge='start'
+                onClick={handleDrawerToggle}
                 aria-label='menu'
                 sx={{
                   color: 'primary.main',
@@ -170,10 +171,10 @@ const Dashboard = () => {
             </Toolbar>
           </div>}
       </div>
-      <Drawer 
-        anchor='left' 
-        open={menuOpen} 
-        variant='persistent' 
+      <Drawer
+        anchor='left'
+        open={menuOpen}
+        variant='persistent'
         onClose={handleDrawerToggle}
         sx={{
           width: 320,
@@ -189,10 +190,10 @@ const Dashboard = () => {
           },
         }}
       >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
             height: '100%',
             p: 2
           }}
@@ -200,9 +201,9 @@ const Dashboard = () => {
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
             <Profile />
           </Box>
-          
+
           <Divider sx={{ mb: 2 }} />
-          
+
           <List component="nav" sx={{ mb: 2 }}>
             <ListItemButton
               onClick={() => navigation.push('/dashboard/apps')}
@@ -212,10 +213,10 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/apps' ? 'primary.main' : 'inherit' }}>
                 <BrowseIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     fontWeight={history.location.pathname === '/dashboard/apps' ? 600 : 400}
                   >
                     Apps
@@ -223,7 +224,7 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-            
+
             <ListItemButton
               onClick={() => navigation.push('/dashboard/identity')}
               selected={history.location.pathname === '/dashboard/identity'}
@@ -232,10 +233,10 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/identity' ? 'primary.main' : 'inherit' }}>
                 <IdentityIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     fontWeight={history.location.pathname === '/dashboard/identity' ? 600 : 400}
                   >
                     Identity
@@ -243,7 +244,7 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-            
+
             <ListItemButton
               onClick={() => navigation.push('/dashboard/trust')}
               selected={history.location.pathname === '/dashboard/trust'}
@@ -252,10 +253,10 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/trust' ? 'primary.main' : 'inherit' }}>
                 <VerifiedUserIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     fontWeight={history.location.pathname === '/dashboard/trust' ? 600 : 400}
                   >
                     Trust
@@ -263,7 +264,7 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-            
+
             <ListItemButton
               onClick={() => navigation.push('/dashboard/security')}
               selected={history.location.pathname === '/dashboard/security'}
@@ -272,10 +273,10 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/security' ? 'primary.main' : 'inherit' }}>
                 <SecurityIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     fontWeight={history.location.pathname === '/dashboard/security' ? 600 : 400}
                   >
                     Security
@@ -283,7 +284,7 @@ const Dashboard = () => {
                 }
               />
             </ListItemButton>
-            
+
             <ListItemButton
               onClick={() => navigation.push('/dashboard/settings')}
               selected={history.location.pathname === '/dashboard/settings'}
@@ -292,10 +293,10 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40, color: history.location.pathname === '/dashboard/settings' ? 'primary.main' : 'inherit' }}>
                 <SettingsIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     fontWeight={history.location.pathname === '/dashboard/settings' ? 600 : 400}
                   >
                     Settings
@@ -316,7 +317,7 @@ const Dashboard = () => {
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <LogoutIcon />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={
                   <Typography variant="body1">
                     Logout
@@ -329,7 +330,7 @@ const Dashboard = () => {
               variant='caption'
               color='textSecondary'
               align='center'
-              sx={{ 
+              sx={{
                 display: 'block',
                 mt: 2,
                 textAlign: 'center',
@@ -367,6 +368,10 @@ const Dashboard = () => {
           <Route
             path='/dashboard/apps'
             component={Apps}
+          />
+          <Route
+            path='/dashboard/app'
+            component={App}
           />
           <Route
             component={() => {
