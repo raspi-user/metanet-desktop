@@ -3,7 +3,7 @@ import { Card, CardContent, Typography } from '@mui/material'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import isImageUrl from '../utils/isImageUrl'
 import { useTheme } from '@mui/styles'
-import { DEFAULT_APP_ICON } from '../constants/popularApps'
+import { generateDefaultIcon } from '../constants/popularApps'
 import { Img } from '@bsv/uhrp-react'
 
 interface MetanetAppProps extends RouteComponentProps {
@@ -15,7 +15,7 @@ interface MetanetAppProps extends RouteComponentProps {
 }
 
 const MetanetApp: React.FC<MetanetAppProps> = ({
-  iconImageUrl = DEFAULT_APP_ICON,
+  iconImageUrl,
   domain,
   appName,
   history,
@@ -31,6 +31,8 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
 
   // Fallback to domain if appName is not provided.
   const displayName = appName || domain
+
+  iconImageUrl = iconImageUrl || generateDefaultIcon(displayName)
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
     if (clickable) {
@@ -60,7 +62,7 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
         backgroundColor: 'transparent',
         backgroundImage: 'none',
         '&:hover': {
-          backgroundColor: 'gray'
+          backgroundColor: (theme as any).palette.action?.hover || 'rgba(0, 0, 0, 0.04)'
         },
       }}
       onClick={handleClick}
@@ -68,7 +70,7 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
       <CardContent>
         <div>
           <Img
-            src={isImageUrl(iconImageUrl) ? iconImageUrl : DEFAULT_APP_ICON}
+            src={iconImageUrl}
             alt={displayName}
             style={{ height: '4.25em', paddingTop: '0.4em' }}
           />
@@ -77,8 +79,8 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
           TODO: Remove references to webkit once browsers mature to a good level
         */}
         <Typography
-          style={{
-            color: 'black',
+          sx={{
+            color: (theme as any).palette.text?.primary || 'inherit',
             paddingTop: '0.4em',
             display: '-webkit-box',
             overflow: 'hidden',

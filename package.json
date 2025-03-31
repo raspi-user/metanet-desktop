@@ -1,7 +1,7 @@
 {
   "name": "metanet-desktop",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,6 +21,7 @@
     "@tauri-apps/plugin-shell": "^2.2.0",
     "boomerang-http": "^0.1.0",
     "fuse.js": "^7.1.0",
+    "jdenticon": "^3.3.0",
     "react": "^18.3.1",
     "react-country-region-selector": "^4.0.2",
     "react-dom": "^18.3.1",
@@ -41,6 +42,6 @@
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "~5.6.2",
     "url": "^0.11.4",
-    "vite": "^6.0.3"
+    "vite": "^6.2.4"
   }
 }
