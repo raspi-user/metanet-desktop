@@ -38,7 +38,7 @@ const RecentActions: FC<RecentActionsProps> = ({
             amount: `${action.satoshis}`,
             inputs: action.inputs,
             outputs: action.outputs,
-            timestamp: 'unknown'
+            timestamp: 'unknown timestamp'
           };
           return <Action key={index} {...actionToDisplay} />
         })}

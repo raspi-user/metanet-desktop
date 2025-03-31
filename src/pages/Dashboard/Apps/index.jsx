@@ -10,7 +10,6 @@ import Fuse from 'fuse.js'
 // import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
 import { WalletContext } from '../../../UserInterface'
-import BasketChip from '../../../components/BasketChip'
 
 const Apps = () => {
   const theme = useTheme()
@@ -161,7 +160,6 @@ const Apps = () => {
       <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
         Browse and manage your application permissions.
       </Typography>
-      <BasketChip basketId='todo tokens' />
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <TextField
           variant="outlined"

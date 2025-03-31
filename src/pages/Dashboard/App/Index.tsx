@@ -118,7 +118,7 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
             includeLabels: true,
           },
           adminOriginator
-        );
+        )
 
         // For demonstration, let's assume actions can be displayed as is,
         // or use transformActions if you need to manipulate them:
