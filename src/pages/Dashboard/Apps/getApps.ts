@@ -59,7 +59,6 @@ export const getApps = async ({
         })
       }
     })
-    debugger
     // Identify any apps that appear in originator names but not in appLabels.
     const missingApps = new Set(
       [...originatorNames].filter(app => !appLabels.has(app))
