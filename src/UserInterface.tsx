@@ -45,9 +45,9 @@ import packageJson from '../package.json'
 
 // Define a type for the config from WalletConfig component
 type WalletConfigType = {
-  wabUrl: string;
-  selectedAuthMethod: string;
-  selectedNetwork: 'main' | 'test';
+    wabUrl: string;
+    selectedAuthMethod: string;
+    selectedNetwork: 'main' | 'test';
 }
 
 /** Queries for responsive design */
@@ -98,9 +98,9 @@ export const WalletContext = createContext<WalletContextValue>({
     appName: 'Metanet Desktop',
     adminOriginator: 'admin.com',
     settings: DEFAULT_SETTINGS,
-    updateSettings: async () => {},
+    updateSettings: async () => { },
     network: 'mainnet',
-    logout: () => {}
+    logout: () => { }
 })
 
 // -----
@@ -209,14 +209,14 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                     if (!response.ok) {
                         throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
                     }
-                    
+
                     const info = await response.json();
                     setWabInfo(info);
-                    
+
                     // Auto-select the first auth method
                     if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
                         setSelectedAuthMethod(info.supportedAuthMethods[0]);
-                        
+
                         // Automatically apply default configuration
                         setConfigComplete(true);
                     }
@@ -235,10 +235,10 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
             if (!response.ok) {
                 throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
             }
-            
+
             const info = await response.json();
             setWabInfo(info);
-            
+
             // If there's only one auth method, auto-select it
             if (info.supportedAuthMethods && info.supportedAuthMethods.length === 1) {
                 setSelectedAuthMethod(info.supportedAuthMethods[0]);
@@ -259,28 +259,28 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
             toast.error("Please select an Auth Method from the WAB info first.");
             return;
         }
-        
+
         try {
             // Make sure we have all the required configuration
             if (!wabUrl) {
                 toast.error("WAB Server URL is required");
                 return;
             }
-            
+
             if (!selectedNetwork) {
                 toast.error("Network selection is required");
                 return;
             }
-            
+
             if (!selectedStorageUrl) {
                 toast.error("Storage URL is required");
                 return;
             }
-            
+
             // Save the configuration
             toast.success("Default configuration applied successfully!");
             setConfigComplete(true);
-            
+
             // Close the configuration dialog
             setShowWalletConfigEdit(false);
         } catch (error: any) {
@@ -312,7 +312,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                         const services = new Services(chain);
                         const wallet = new Wallet(signer, services, undefined, privilegedKeyManager);
                         newManagers.settingsManager = wallet.settingsManager;
-                        
+
                         // Use user-selected storage provider
                         const client = new StorageClient(wallet, selectedStorageUrl);
                         await client.makeAvailable();
@@ -320,14 +320,14 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                         // Setup permissions with provided callbacks.
                         const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
-                            seekPermissionsForPublicKeyRevelation: true,
-                            seekProtocolPermissionsForSigning: true,
-                            seekProtocolPermissionsForEncrypting: true,
-                            seekProtocolPermissionsForHMAC: true,
-                            seekPermissionsForIdentityKeyRevelation: true,
-                            seekPermissionsForKeyLinkageRevelation: true
+                            seekPermissionsForPublicKeyRevelation: false,
+                            seekProtocolPermissionsForSigning: false,
+                            seekProtocolPermissionsForEncrypting: false,
+                            seekProtocolPermissionsForHMAC: false,
+                            seekPermissionsForIdentityKeyRevelation: false,
+                            seekPermissionsForKeyLinkageRevelation: false
                         });
-                        
+
                         if (protocolPermissionCallback) {
                             permissionsManager.bindCallback('onProtocolPermissionRequested', protocolPermissionCallback);
                         }
@@ -357,20 +357,20 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
 
                 // Create network service based on selected network
                 const networkPreset = selectedNetwork === 'main' ? 'mainnet' : 'testnet';
-                
+
                 // Create a LookupResolver instance
                 const resolver = new LookupResolver({
                     networkPreset
                 });
-                
+
                 // Create a broadcaster with proper network settings
                 const broadcaster = new SHIPBroadcaster(['tm_users'], {
                     networkPreset
                 });
-                
+
                 // Create a WAB Client with proper URL
                 const wabClient = new WABClient(wabUrl);
-                
+
                 // Create a phone interactor
                 const phoneInteractor = new TwilioPhoneInteractor();
 
@@ -388,7 +388,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                     wabClient,
                     phoneInteractor
                 );
-                
+
                 // Store in window for debugging
                 (window as any).walletManager = exampleWalletManager;
 
@@ -461,10 +461,10 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         if (localStorage.snap) {
             localStorage.removeItem('snap');
         }
-        
+
         // Reset manager state
         setManagers({});
-        
+
         // Reset configuration state
         setConfigComplete(false);
         setSnapshotLoaded(false);
@@ -484,14 +484,14 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
         network: selectedNetwork === 'main' ? 'mainnet' : 'testnet' as 'mainnet' | 'testnet',
         logout
     }), [
-        managers, 
-        isFocused, 
-        requestFocus, 
-        relinquishFocus, 
-        appName, 
-        appVersion, 
-        adminOriginator, 
-        settings, 
+        managers,
+        isFocused,
+        requestFocus,
+        relinquishFocus,
+        appName,
+        appVersion,
+        adminOriginator,
+        settings,
         selectedNetwork,
         logout
     ])
