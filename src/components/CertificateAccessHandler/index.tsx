@@ -1,17 +1,19 @@
 import { useState, useEffect, useContext, SetStateAction, FC, Dispatch } from 'react'
-import { DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
-// import boomerang from 'boomerang-http'
+import { DialogContent, DialogActions, Button, Typography, Divider, Box, Stack, Tooltip } from '@mui/material'
 import CustomDialog from '../CustomDialog/index.jsx'
 import { WalletContext } from '../../UserInterface.js'
 import AppChip from '../AppChip'
 import CertificateChip from '../CertificateChip/index'
 import { PermissionEventHandler, PermissionRequest } from '@bsv/wallet-toolbox-client'
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
+import deterministicColor from '../../utils/deterministicColor'
 
 type CertificateAccessRequest = {
   requestID: string
   certificateType?: string
-  fields?: object
-  verifierPublicKey?: string //TODO update
+  fields?: any
+  fieldsArray?: string[]
+  verifierPublicKey?: string
   originator: string
   description?: string
   renewal?: boolean
@@ -27,47 +29,36 @@ const CertificateAccessHandler: FC<{
     managers
   } = useContext(WalletContext)
   const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [perms, setPerms] = useState<Array<any>>([
-    // originator
-    // requestID
-    // certificateType
-    // fields
-    // verifierPublicKey
-    // description
-    // renewal`
-  ])
-
-  // The single "pending" request data
-  // const [request, setRequest] = useState<CertificateAccessRequest | null>(null)
-
-  // const closeDialog = async () => {
-  //   setOpen(false)
-  //   setRequest(null)
-  //   // If we weren't focused before, relinquish
-  //   if (!wasOriginallyFocused) {
-  //     await onFocusRelinquished()
-  //   }
-  // }
+  const [open, setOpen] = useState(true)
+  const [perms, setPerms] = useState<CertificateAccessRequest[]>([{
+    requestID: '5464366763',
+    originator: 'deggen.com',
+    certificateType: 'person',
+    fields: {
+      name: 'peter',
+      age: 30,
+      height: 180
+    },
+    fieldsArray: ['name', 'age', 'height'],
+    verifierPublicKey: 'self',
+    description: 'This is a person certificate',
+    renewal: false
+  }])
 
   const handleGrant = async () => {
     managers.permissionsManager!.grantPermission({
       requestID: perms[0].requestID
     })
-    setPerms(prev => {
-      const newPerms = prev.slice(1)
-      if (newPerms.length === 0) {
-        setOpen(false)
-        if (!wasOriginallyFocused) {
-          onFocusRelinquished()
-        }
-      }
-      return newPerms
-    })
+    advanceQueue()
   }
 
   const handleDeny = async () => {
     managers.permissionsManager!.denyPermission(perms[0].requestID)
+    advanceQueue()
+  }
+
+  // Pop the first request from the queue, close if empty, relinquish focus if needed
+  const advanceQueue = () => {
     setPerms(prev => {
       const newPerms = prev.slice(1)
       if (newPerms.length === 0) {
@@ -79,13 +70,6 @@ const CertificateAccessHandler: FC<{
       return newPerms
     })
   }
-
-  // const handleDialogClose = async () => {
-  //   // If user closes via the "X" (or otherwise):
-  //   managers.permissionsManager!.denyPermission(request!.requestID)
-  //   // if (rejectFn) rejectFn(new Error('User closed basket access request dialog'))
-  //   await closeDialog()
-  // }
 
   useEffect(() => {
     setCertificateAccessHandler((): PermissionEventHandler => {
@@ -94,18 +78,18 @@ const CertificateAccessHandler: FC<{
           requestID,
           originator,
           renewal,
-          certificate,
           reason
         } = args
-        const {
-          certType,
-          fields,
-          verifier
-        } = certificate!
-
-        // Save request + resolvers in state
-        // setRequest(incomingRequest)
-        setOpen(true)
+        
+        // Extract certificate data, safely handling potentially undefined values
+        const certificate = args.certificate as any
+        const certType = certificate?.certType || ''
+        const fields = certificate?.fields || {}
+        
+        // Extract field names as an array for the CertificateChip component
+        const fieldsArray = fields ? Object.keys(fields) : []
+        
+        const verifier = certificate?.verifier || ''
 
         // Focus logic
         const currentlyFocused = await isFocused()
@@ -113,21 +97,23 @@ const CertificateAccessHandler: FC<{
         if (!currentlyFocused) {
           await onFocusRequested()
         }
-        if (perms.length === 0) {
-          setWasOriginallyFocused(wasOriginallyFocused)
-        }
+        
+        // Add to queue
         setPerms(p => {
-          const newItem = {
+          const newItem: CertificateAccessRequest = {
             originator,
             verifierPublicKey: verifier,
             certificateType: certType,
             fields,
+            fieldsArray,
             renewal,
             requestID,
             description: reason
           }
           return [...p, newItem]
         })
+        
+        setOpen(true)
       }
     })
   }, [])
@@ -139,72 +125,72 @@ const CertificateAccessHandler: FC<{
   return (
     <CustomDialog
       open={open}
-      // onClose={handleCancel}
+      onClose={handleDeny}
       title={!perms[0].renewal
         ? 'Certificate Access Request'
         : 'Certificate Access Renewal'
       }
+      icon={<VerifiedUserIcon fontSize="medium" />}
     >
-      <DialogContent style={{
-        textAlign: 'center',
-        padding: '1em',
-        flex: 'none'
-      }}
-      >
-        <DialogContentText>
-          <br />
-          Someone wants to use an app to look at some of your digital certificates.
-        </DialogContentText>
-        <br />
-        <center>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gridGap: '2em', alignItems: 'center', width: 'min-content' }}>
-            <span>app:</span>
-            {perms[0].originator && <div>
-              <AppChip
-                size={2.5}
-                showDomain
-                label={perms[0].originator}
-                clickable={false}
-              />
-            </div>}
-          </div>
-          <br />
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gridGap: '2em', alignItems: 'center', width: 'min-content' }}>
-            <span>certificate:</span>
-            <div>
-              <CertificateChip
-                certType={perms[0].certificateType}
-                fieldsToDisplay={perms[0].fields}
-                verifier={perms[0].verifierPublicKey}
-              />
-            </div>
-          </div>
-          <br />
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gridGap: '2em', alignItems: 'center', margin: '0px 1.5em' }}>
-            <span>reason:</span>
-            <DialogContentText>
-              {perms[0].description}
-            </DialogContentText>
-          </div>
-        </center>
+      <DialogContent>
+        <Stack spacing={1}>
+          {/* App section */}
+          <AppChip
+            size={1.5}
+            showDomain
+            label={perms[0].originator}
+            clickable={false}
+          />
+          
+          <Divider />
+
+          {/* Certificate section */}
+          <CertificateChip
+            certType={perms[0].certificateType}
+            fieldsToDisplay={perms[0].fieldsArray}
+            verifier={perms[0].verifierPublicKey}
+          />
+
+          {/* Reason section */}
+          {perms[0].description && (
+            <>
+              <Divider />
+              <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between" sx={{
+                height: '3em', width: '100%'
+              }}>
+                <Typography variant="body1" fontWeight="bold">
+                  Reason:
+                </Typography>
+                <Stack px={3}>
+                  <Typography variant="body1">
+                    {perms[0].description}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </>
+          )}
+        </Stack>
       </DialogContent>
-      <DialogActions style={{
-        justifyContent: 'space-around',
-        padding: '1em',
-        flex: 'none'
-      }}
-      >
-        <Button
+
+      {/* Visual signature */}
+      <Tooltip title="Unique visual signature for this request" placement="top">
+        <Box sx={{ mb: 3, py: 0.5, background: deterministicColor(JSON.stringify(perms[0])) }} />
+      </Tooltip>
+
+      <DialogActions sx={{ justifyContent: 'space-between' }}>
+        <Button 
           onClick={handleDeny}
-          color='primary'
+          variant="outlined"
+          color="inherit"
         >
           Deny
         </Button>
-        <Button
-          color='primary'
+        <Button 
           onClick={handleGrant}
+          variant="contained"
+          color="primary"
         >
-          Grant
+          Grant Access
         </Button>
       </DialogActions>
     </CustomDialog>
