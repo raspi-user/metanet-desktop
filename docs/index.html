@@ -131,18 +131,57 @@
             return null;
         }
 
-        function getDownloadUrl(platform) {
-            const version = 'latest'; // This will be replaced by the actual version
-            const base = 'https://github.com/bitcoin-sv/metanet-desktop/releases/download';
-            switch (platform) {
-                case 'windows': return `${base}/${version}/Metanet.Desktop_${version}_x64_en-US.msi`;
-                case 'macos-arm64': return `${base}/${version}/Metanet.Desktop_${version}_aarch64.dmg`;
-                case 'macos-x64': return `${base}/${version}/Metanet.Desktop_${version}_x64.dmg`;
-                case 'linux': return `${base}/${version}/metanet-desktop_${version}_amd64.AppImage`;
-                default: return '#';
+        // Function to fetch release information
+        async function fetchReleaseInfo() {
+            try {
+                const response = await fetch('./release-info.json');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch release info');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading release info:', error);
+                return null;
             }
         }
 
+        // Function to find the appropriate download for a platform
+        function findDownloadForPlatform(assets, platform) {
+            if (!assets || !assets.length) return null;
+            
+            let assetFilter;
+            switch (platform) {
+                case 'windows':
+                    assetFilter = asset => 
+                        asset.name.includes('.exe') || 
+                        asset.name.includes('.msi') || 
+                        asset.name.toLowerCase().includes('windows');
+                    break;
+                case 'macos-arm64':
+                    assetFilter = asset => 
+                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) && 
+                        (asset.name.includes('arm64') || asset.name.includes('aarch64'));
+                    break;
+                case 'macos-x64':
+                    assetFilter = asset => 
+                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) && 
+                        (asset.name.includes('x86_64') || asset.name.includes('x64'));
+                    break;
+                case 'linux':
+                    assetFilter = asset => 
+                        asset.name.includes('.AppImage') || 
+                        asset.name.toLowerCase().includes('linux') || 
+                        asset.name.includes('.deb') || 
+                        asset.name.includes('.rpm');
+                    break;
+                default:
+                    return null;
+            }
+            
+            return assets.find(assetFilter) || null;
+        }
+
+        // Function to get display name for a platform
         function getPlatformDisplay(platform) {
             switch (platform) {
                 case 'windows': return 'Windows';
@@ -153,43 +192,80 @@
             }
         }
 
-        function createDownloadSection() {
+        // Main function to create the download section
+        async function createDownloadSection() {
+            const releaseInfo = await fetchReleaseInfo();
             const platform = detectPlatform();
             const container = document.getElementById('download-section');
             const allPlatforms = ['windows', 'macos-arm64', 'macos-x64', 'linux'];
             
-            if (platform) {
+            // If we couldn't fetch release info, show an error message
+            if (!releaseInfo) {
                 container.innerHTML = `
-                    <a href="${getDownloadUrl(platform)}" class="download-btn">
+                    <div class="platform-options">
+                        <p>Error loading release information. Please visit the 
+                        <a href="https://github.com/bitcoin-sv/metanet-desktop/releases" target="_blank">GitHub releases page</a> 
+                        to download directly.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Get the assets from the release info
+            const { assets, release_version, release_url } = releaseInfo;
+            
+            // Create HTML for a download button for the given platform
+            const createDownloadButton = (platform) => {
+                const asset = findDownloadForPlatform(assets, platform);
+                if (!asset) return '';
+                
+                return `
+                    <a href="${asset.browser_download_url}" class="platform-btn">
+                        ${getPlatformDisplay(platform)} (${(asset.size / 1024 / 1024).toFixed(1)} MB)
+                    </a>
+                `;
+            };
+            
+            // Main download button for detected platform
+            const mainDownloadAsset = platform ? findDownloadForPlatform(assets, platform) : null;
+            
+            if (platform && mainDownloadAsset) {
+                container.innerHTML = `
+                    <a href="${mainDownloadAsset.browser_download_url}" class="download-btn">
                         Download for ${getPlatformDisplay(platform)}
                     </a>
                     <div class="platform-options">
                         <p>Not your platform? Download for:</p>
                         ${allPlatforms
                             .filter(p => p !== platform)
-                            .map(p => `
-                                <a href="${getDownloadUrl(p)}" class="platform-btn">
-                                    ${getPlatformDisplay(p)}
-                                </a>
-                            `).join('')}
+                            .map(p => createDownloadButton(p))
+                            .filter(Boolean)
+                            .join('')}
                     </div>
+                    <p class="release-notes">
+                        Version ${release_version} | 
+                        <a href="${release_url}" target="_blank">Release Notes</a>
+                    </p>
                 `;
             } else {
                 container.innerHTML = `
                     <div class="platform-options">
                         <p>Select your platform:</p>
                         ${allPlatforms
-                            .map(p => `
-                                <a href="${getDownloadUrl(p)}" class="platform-btn">
-                                    ${getPlatformDisplay(p)}
-                                </a>
-                            `).join('')}
+                            .map(p => createDownloadButton(p))
+                            .filter(Boolean)
+                            .join('')}
                     </div>
+                    <p class="release-notes">
+                        Version ${release_version} | 
+                        <a href="${release_url}" target="_blank">Release Notes</a>
+                    </p>
                 `;
             }
         }
 
-        createDownloadSection();
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', createDownloadSection);
     </script>
 </body>
 </html>
