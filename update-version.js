@@ -54,7 +54,7 @@ const filesToUpdate = [
   {
     path: 'src-tauri/metanet-desktop.desktop',
     update: (content) => {
-      return content.replace(/^Version=.*$/m, `Version=${newVersion}`);
+      return content.replace(/^Version=.*$/m, `Version=${newVersion.split('.').slice(0, 2).join('.')}`);
     }
   }
 ];
