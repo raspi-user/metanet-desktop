@@ -1,14 +1,14 @@
 {
   "name": "metanet-desktop",
   "private": true,
-  "version": "0.2.6",
+  "version": "0.2.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "version": "node update-version.js"
+    "release-version": "node update-version.js"
   },
   "dependencies": {
     "@bsv/sdk": "^1.4.13",
@@ -41,6 +41,8 @@
     "@types/react-dom": "^18.3.1",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
     "typescript": "~5.6.2",
     "url": "^0.11.4",
     "vite": "^6.2.4"

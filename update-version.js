@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Get the version from command line arguments
 const newVersion = process.argv[2];
@@ -43,7 +43,11 @@ const filesToUpdate = [
   {
     path: 'src-tauri/metanet-desktop.appdata.xml',
     update: (content) => {
-      return content.replace(/<release version=".*?"/, `<release version="${newVersion}"`);
+      // Update both version and release date
+      const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      return content
+        .replace(/<release version=".*?"/, `<release version="${newVersion}"`)
+        .replace(/date=".*?"/, `date="${today}"`);
     }
   },
   {
