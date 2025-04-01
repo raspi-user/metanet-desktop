@@ -19,6 +19,6 @@
     <binary>metanet-desktop</binary>
   </provides>
   <releases>
-    <release version="0.2.3" date="2025-03-31"/>
+    <release version="0.2.4" date="2025-04-01"/>
   </releases>
 </component>
