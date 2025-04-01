@@ -106,7 +106,7 @@ jobs:
           mkdir -p AppDir/usr/share/metainfo
           cp src-tauri/target/release/metanet-desktop AppDir/usr/bin/
           cp src-tauri/metanet-desktop.desktop AppDir/usr/share/applications/
-          cp src-tauri/metanet-desktop.appdata.xml AppDir/usr/share/metainfo/
+          cp src-tauri/org.bsvblockchain.metanetdesktop.metainfo.xml AppDir/usr/share/metainfo/
           cp src-tauri/icons/128x128.png AppDir/usr/share/icons/hicolor/128x128/apps/metanet-desktop.png
           # Set executable permissions
           chmod +x AppDir/usr/bin/metanet-desktop
