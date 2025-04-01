@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Get the version from command line arguments
 const newVersion = process.argv[2];
@@ -77,3 +78,18 @@ filesToUpdate.forEach(file => {
 });
 
 console.log(`Version updated to ${newVersion} successfully!`);
+
+try {
+  // Commit the changes
+  execSync('git add .');
+  execSync(`git commit -m "Bump version to ${newVersion}"`);
+  
+  // Tag the commit
+  const tagName = `v${newVersion}`;
+  execSync(`git tag ${tagName}`);
+  
+  console.log(`Created git tag: ${tagName}`);
+  console.log('To push changes and tag, run: git push && git push --tags');
+} catch (error) {
+  console.error('Failed to create git commit/tag:', error.message);
+}
