@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "version": "cd src-tauri; cargo bump patch; cd -; npm version patch"
+    "version": "cd src-tauri; cargo bump patch; cd -; git add .; git commit -m \"version patch\"; npm version patch"
   },
   "dependencies": {
     "@bsv/sdk": "^1.4.13",
