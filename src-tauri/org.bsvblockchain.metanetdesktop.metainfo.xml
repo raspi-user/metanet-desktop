@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>org.bsvblockchain.metanetdesktop</id>
-  <metadata_license>OpenBSV</metadata_license>
-  <project_license>OpenBSV</project_license>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
   <name>Metanet-Desktop</name>
   <summary>BSV Blockchain Metanet Desktop Application</summary>
   <description>
