@@ -50,12 +50,6 @@ const filesToUpdate = [
         .replace(/<release version=".*?"/, `<release version="${newVersion}"`)
         .replace(/date=".*?"/, `date="${today}"`);
     }
-  },
-  {
-    path: 'src-tauri/metanet-desktop.desktop',
-    update: (content) => {
-      return content.replace(/^Version=.*$/m, `Version=${newVersion.split('.').slice(0, 2).join('.')}`);
-    }
   }
 ];
 
