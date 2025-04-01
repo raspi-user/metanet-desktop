@@ -11,7 +11,7 @@
     "release-version": "node update-version.js"
   },
   "dependencies": {
-    "@bsv/sdk": "^1.4.13",
+    "@bsv/sdk": "^1.4.15",
     "@bsv/uhrp-react": "^1.0.1",
     "@bsv/wallet-toolbox-client": "^1.2.30",
     "@emotion/react": "^11.14.0",
