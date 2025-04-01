@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metanet Desktop - BSV Blockchain Wallet</title>
+    <style>
+        :root {
+            --navy: #1B365D;
+            --teal: #2C5282;
+            --gray: #4A5568;
+            --dark-gray: #4A4A4A;
+            --bg-dark: #0F0A29;
+            --text-light: #E8E2F0;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: var(--text-light);
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6E46E5, #7B42EB, #3B5EF6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(110, 70, 229, 0.3);
+        }
+        .description {
+            font-size: 1.4rem;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #6E46E5, #7B42EB);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 4px 20px rgba(110, 70, 229, 0.3);
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(110, 70, 229, 0.4);
+        }
+        .platform-options {
+            margin-top: 2.5rem;
+            color: var(--text-light);
+        }
+        .platform-btn {
+            display: inline-block;
+            background: rgba(110, 70, 229, 0.1);
+            border: 1px solid rgba(110, 70, 229, 0.3);
+            color: var(--text-light);
+            padding: 0.5rem 1.5rem;
+            margin: 0.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .platform-btn:hover {
+            background: rgba(110, 70, 229, 0.2);
+            border-color: rgba(110, 70, 229, 0.5);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Metanet Desktop</h1>
+        <p class="description">
+          Your Portal to the Metanet
+        </p>
+        <div id="download-section">
+            <!-- Download button will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        function detectPlatform() {
+            const ua = navigator.userAgent.toLowerCase();
+            
+            // Check for macOS
+            if (ua.includes('mac')) {
+                // More reliable Apple Silicon detection methods
+                
+                // Method 1: Check for ARM64 in the user agent
+                if (ua.includes('arm64') || ua.includes('arm 64')) {
+                    return 'macos-arm64';
+                }
+                
+                // Method 2: Use navigator.platform (though deprecated, it still helps)
+                if (navigator.platform && (navigator.platform.includes('arm') || navigator.platform.includes('ARM'))) {
+                    return 'macos-arm64';
+                }
+                
+                // Method 3: Check CPU cores as Intel and ARM CPUs typically have different core counts
+                // Apple Silicon Macs often have 8+ cores
+                if (navigator.hardwareConcurrency >= 8) {
+                    // This is not perfect but can help if other methods fail
+                    // We prioritize Apple Silicon for newer Macs as that's increasingly the norm
+                    const currentYear = new Date().getFullYear();
+                    if (currentYear >= 2022) {
+                        // Most new Macs after 2022 are likely to be Apple Silicon
+                        return 'macos-arm64';
+                    }
+                }
+                
+                // Default to x64 if ARM/Apple Silicon couldn't be detected
+                return 'macos-x64';
+            }
+            
+            if (ua.includes('win')) return 'windows';
+            if (ua.includes('linux')) return 'linux';
+            return null;
+        }
+
+        function getDownloadUrl(platform) {
+            const version = 'latest'; // This will be replaced by the actual version
+            const base = 'https://github.com/bitcoin-sv/metanet-desktop/releases/download';
+            switch (platform) {
+                case 'windows': return `${base}/${version}/Metanet.Desktop_${version}_x64_en-US.msi`;
+                case 'macos-arm64': return `${base}/${version}/Metanet.Desktop_${version}_aarch64.dmg`;
+                case 'macos-x64': return `${base}/${version}/Metanet.Desktop_${version}_x64.dmg`;
+                case 'linux': return `${base}/${version}/metanet-desktop_${version}_amd64.AppImage`;
+                default: return '#';
+            }
+        }
+
+        function getPlatformDisplay(platform) {
+            switch (platform) {
+                case 'windows': return 'Windows';
+                case 'macos-arm64': return 'macOS (Apple Silicon)';
+                case 'macos-x64': return 'macOS (Intel)';
+                case 'linux': return 'Linux';
+                default: return platform;
+            }
+        }
+
+        function createDownloadSection() {
+            const platform = detectPlatform();
+            const container = document.getElementById('download-section');
+            const allPlatforms = ['windows', 'macos-arm64', 'macos-x64', 'linux'];
+            
+            if (platform) {
+                container.innerHTML = `
+                    <a href="${getDownloadUrl(platform)}" class="download-btn">
+                        Download for ${getPlatformDisplay(platform)}
+                    </a>
+                    <div class="platform-options">
+                        <p>Not your platform? Download for:</p>
+                        ${allPlatforms
+                            .filter(p => p !== platform)
+                            .map(p => `
+                                <a href="${getDownloadUrl(p)}" class="platform-btn">
+                                    ${getPlatformDisplay(p)}
+                                </a>
+                            `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="platform-options">
+                        <p>Select your platform:</p>
+                        ${allPlatforms
+                            .map(p => `
+                                <a href="${getDownloadUrl(p)}" class="platform-btn">
+                                    ${getPlatformDisplay(p)}
+                                </a>
+                            `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        createDownloadSection();
+    </script>
+</body>
+</html>
