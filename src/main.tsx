@@ -100,7 +100,6 @@ root.render(
               // 1. createAction
               case '/createAction': {
                 try {
-                  debugger;
                   const args = JSON.parse(req.body) as CreateActionArgs;
 
                   const result = await wallet.createAction(args, req.headers['origin'])
@@ -118,7 +117,6 @@ root.render(
                       error['tx'],
                       error['noSendChange'],
                     )
-                    debugger;
                     console.error('createAction WERR_REVIEW_ACTIONS:', e)
                     response = {
                       request_id: req.request_id,
@@ -790,7 +788,6 @@ root.render(
             // Emit the response back to Rust.
             emit('ts-response', response)
           } catch (e) {
-            debugger;
             console.error("Error handling http-request event:", e)
           }
         })
