@@ -6,46 +6,73 @@
     <title>Metanet Desktop - BSV Blockchain Wallet</title>
     <style>
         :root {
-            --navy: #1B365D;
-            --teal: #2C5282;
-            --gray: #4A5568;
-            --dark-gray: #4A4A4A;
-            --bg-dark: #0F0A29;
-            --text-light: #E8E2F0;
+          --color-background: #0e0f1c;
+          --color-background-gradient: linear-gradient(90deg, #101323 0%, #1a1633 100%);
+          --color-surface: #1c1d2f;
+          --color-surface-alt: #25263a;
+          --color-text-primary: #ffffff;
+          --color-text-secondary: #b0b2c3;
+          --color-accent-purple: #a86efc;
+          --color-accent-blue: #3ebdf2;
+          --color-accent-indigo: #646cff;
+          --color-icon-blue: #36b3e1;
+          --color-icon-purple: #7d6eff;
+          --color-icon-teal: #50c4ba;
+          --color-button-gradient-start: #646cff;
+          --color-button-gradient-end: #a86efc;
+          --color-border: #2d2e41;
         }
+        
         body {
             font-family: Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            color: var(--text-light);
-            background-color: var(--bg-dark);
+            color: var(--color-text-primary);
+            background-color: var(--color-background);
+            background-image: var(--color-background-gradient);
             min-height: 100vh;
         }
         .container {
-            max-width: 800px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 2rem;
             text-align: center;
         }
+        .header-container {
+            margin: 7rem 0;
+            position: relative;
+            display: inline-block;
+        }
+        .alpha-tag {
+            position: absolute;
+            top: 45px;
+            right: -35px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #6E46E5, #7B42EB, #3B5EF6);
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 30px rgba(110, 70, 229, 0.3);
+            text-shadow: 0 0 15px rgba(230, 226, 241, 0.2);
         }
         .description {
             font-size: 1.4rem;
-            color: var(--text-light);
+            color: var(--color-text-primary);
             margin-bottom: 2.5rem;
             opacity: 0.9;
         }
         .download-btn {
             display: inline-block;
-            background: linear-gradient(135deg, #6E46E5, #7B42EB);
+            background: linear-gradient(135deg, var(--color-button-gradient-start), var(--color-button-gradient-end));
             color: white;
             padding: 1rem 2rem;
             text-decoration: none;
@@ -61,13 +88,13 @@
         }
         .platform-options {
             margin-top: 2.5rem;
-            color: var(--text-light);
+            color: var(--color-text-primary);
         }
         .platform-btn {
             display: inline-block;
-            background: rgba(110, 70, 229, 0.1);
-            border: 1px solid rgba(110, 70, 229, 0.3);
-            color: var(--text-light);
+            background: rgba(100, 108, 255, 0.1);
+            border: 1px solid rgba(100, 108, 255, 0.3);
+            color: var(--color-text-primary);
             padding: 0.5rem 1.5rem;
             margin: 0.5rem;
             text-decoration: none;
@@ -75,20 +102,281 @@
             transition: all 0.3s;
         }
         .platform-btn:hover {
-            background: rgba(110, 70, 229, 0.2);
-            border-color: rgba(110, 70, 229, 0.5);
+            background: rgba(100, 108, 255, 0.2);
+            border-color: rgba(100, 108, 255, 0.5);
             transform: translateY(-1px);
+        }
+        .features-section {
+            margin: 3rem auto;
+            max-width: 1280px;
+            background: var(--color-surface);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+        }
+        .features-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--color-text-primary);
+        }
+        .features-section p {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .features-section b {
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .features-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 0 auto;
+        }
+        .feature-item {
+            width: 320px;
+            margin-bottom: 2rem;
+            background: var(--color-surface-alt);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .feature-item h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            display: inline-block;
+        }
+        .feature-item p {
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            text-align: left;
+            margin-bottom: 0;
+        }
+        .screenshot-section {
+            display: flex;
+            align-items: center;
+            margin: 3rem auto;
+            max-width: 1280px;
+            background: var(--color-surface-alt);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            flex-direction: row;
+        }
+        .screenshot-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        @media (max-width: 960px) {
+            .screenshot-section {
+                flex-direction: column;
+            }
+            .screenshot-container {
+                flex-direction: column;
+            }
+            .alpha-tag {
+                top: 25px;
+                right: -5px;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+        .screenshot-content {
+            flex: 1;
+            padding: 1rem;
+        }
+        .screenshot-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: white;
+            text-align: left;
+        }
+        .screenshot-content h2 b {
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .screenshot-content p {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+            text-align: left;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .feature-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.4;
+            color: var(--color-text-secondary);
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-accent-purple);
+            font-weight: bold;
+        }
+        .screenshot-image {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+        }
+        .screenshot-image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+        }
+        .release-notes {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: var(--color-text-secondary);
+        }
+        .release-notes a {
+            color: var(--color-accent-purple);
+            text-decoration: none;
+        }
+        .release-notes a:hover {
+            text-decoration: underline;
+        }
+        .footer-section {
+            margin-top: 5rem;
+            padding: 3rem 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .footer-link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        .footer-link:hover {
+            color: var(--color-accent-purple);
+            background: rgba(168, 110, 252, 0.1);
+        }
+        .footer-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        .footer-copyright {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Metanet Desktop</h1>
-        <p class="description">
-          Your Portal to the Metanet
-        </p>
+        <div class="header-container">
+            <h1>Metanet Desktop</h1>
+            <span class="alpha-tag">ALPHA</span>
+        </div>
+
         <div id="download-section">
             <!-- Download button will be inserted here by JavaScript -->
+        </div>
+
+        <div class="features-section">
+            <h2><b>Powerful</b> Features</h2>
+            <p>Metanet Desktop provides all the tools you need to interact with the BSV Blockchain efficiently.</p>
+            <div class="features-container">
+                <div class="feature-item">
+                    <h3>Vendor <b>Interoperable</b></h3>
+                    <p>Implements the BRC-100 Wallet Interface. Configure with any Wallet Authentication Backend and Storage Infrastructure.</p>
+                </div>
+                <div class="feature-item">
+                    <h3><b>Secure</b> Management</h3>
+                    <p>Linked key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your keys.</p>
+                </div>
+                <div class="feature-item">
+                    <h3><b>Decentralized</b> Identity</h3>
+                    <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity securely and privately without centralized liabilities.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="screenshot-section">
+          <div class="screenshot-container">
+            <div class="screenshot-content">
+                <h2>Unleash the <b>BSV Blockchain</b></h2>
+                <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both beginners and experts to take full advantage of BSV Blockchain technology.</p>
+                <ul class="feature-list">
+                    <li>Action oriented design with transparent controls and rich metadata</li>
+                    <li>Robust AES-256-GCM Encryption and ECDSA Signatures</li>
+                    <li>Identity & Certificate Manager for selective data revelation</li>
+                    <li>SPV Scalability using BEEF Transaction data standards</li>
+                    <li>Auditable Proofs & Key Linkages for enhanced privacy</li>
+                    <li>Flexible Asset & Key Permissions through named baskets</li>
+                </ul>
+            </div>
+            <div class="screenshot-image">
+                <img src="screen.jpg" alt="Metanet Desktop Screenshot">
+            </div>
+          </div>
+        </div>
+        <div class="footer-section">
+            <div class="footer-links">
+                <a href="https://github.com/bitcoin-sv/metanet-desktop/releases" class="footer-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                    Previous Releases
+                </a>
+                <a href="https://bsvblockchain.org" class="footer-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    BSV Blockchain
+                </a>
+                <a href="https://x.com/bsvblockchain" class="footer-link">
+                    <svg width="1200" height="1227" viewBox="0 0 1200 1227" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" fill="white"/>
+                    </svg>
+                    @bsvblockchain
+                </a>
+            </div>
+            <p class="footer-copyright">
+                &copy; 2025 BSV Association
+            </p>
         </div>
     </div>
 
@@ -256,7 +544,6 @@
                         Download for ${getPlatformDisplay(platform)}
                     </a>
                     <div class="platform-options">
-                        <p>Not your platform? Download for:</p>
                         ${allPlatforms
                             .filter(p => p !== platform)
                             .map(p => createDownloadButton(p))
@@ -264,7 +551,7 @@
                             .join('')}
                     </div>
                     <p class="release-notes">
-                        Version ${releaseInfo.release_version} | 
+                        Version ${releaseInfo.release_version}
                         <a href="${releaseInfo.release_url}" target="_blank">Release Notes</a>
                     </p>
                 `;
