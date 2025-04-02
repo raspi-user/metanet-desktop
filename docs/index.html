@@ -39,6 +39,22 @@
             padding: 2rem;
             text-align: center;
         }
+        .header-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        .alpha-tag {
+            position: absolute;
+            top: 45px;
+            right: -35px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
@@ -92,8 +108,7 @@
         }
         .features-section {
             margin: 3rem auto;
-            max-width: 800px;
-            text-align: left;
+            max-width: 1280px;
             background: var(--color-surface);
             padding: 2rem;
             border-radius: 10px;
@@ -105,14 +120,38 @@
             margin-bottom: 2rem;
             color: var(--color-text-primary);
         }
+        .features-section p {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .features-section b {
             background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
+        .features-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 0 auto;
+        }
         .feature-item {
+            width: 320px;
             margin-bottom: 2rem;
+            background: var(--color-surface-alt);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
         .feature-item h3 {
             font-size: 1.4rem;
@@ -123,6 +162,8 @@
         .feature-item p {
             color: var(--color-text-secondary);
             line-height: 1.6;
+            text-align: left;
+            margin-bottom: 0;
         }
         .screenshot-section {
             display: flex;
@@ -204,10 +245,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Metanet Desktop</h1>
-        <p class="description">
-          Your Portal to the Metanet
-        </p>
+        <div class="header-container">
+            <h1>Metanet Desktop</h1>
+            <span class="alpha-tag">ALPHA</span>
+        </div>
 
         <div id="download-section">
             <!-- Download button will be inserted here by JavaScript -->
@@ -215,21 +256,20 @@
 
         <div class="features-section">
             <h2><b>Powerful</b> Features</h2>
-            <p>Metanet Desktop provides all the tools you need to interact with the blockchain efficiently.</p>
-            
-            <div class="feature-item">
-                <h3>Universal Compatibility & Interoperability</h3>
-                <p>Built on the vendor-neutral BRC-100 wallet standard, Metanet Desktop effortlessly interacts with any BSV dApp, exchange, marketplace, or blockchain application. Complies fully with the open BRC-100 Wallet Interface, ensuring compatibility with all compliant wallets and apps in the BSV ecosystem.</p>
-            </div>
-            
-            <div class="feature-item">
-                <h3>Security & Privilege Management</h3>
-                <p>Sophisticated key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your identity and assets.</p>
-            </div>
-            
-            <div class="feature-item">
-                <h3>Decentralized Identity</h3>
-                <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity securely and privately without centralized liabilities.</p>
+            <p>Metanet Desktop provides all the tools you need to interact with the BSV Blockchain efficiently.</p>
+            <div class="features-container">
+                <div class="feature-item">
+                    <h3>Vendor <b>Interoperable</b></h3>
+                    <p>Implements the BRC-100 Wallet Interface. Configure with any Wallet Authentication Backend and Storage Infrastructure.</p>
+                </div>
+                <div class="feature-item">
+                    <h3><b>Secure</b> Management</h3>
+                    <p>Sophisticated key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your keys.</p>
+                </div>
+                <div class="feature-item">
+                    <h3><b>Decentralized</b> Identity</h3>
+                    <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity securely and privately without centralized liabilities.</p>
+                </div>
             </div>
         </div>
 
