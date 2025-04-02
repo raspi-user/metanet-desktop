@@ -6,24 +6,35 @@
     <title>Metanet Desktop - BSV Blockchain Wallet</title>
     <style>
         :root {
-            --navy: #1B365D;
-            --teal: #2C5282;
-            --gray: #4A5568;
-            --dark-gray: #4A4A4A;
-            --bg-dark: #0F0A29;
-            --text-light: #E8E2F0;
+          --color-background: #0e0f1c;
+          --color-background-gradient: linear-gradient(90deg, #101323 0%, #1a1633 100%);
+          --color-surface: #1c1d2f;
+          --color-surface-alt: #25263a;
+          --color-text-primary: #ffffff;
+          --color-text-secondary: #b0b2c3;
+          --color-accent-purple: #a86efc;
+          --color-accent-blue: #3ebdf2;
+          --color-accent-indigo: #646cff;
+          --color-icon-blue: #36b3e1;
+          --color-icon-purple: #7d6eff;
+          --color-icon-teal: #50c4ba;
+          --color-button-gradient-start: #646cff;
+          --color-button-gradient-end: #a86efc;
+          --color-border: #2d2e41;
         }
+        
         body {
             font-family: Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            color: var(--text-light);
-            background-color: var(--bg-dark);
+            color: var(--color-text-primary);
+            background-color: var(--color-background);
+            background-image: var(--color-background-gradient);
             min-height: 100vh;
         }
         .container {
-            max-width: 800px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 2rem;
             text-align: center;
@@ -31,7 +42,7 @@
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #6E46E5, #7B42EB, #3B5EF6);
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -39,13 +50,13 @@
         }
         .description {
             font-size: 1.4rem;
-            color: var(--text-light);
+            color: var(--color-text-primary);
             margin-bottom: 2.5rem;
             opacity: 0.9;
         }
         .download-btn {
             display: inline-block;
-            background: linear-gradient(135deg, #6E46E5, #7B42EB);
+            background: linear-gradient(135deg, var(--color-button-gradient-start), var(--color-button-gradient-end));
             color: white;
             padding: 1rem 2rem;
             text-decoration: none;
@@ -61,13 +72,13 @@
         }
         .platform-options {
             margin-top: 2.5rem;
-            color: var(--text-light);
+            color: var(--color-text-primary);
         }
         .platform-btn {
             display: inline-block;
-            background: rgba(110, 70, 229, 0.1);
-            border: 1px solid rgba(110, 70, 229, 0.3);
-            color: var(--text-light);
+            background: rgba(100, 108, 255, 0.1);
+            border: 1px solid rgba(100, 108, 255, 0.3);
+            color: var(--color-text-primary);
             padding: 0.5rem 1.5rem;
             margin: 0.5rem;
             text-decoration: none;
@@ -75,9 +86,119 @@
             transition: all 0.3s;
         }
         .platform-btn:hover {
-            background: rgba(110, 70, 229, 0.2);
-            border-color: rgba(110, 70, 229, 0.5);
+            background: rgba(100, 108, 255, 0.2);
+            border-color: rgba(100, 108, 255, 0.5);
             transform: translateY(-1px);
+        }
+        .features-section {
+            margin: 3rem auto;
+            max-width: 800px;
+            text-align: left;
+            background: var(--color-surface);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+        }
+        .features-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--color-text-primary);
+        }
+        .features-section b {
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .feature-item {
+            margin-bottom: 2rem;
+        }
+        .feature-item h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            display: inline-block;
+        }
+        .feature-item p {
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+        .screenshot-section {
+            display: flex;
+            align-items: center;
+            margin: 3rem auto;
+            max-width: 1280px;
+            background: var(--color-surface-alt);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+        .screenshot-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        .screenshot-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: white;
+            text-align: left;
+        }
+        .screenshot-content h2 b {
+            background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .screenshot-content p {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+            text-align: left;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .feature-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.4;
+            color: var(--color-text-secondary);
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-accent-purple);
+            font-weight: bold;
+        }
+        .screenshot-image {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+        }
+        .screenshot-image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+        }
+        .release-notes {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: var(--color-text-secondary);
+        }
+        .release-notes a {
+            color: var(--color-accent-purple);
+            text-decoration: none;
+        }
+        .release-notes a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -87,8 +208,47 @@
         <p class="description">
           Your Portal to the Metanet
         </p>
+
         <div id="download-section">
             <!-- Download button will be inserted here by JavaScript -->
+        </div>
+
+        <div class="features-section">
+            <h2><b>Powerful</b> Features</h2>
+            <p>Metanet Desktop provides all the tools you need to interact with the blockchain efficiently.</p>
+            
+            <div class="feature-item">
+                <h3>Universal Compatibility & Interoperability</h3>
+                <p>Built on the vendor-neutral BRC-100 wallet standard, Metanet Desktop effortlessly interacts with any BSV dApp, exchange, marketplace, or blockchain application. Complies fully with the open BRC-100 Wallet Interface, ensuring compatibility with all compliant wallets and apps in the BSV ecosystem.</p>
+            </div>
+            
+            <div class="feature-item">
+                <h3>Security & Privilege Management</h3>
+                <p>Sophisticated key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your identity and assets.</p>
+            </div>
+            
+            <div class="feature-item">
+                <h3>Decentralized Identity</h3>
+                <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity securely and privately without centralized liabilities.</p>
+            </div>
+        </div>
+
+        <div class="screenshot-section">
+            <div class="screenshot-content">
+                <h2>Unleash the <b>BSV Blockchain</b></h2>
+                <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both beginners and experts to take full advantage of blockchain technology.</p>
+                <ul class="feature-list">
+                    <li>Action-Oriented Transactions with transparent controls and rich metadata</li>
+                    <li>Robust Cryptography using AES-256-GCM encryption and ECDSA signatures</li>
+                    <li>Identity & Certificate Manager for selective data revelation</li>
+                    <li>SPV and Scalability with BEEF blockchain data standards</li>
+                    <li>Auditable Proofs & Key Linkages for enhanced privacy</li>
+                    <li>Flexible Asset & Key Permissions through named baskets</li>
+                </ul>
+            </div>
+            <div class="screenshot-image">
+                <img src="screen.jpg" alt="Metanet Desktop Screenshot">
+            </div>
         </div>
     </div>
 
