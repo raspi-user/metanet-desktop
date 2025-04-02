@@ -40,9 +40,9 @@
             text-align: center;
         }
         .header-container {
+            margin: 7rem 0;
             position: relative;
             display: inline-block;
-            margin-bottom: 0.5rem;
         }
         .alpha-tag {
             position: absolute;
@@ -62,7 +62,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 30px rgba(110, 70, 229, 0.3);
+            text-shadow: 0 0 15px rgba(230, 226, 241, 0.2);
         }
         .description {
             font-size: 1.4rem;
@@ -174,10 +174,32 @@
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid var(--color-border);
+            flex-direction: row;
+        }
+        .screenshot-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        @media (max-width: 960px) {
+            .screenshot-section {
+                flex-direction: column;
+            }
+            .screenshot-container {
+                flex-direction: column;
+            }
+            .alpha-tag {
+                top: 25px;
+                right: -5px;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
         }
         .screenshot-content {
             flex: 1;
-            padding: 2rem;
+            padding: 1rem;
         }
         .screenshot-content h2 {
             font-size: 1.8rem;
@@ -241,6 +263,43 @@
         .release-notes a:hover {
             text-decoration: underline;
         }
+        .footer-section {
+            margin-top: 5rem;
+            padding: 3rem 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .footer-link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        .footer-link:hover {
+            color: var(--color-accent-purple);
+            background: rgba(168, 110, 252, 0.1);
+        }
+        .footer-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        .footer-copyright {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -264,7 +323,7 @@
                 </div>
                 <div class="feature-item">
                     <h3><b>Secure</b> Management</h3>
-                    <p>Sophisticated key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your keys.</p>
+                    <p>Linked key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your keys.</p>
                 </div>
                 <div class="feature-item">
                     <h3><b>Decentralized</b> Identity</h3>
@@ -274,14 +333,15 @@
         </div>
 
         <div class="screenshot-section">
+          <div class="screenshot-container">
             <div class="screenshot-content">
                 <h2>Unleash the <b>BSV Blockchain</b></h2>
-                <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both beginners and experts to take full advantage of blockchain technology.</p>
+                <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both beginners and experts to take full advantage of BSV Blockchain technology.</p>
                 <ul class="feature-list">
-                    <li>Action-Oriented Transactions with transparent controls and rich metadata</li>
-                    <li>Robust Cryptography using AES-256-GCM encryption and ECDSA signatures</li>
+                    <li>Action oriented design with transparent controls and rich metadata</li>
+                    <li>Robust AES-256-GCM Encryption and ECDSA Signatures</li>
                     <li>Identity & Certificate Manager for selective data revelation</li>
-                    <li>SPV and Scalability with BEEF blockchain data standards</li>
+                    <li>SPV Scalability using BEEF Transaction data standards</li>
                     <li>Auditable Proofs & Key Linkages for enhanced privacy</li>
                     <li>Flexible Asset & Key Permissions through named baskets</li>
                 </ul>
@@ -289,6 +349,34 @@
             <div class="screenshot-image">
                 <img src="screen.jpg" alt="Metanet Desktop Screenshot">
             </div>
+          </div>
+        </div>
+        <div class="footer-section">
+            <div class="footer-links">
+                <a href="https://github.com/bitcoin-sv/metanet-desktop/releases" class="footer-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                    Previous Releases
+                </a>
+                <a href="https://bsvblockchain.org" class="footer-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    BSV Blockchain
+                </a>
+                <a href="https://x.com/bsvblockchain" class="footer-link">
+                    <svg width="1200" height="1227" viewBox="0 0 1200 1227" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" fill="white"/>
+                    </svg>
+                    @bsvblockchain
+                </a>
+            </div>
+            <p class="footer-copyright">
+                &copy; 2025 BSV Association
+            </p>
         </div>
     </div>
 
@@ -456,7 +544,6 @@
                         Download for ${getPlatformDisplay(platform)}
                     </a>
                     <div class="platform-options">
-                        <p>Not your platform? Download for:</p>
                         ${allPlatforms
                             .filter(p => p !== platform)
                             .map(p => createDownloadButton(p))
@@ -464,7 +551,7 @@
                             .join('')}
                     </div>
                     <p class="release-notes">
-                        Version ${releaseInfo.release_version} | 
+                        Version ${releaseInfo.release_version}
                         <a href="${releaseInfo.release_url}" target="_blank">Release Notes</a>
                     </p>
                 `;
