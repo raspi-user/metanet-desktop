@@ -26,7 +26,7 @@ import {
   DiscoverByIdentityKeyArgs,
   DiscoverByAttributesArgs,
   GetHeaderArgs,
-
+  WERR_REVIEW_ACTIONS
 } from '@bsv/sdk';
 import { listen, emit } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
@@ -100,6 +100,7 @@ root.render(
               // 1. createAction
               case '/createAction': {
                 try {
+                  debugger;
                   const args = JSON.parse(req.body) as CreateActionArgs;
 
                   const result = await wallet.createAction(args, req.headers['origin'])
@@ -109,13 +110,30 @@ root.render(
                     body: JSON.stringify(result),
                   }
                 } catch (error) {
-                  console.error('createAction error:', error)
-                  response = {
-                    request_id: req.request_id,
-                    status: 400,
-                    body: JSON.stringify({
-                      message: error instanceof Error ? error.message : String(error)
-                    })
+                  if (typeof error === 'object' && error.constructor.name === 'WERR_REVIEW_ACTIONS') {
+                    const e = new WERR_REVIEW_ACTIONS(
+                      error['reviewActionResults'],
+                      error['sendWithResults'],
+                      error['txid'],
+                      error['tx'],
+                      error['noSendChange'],
+                    )
+                    debugger;
+                    console.error('createAction WERR_REVIEW_ACTIONS:', e)
+                    response = {
+                      request_id: req.request_id,
+                      status: 400,
+                      body: JSON.stringify(e)
+                    }
+                  } else {
+                    console.error('createAction error:', error)
+                    response = {
+                      request_id: req.request_id,
+                      status: 400,
+                      body: JSON.stringify({
+                        message: error instanceof Error ? error.message : String(error)
+                      })
+                    }
                   }
                 }
                 break
@@ -772,6 +790,7 @@ root.render(
             // Emit the response back to Rust.
             emit('ts-response', response)
           } catch (e) {
+            debugger;
             console.error("Error handling http-request event:", e)
           }
         })
