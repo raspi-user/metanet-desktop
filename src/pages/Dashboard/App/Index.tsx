@@ -14,39 +14,35 @@ import RecentActions from '../../../components/RecentActions';
 import fetchAndCacheAppData from '../../../utils/fetchAndCacheAppData';
 // import AccessAtAGlance from '../../../components/AccessAtAGlance';
 
-// Example transform function that merges "default" inputs & outputs with custom baskets
-// Modify or remove this if you don't need to transform data from listActions:
-function transformActions(actions: WalletAction[]): WalletAction[] {
+// Extended interface for transformed wallet actions
+interface TransformedWalletAction extends WalletAction {
+  amount: number;
+  fees?: number;
+}
+
+// Transform function now returns TransformedWalletAction[]
+function transformActions(actions: WalletAction[]): TransformedWalletAction[] {
   return actions.map((action) => {
-    // const inputs = action.inputs ?? [];
-    // const outputs = action.outputs ?? [];
+    const inputs = action.inputs ?? [];
+    const outputs = action.outputs ?? [];
 
-    // // Filter out "default" vs. custom
-    // const mergedInputs = inputs.filter((i) => i.basket !== 'default');
-    // const mergedOutputs = outputs.filter((o) => o.basket !== 'default');
-    // const defaultInputs = inputs.filter((i) => i.basket === 'default');
-    // const defaultOutputs = outputs.filter((o) => o.basket === 'default');
+    // Calculate total input and output amounts
+    const totalInputAmount = inputs.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0);
+    const totalOutputAmount = outputs.reduce((sum, output) => sum + Number(output.satoshis), 0);
 
-    // // We also need to handle net amounts, if relevant
-    // let defaultNetAmount = 0;
-    // for (const input of defaultInputs) defaultNetAmount -= input.amount;
-    // for (const output of defaultOutputs) defaultNetAmount += output.amount;
+    // Calculate fees
+    const fees = totalInputAmount - totalOutputAmount;
 
-    // // For example, push a single net "default" input or output:
-    // if (defaultNetAmount < 0) {
-    //   mergedInputs.push({ ...defaultInputs[0], amount: Math.abs(defaultNetAmount) });
-    // } else if (defaultNetAmount > 0) {
-    //   mergedOutputs.push({ ...defaultOutputs[0], amount: defaultNetAmount });
-    // }
-
-    // We could store a "fees" property in the action if you'd like to track them:
-    // action.fees = defaultNetAmount - action.satoshis; // Example logic if satoshis is total
-    // But you'd need to define that property, or track it in your UI somewhere.
+    // Always show the total output amount as the main amount
+    const amount = totalOutputAmount;
+    console.log('TOTAL', action)
 
     return {
       ...action,
-      // inputs: mergedInputs,
-      // outputs: mergedOutputs,
+      amount,
+      inputs,
+      outputs,
+      fees: fees > 0 ? fees : undefined
     };
   });
 }
@@ -65,6 +61,7 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
 
   const [appName, setAppName] = useState<string>(appDomain);
   const [appIcon, setAppIcon] = useState<string>(DEFAULT_APP_ICON);
+  // Retain displayLimit for UI, though pagination now loads fixed sets of 10.
   const [displayLimit, setDisplayLimit] = useState<number>(5);
   const [loading, setLoading] = useState<boolean>(false);
   const [refresh, setRefresh] = useState<boolean>(false);
@@ -74,14 +71,15 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
     id: false,
   });
 
-  // We'll store an object that looks like { totalTransactions, transactions }
-  // to align with the shape expected by RecentActions
-  const [appActions, setAppActions] = useState<WalletAction[]>([])
+  // Store fetched actions here.
+  const [appActions, setAppActions] = useState<TransformedWalletAction[]>([]);
+  // New state for pagination – page 0 returns the most recent 10 actions.
+  const [page, setPage] = useState<number>(0);
 
-  // Grab managers and admin originator from the Wallet Context
+  // Grab managers and adminOriginator from Wallet Context
   const { managers, adminOriginator } = useContext(WalletContext);
 
-  // Copies the domain (or any data) to the clipboard and shows a temporary check icon
+  // Copy handler for UI
   const handleCopy = (data: string, type: 'id' | 'registryOperator') => {
     navigator.clipboard.writeText(data);
     setCopied((prev) => ({ ...prev, [type]: true }));
@@ -96,7 +94,7 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
         // Optionally fetch app icon & name from your helper
         fetchAndCacheAppData(appDomain, setAppIcon, setAppName, DEFAULT_APP_ICON);
 
-        // If you still want local caching, you can do it here:
+        // Check for local cache (retain existing logic)
         const cacheKey = `transactions_${appDomain}`;
         const cachedData = window.localStorage.getItem(cacheKey);
         if (cachedData) {
@@ -104,47 +102,70 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
             totalTransactions: number;
             transactions: WalletAction[];
           };
-          // Transform if needed
-          const transformed = transformActions(cachedParsed.transactions);
-          setAppActions(transformed);
-          setLoading(false);
+          const transformedCached = transformActions(cachedParsed.transactions);
+          setAppActions(transformedCached);
+          // (Optionally you could return early if caching is sufficient)
         }
 
-        // Now fetch the real data from managers.permissionsManager:
-        const { actions } = await managers.permissionsManager.listActions(
+        // Retrieve the total count of actions first
+        const { totalActions } = await managers.permissionsManager.listActions(
           {
             labels: [`admin originator ${appDomain}`],
             labelQueryMode: 'any',
-            includeLabels: true
+            includeLabels: false,
+            limit: 1,
           },
           adminOriginator
-        )
-        console.log(appDomain)
-        console.log('ACTIONS', actions)
+        );
+        totalActions
 
-        // For demonstration, let's assume actions can be displayed as is,
-        // or use transformActions if you need to manipulate them:
-        const transformedActions = transformActions(actions);
-        const totalActions = transformedActions.length;
+        // Use a fixed limit of 10 actions per page
+        const limit = 10;
+        // Calculate offset so that page 0 fetches the last 10 (most recent) actions.
+        // For page n, offset = totalCount - (n + 1) * limit (not going below 0).
+        const offset = Math.max(totalActions - (page + 1) * limit, 0);
 
-        // If the total is bigger than displayLimit, user can load more
-        // But for the example, we set all displayed actions for now
-        const displayedSlice = transformedActions.slice(0, displayLimit);
+        // Now fetch the actions for the current page.
+        const actionsResponse = await managers.permissionsManager.listActions(
+          {
+            labels: [`admin originator ${appDomain}`],
+            labelQueryMode: 'any',
+            includeLabels: true,
+            includeInputs: true,
+            includeOutputs: true,
+            limit,
+            offset,
+          },
+          adminOriginator
+        );
 
-        if (totalActions > displayedSlice.length) {
-          setAllActionsShown(false);
+        // Transform the actions
+        let pageActions = transformActions(actionsResponse.actions);
+        // Reverse if API returns ascending order, so most recent appears first.
+        pageActions = pageActions.reverse();
+
+        // Update state: for the first page replace; for later pages append.
+        if (page === 0) {
+          setAppActions(pageActions);
         } else {
-          setAllActionsShown(true);
+          setAppActions((prev) => [...prev, ...pageActions]);
         }
 
-        setAppActions(displayedSlice);
+        // If offset is 0, then we've reached the beginning of the list.
+        setAllActionsShown(offset === 0);
 
-        // Store in local cache if desired
+        // Optionally update local cache
         window.localStorage.setItem(
           cacheKey,
           JSON.stringify({
             totalTransactions: totalActions,
-            transactions: transformedActions,
+            transactions:
+              page === 0
+                ? pageActions
+                : [
+                  ...(cachedData ? JSON.parse(cachedData).transactions : []),
+                  ...pageActions,
+                ],
           })
         );
       } catch (e) {
@@ -154,7 +175,7 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
         setRefresh(false);
       }
     })();
-  }, [refresh, appDomain, displayLimit, managers.permissionsManager, adminOriginator]);
+  }, [refresh, appDomain, displayLimit, managers.permissionsManager, adminOriginator, page]);
 
   const recentActionParams = {
     loading,
@@ -193,13 +214,6 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
           }}
         />
       </Grid>
-
-      {/* 
-        If you want a placeholder area for any custom chart or summary:
-        <Grid item xs={12} style={{ width: '100%', height: '10em', background: 'gray' }}>
-          <Typography paddingBottom='2em' align='center'>Total App Cashflow</Typography>
-        </Grid> 
-      */}
 
       {/* Main Content: RecentActions + AccessAtAGlance */}
       <Grid container item spacing={3} direction="row">
