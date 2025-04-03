@@ -6,10 +6,16 @@ export default async function fetchManifest({
   domain,
 }: FetchManifestParams): Promise<any | undefined> {
   try {
-    const protocol = domain.startsWith('localhost:') ? 'http' : 'https'
-    const url = `${protocol}://${domain}/manifest.json`
-    const response = await fetch(url, { method: 'GET' })
+    // Remove any protocol prefixes (even if duplicated)
+    const cleanDomain = domain.replace(/^(https?:\/\/)+/, '')
 
+    // Decide protocol: use 'http' for localhost, otherwise default to 'https'
+    const protocol = cleanDomain.startsWith('localhost:') ? 'http' : 'https'
+
+    // Construct the final URL with the cleaned domain
+    const url = `${protocol}://${cleanDomain}/manifest.json`
+
+    const response = await fetch(url, { method: 'GET' })
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }

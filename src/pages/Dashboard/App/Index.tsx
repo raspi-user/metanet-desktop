@@ -97,28 +97,30 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
         fetchAndCacheAppData(appDomain, setAppIcon, setAppName, DEFAULT_APP_ICON);
 
         // If you still want local caching, you can do it here:
-        // const cacheKey = `transactions_${appDomain}`;
-        // const cachedData = window.localStorage.getItem(cacheKey);
-        // if (cachedData) {
-        //   const cachedParsed = JSON.parse(cachedData) as {
-        //     totalTransactions: number;
-        //     transactions: WalletAction[];
-        //   };
-        //   // Transform if needed
-        //   const transformed = transformActions(cachedParsed.transactions);
-        //   setAppActions(transformed);
-        //   setLoading(false);
-        // }
+        const cacheKey = `transactions_${appDomain}`;
+        const cachedData = window.localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const cachedParsed = JSON.parse(cachedData) as {
+            totalTransactions: number;
+            transactions: WalletAction[];
+          };
+          // Transform if needed
+          const transformed = transformActions(cachedParsed.transactions);
+          setAppActions(transformed);
+          setLoading(false);
+        }
 
         // Now fetch the real data from managers.permissionsManager:
         const { actions } = await managers.permissionsManager.listActions(
           {
-            labels: [],
+            labels: [`admin originator ${appDomain}`],
             labelQueryMode: 'any',
-            includeLabels: true,
+            includeLabels: true
           },
           adminOriginator
         )
+        console.log(appDomain)
+        console.log('ACTIONS', actions)
 
         // For demonstration, let's assume actions can be displayed as is,
         // or use transformActions if you need to manipulate them:
@@ -138,13 +140,13 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
         setAppActions(displayedSlice);
 
         // Store in local cache if desired
-        // window.localStorage.setItem(
-        //   cacheKey,
-        //   JSON.stringify({
-        //     totalTransactions: totalActions,
-        //     transactions: transformedActions,
-        //   })
-        // );
+        window.localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            totalTransactions: totalActions,
+            transactions: transformedActions,
+          })
+        );
       } catch (e) {
         console.error(e);
       } finally {
