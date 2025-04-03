@@ -1,11 +1,10 @@
 import { useContext, useState } from 'react'
 import { Chip, Box, Typography, IconButton } from '@mui/material'
-import Grid from '@mui/material/Grid2'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { useTheme, makeStyles } from '@mui/styles'
 import style from './style'
 import CounterpartyChip from '../CounterpartyChip'
-import { Base64String, WalletCertificate } from '@bsv/sdk'
+import { Base64String } from '@bsv/sdk'
 import { WalletContext } from '../../UserInterface'
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -14,28 +13,32 @@ const useStyles = makeStyles(style, {
 })
 
 interface CertificateChipProps extends RouteComponentProps {
-  certificate: WalletCertificate
-  lastAccessed?: string
-  onIssuerClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  certType?: Base64String
+  serialNumber?: Base64String
+  certifier?: string
   verifier?: string
-  onVerifierClick?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  lastAccessed?: string
   fieldsToDisplay?: string[]
   clickable?: boolean
   size?: number
   backgroundColor?: string
   expires?: string
-  onCloseClick?: () => void
   canRevoke?: boolean
   description?: string
   iconURL?: string
-  onRevoke?: (certificate: WalletCertificate) => void
+  onIssuerClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onVerifierClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onCloseClick?: () => void
+  onRevoke?: (serialNumber: Base64String) => void
 }
 
 const CertificateChip: React.FC<CertificateChipProps> = ({
-  certificate,
   lastAccessed,
   onIssuerClick,
+  certType,
+  certifier,
+  serialNumber,
   verifier,
   onVerifierClick,
   onClick,
@@ -51,14 +54,14 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
   iconURL,
   onRevoke
 }) => {
-  if (typeof certificate.type !== 'string') {
-    throw new Error('The certificate.type prop in CertificateChip is not a string')
+  if (typeof certType !== 'string') {
+    throw new Error('The certType in CertificateChip is not a string')
   }
   const classes = useStyles()
   const theme = useTheme()
 
   const [certName] = useState('Unknown Cert')
-  const [descriptionState] = useState(description || `${certificate.type.substr(0, 12)}...`)
+  const [descriptionState] = useState(description || `${certType.substr(0, 12)}...`)
   const [isRevoked, setIsRevoked] = useState(false)
 
   const fields = (Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0) ? fieldsToDisplay : Object.entries(fieldsToDisplay || {}).map(([k, v]) => `${k}: ${v}`)
@@ -70,9 +73,9 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
   const handleRelinquishCertificate = async () => {
     try {
       const result = await managers.permissionsManager.relinquishCertificate({
-        type: certificate.type,
-        serialNumber: certificate.serialNumber,
-        certifier: certificate.certifier
+        type: certType,
+        serialNumber: serialNumber,
+        certifier
       })
       console.log('Certificate revoked successfully:', result)
 
@@ -81,7 +84,7 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
 
       // Notify parent component about the revocation
       if (onRevoke) {
-        onRevoke(certificate)
+        onRevoke(serialNumber)
       }
 
       // Call onCloseClick if provided (for backward compatibility)
@@ -145,8 +148,8 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
       )}
 
       {/* Issuer section */}
-      {certificate.certifier && <CounterpartyChip
-        counterparty={certificate.certifier}
+      {certifier && <CounterpartyChip
+        counterparty={certifier}
         onClick={onIssuerClick}
         label="Issuer"
       />}

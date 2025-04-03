@@ -114,11 +114,10 @@ const MyIdentity = () => {
   }
 
   // Handle certificate revocation by removing it from the state
-  const handleCertificateRevoke = (revokedCertificate) => {
+  const handleCertificateRevoke = (serialNumber) => {
     setCertificates(prevCertificates => {
       const updatedCertificates = prevCertificates.filter(cert =>
-        cert.serialNumber !== revokedCertificate.serialNumber ||
-        cert.certifier !== revokedCertificate.certifier
+        cert.serialNumber !== serialNumber
       )
 
       // Update the local storage cache with the updated certificates
@@ -227,7 +226,9 @@ const MyIdentity = () => {
             <Grid2 key={cert.serialNumber} size={1}>
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', border: 1, borderColor: 'action.main' }}>
                 <CertificateChip
-                  certificate={cert}
+                  certType={cert.type}
+                  serialNumber={cert.serialNumber}
+                  certifier={cert.certifier}
                   fieldsToDisplay={cert.decryptedFields}
                   canRevoke={true}
                   onRevoke={handleCertificateRevoke}
