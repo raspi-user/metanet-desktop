@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { Chip, Box, Typography, Button } from '@mui/material'
+import { Chip, Box, Typography, IconButton } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { useTheme, makeStyles } from '@mui/styles'
@@ -7,6 +7,7 @@ import style from './style'
 import CounterpartyChip from '../CounterpartyChip'
 import { Base64String, WalletCertificate } from '@bsv/sdk'
 import { WalletContext } from '../../UserInterface'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const useStyles = makeStyles(style, {
   name: 'CertificateChip'
@@ -165,15 +166,15 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
 
       {/* Revoke button - only shown when canRevoke is true */}
       {canRevoke && (
-        <Box sx={{ mt: 1 }}>
-          <Button
-            variant="outlined"
-            color="error"
+        <Box sx={{ ml: 1 }}>
+          <IconButton
+            color="primary"
             size="small"
             onClick={handleRelinquishCertificate}
+            aria-label="revoke certificate"
           >
-            Revoke Certificate
-          </Button>
+            <DeleteIcon />
+          </IconButton>
         </Box>
       )}
     </Box>
