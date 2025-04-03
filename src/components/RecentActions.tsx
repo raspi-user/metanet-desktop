@@ -3,9 +3,15 @@ import { Typography, Button, LinearProgress } from '@mui/material';
 import Action from './Action';
 import { WalletAction } from '@bsv/sdk';
 
+// Import the TransformedWalletAction interface
+interface TransformedWalletAction extends WalletAction {
+  amount: number;
+  fees?: number;
+}
+
 interface RecentActionsProps {
   loading: boolean;
-  appActions: WalletAction[];
+  appActions: TransformedWalletAction[];
   displayLimit: number;
   setDisplayLimit: (limit: number) => void;
   setRefresh: (refresh: boolean) => void;
@@ -35,9 +41,10 @@ const RecentActions: FC<RecentActionsProps> = ({
           const actionToDisplay = {
             txid: action.txid,
             description: action.description,
-            amount: `${action.satoshis}`,
+            amount: action.amount.toString(),
             inputs: action.inputs,
-            outputs: action.outputs
+            outputs: action.outputs,
+            fees: action.fees?.toString()
           };
           return <Action key={index} {...actionToDisplay} />
         })}
