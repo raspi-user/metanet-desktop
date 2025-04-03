@@ -23,27 +23,27 @@ interface TransformedWalletAction extends WalletAction {
 // Transform function now returns TransformedWalletAction[]
 function transformActions(actions: WalletAction[]): TransformedWalletAction[] {
   return actions.map((action) => {
-    const inputs = action.inputs ?? []
-    const outputs = action.outputs ?? []
+    const inputs = action.inputs ?? [];
+    const outputs = action.outputs ?? [];
 
     // Calculate total input and output amounts
-    const totalInputAmount = inputs.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0)
-    const totalOutputAmount = outputs.reduce((sum, output) => sum + Number(output.satoshis), 0)
+    const totalInputAmount = inputs.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0);
+    const totalOutputAmount = outputs.reduce((sum, output) => sum + Number(output.satoshis), 0);
 
     // Calculate fees
-    const fees = totalInputAmount - totalOutputAmount
+    const fees = totalInputAmount - totalOutputAmount;
 
     // Always show the total output amount as the main amount
-    const amount = action.satoshis
+    const amount = action.satoshis;
 
     return {
       ...action,
       amount,
       inputs,
       outputs,
-      fees: fees > 0 ? fees : undefined
-    }
-  })
+      fees: fees > 0 ? fees : undefined,
+    };
+  });
 }
 
 interface LocationState {
@@ -116,7 +116,6 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
           },
           adminOriginator
         );
-        totalActions
 
         // Use a fixed limit of 10 actions per page
         const limit = 10;
@@ -153,20 +152,16 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
         // If offset is 0, then we've reached the beginning of the list.
         setAllActionsShown(offset === 0);
 
-        // Optionally update local cache
-        window.localStorage.setItem(
-          cacheKey,
-          JSON.stringify({
-            totalTransactions: totalActions,
-            transactions:
-              page === 0
-                ? pageActions
-                : [
-                  ...(cachedData ? JSON.parse(cachedData).transactions : []),
-                  ...pageActions,
-                ],
-          })
-        );
+        // Only update local cache when on page 0 to store just the 10 most recent transactions
+        if (page === 0) {
+          window.localStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              totalTransactions: totalActions,
+              transactions: pageActions,
+            })
+          );
+        }
       } catch (e) {
         console.error(e);
       } finally {
