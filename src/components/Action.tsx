@@ -9,34 +9,85 @@ import {
   Grid,
   Snackbar,
   Alert,
+  Divider,
+  Paper,
+  Box,
+  Tooltip,
+  useTheme,
 } from '@mui/material';
-import { useTheme, makeStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import CheckIcon from '@mui/icons-material/Check';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CallReceivedIcon from '@mui/icons-material/CallReceived';
+import CallMadeIcon from '@mui/icons-material/CallMade';
 import AmountDisplay from './AmountDisplay';
 import { WalletActionInput, WalletActionOutput } from '@bsv/sdk';
 
-const useStyles = makeStyles(
-  {
-    txid: {
-      fontFamily: 'monospace',
-      color: 'textSecondary',
-      userSelect: 'all',
-      fontSize: '1em',
-      '@media (max-width: 1000px) and (min-width: 401px)': {
-        fontSize: '0.75em',
-      },
-      '@media (max-width: 400px) and (min-width: 0px)': {
-        fontSize: '0.7em',
-      },
+const useStyles = makeStyles({
+  txid: {
+    fontFamily: '"Roboto Mono", "Courier New", monospace',
+    color: 'textSecondary',
+    userSelect: 'all',
+    fontSize: '1em',
+    letterSpacing: '0.5px',
+    '@media (max-width: 1000px) and (min-width: 401px)': {
+      fontSize: '0.75em',
+    },
+    '@media (max-width: 400px) and (min-width: 0px)': {
+      fontSize: '0.7em',
     },
   },
-  {
-    name: 'RecentActions',
-  }
-);
-
+  txidContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    borderRadius: '4px',
+    padding: '12px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  txidContainerDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  sectionTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '12px',
+  },
+  detailCard: {
+    padding: '16px',
+    marginBottom: '16px',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    borderRadius: '8px',
+    '&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    },
+  },
+  amountChip: {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    display: 'inline-block',
+  },
+  divider: {
+    margin: '24px 0',
+  },
+  infoIcon: {
+    fontSize: '1rem',
+    cursor: 'help',
+  },
+  infoIconLight: {
+    color: 'rgba(0, 0, 0, 0.54)',
+  },
+  infoIconDark: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+}, {
+  name: 'RecentActions',
+});
 
 interface ActionProps {
   txid: string;
@@ -45,7 +96,6 @@ interface ActionProps {
   inputs: WalletActionInput[];
   outputs: WalletActionOutput[];
   fees?: string | number;
-  // timestamp: string; // Not supported currently
   onClick?: () => void;
   isExpanded?: boolean;
 }
@@ -106,6 +156,9 @@ const Action: FC<ActionProps> = ({
 
   const [firstLine, secondLine] = splitString(txid, 32);
 
+  const totalInputAmount = inputs?.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0) || 0;
+  const totalOutputAmount = outputs?.reduce((sum, output) => sum + Number(output.satoshis), 0) || 0;
+
   return (
     <Accordion expanded={expanded} onChange={handleExpand}>
       <AccordionSummary
@@ -134,113 +187,167 @@ const Action: FC<ActionProps> = ({
           </Grid>
         </Grid>
       </AccordionSummary>
-      <AccordionDetails
-        style={{
-          padding: '1.5em',
-          display: 'flex',
-          alignItems: 'center',
-          flexDirection: 'column',
-        }}
-      >
-        <div>
-          <Typography>TXID</Typography>
-          <Grid container direction="row">
-            <Grid item sx={{ flex: 9 }} style={{ paddingRight: '0.5em' }}>
-              <div>
-                <Typography variant="body1" className={classes.txid}>
+      <AccordionDetails>
+        <Box sx={{ width: '100%' }}>
+          {/* Transaction ID Section */}
+          <Paper elevation={0} className={classes.detailCard}>
+            <div className={classes.sectionTitle}>
+              <Typography variant="h6">Transaction ID</Typography>
+              <Tooltip title="Unique identifier for this transaction">
+                <InfoOutlinedIcon
+                  className={`${classes.infoIcon} ${theme.palette.mode === 'dark'
+                    ? classes.infoIconDark
+                    : classes.infoIconLight
+                    }`}
+                />
+              </Tooltip>
+            </div>
+            <div className={`${classes.txidContainer} ${theme.palette.mode === 'dark' ? classes.txidContainerDark : ''}`}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" className={classes.txid} component="div">
                   {firstLine}
+                  {secondLine && (
+                    <Typography variant="body2" className={classes.txid} component="div">
+                      {secondLine}
+                    </Typography>
+                  )}
                 </Typography>
-              </div>
-              <div>
-                <Typography variant="body1" className={classes.txid}>
-                  {secondLine}
-                </Typography>
-              </div>
-            </Grid>
-            <Grid item sx={{ flex: 3 }}>
-              <IconButton onClick={handleCopy} disabled={copied}>
+              </Box>
+              <IconButton
+                onClick={handleCopy}
+                disabled={copied}
+                size="small"
+                sx={{
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(0, 0, 0, 0.08)',
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'rgba(0, 0, 0, 0.12)',
+                  }
+                }}
+              >
                 {copied ? <CheckIcon /> : <FileCopyIcon />}
               </IconButton>
+            </div>
+          </Paper>
+
+          {/* Transaction Summary */}
+          <Paper elevation={0} className={classes.detailCard}>
+            <div className={classes.sectionTitle}>
+              <Typography variant="h6">Transaction Summary</Typography>
+            </div>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="textSecondary">Total Input</Typography>
+                <Typography variant="h6">
+                  <AmountDisplay>{totalInputAmount}</AmountDisplay>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="textSecondary">Total Output</Typography>
+                <Typography variant="h6">
+                  <AmountDisplay>{totalOutputAmount}</AmountDisplay>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="textSecondary">Network Fees</Typography>
+                <Typography variant="h6">
+                  <AmountDisplay>{fees || 0}</AmountDisplay>
+                </Typography>
+              </Grid>
             </Grid>
-          </Grid>
-          <Snackbar
-            open={copied}
-            autoHideDuration={2000}
-            onClose={() => setCopied(false)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            style={{ paddingRight: '1em' }}
-          >
-            <Alert severity="success">Copied!</Alert>
-          </Snackbar>
-          {inputs && inputs.length !== 0 && <Typography variant="h6">Inputs</Typography>}
-          <div style={{ marginLeft: '0.5em' }}>
-            <Grid container direction="column" style={{ padding: '0.5em' }}>
-              {inputs ? inputs.map((input, index) => (
-                <div key={index}>
-                  <Grid container direction="row">
-                    <Grid item style={{ paddingRight: '0.6em' }}>
-                      <Typography variant="h6">{`${index + 1}.`}</Typography>
-                    </Grid>
-                    <Grid item maxWidth="22em">
-                      <Typography
-                        variant="body1"
-                        style={{ whiteSpace: 'pre-line', wordWrap: 'break-word' }}
-                      >
-                        {input.inputDescription}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  <Grid item style={{ marginLeft: '1.7em', paddingRight: '1em' }}>
-                    <Typography variant="body2">
-                      <AmountDisplay description={input.inputDescription}>{input.sourceSatoshis}</AmountDisplay>
-                    </Typography>
-                  </Grid>
-                </div>
-              )) : ''}
-            </Grid>
-          </div>
-          {outputs && outputs.length !== 0 && <Typography variant="h6">Outputs</Typography>}
-          <div style={{ marginLeft: '0.5em' }}>
-            <Grid container direction="column" style={{ padding: '0.5em' }}>
-              {outputs ? outputs.map((output, index) => (
-                <div key={index}>
-                  <Grid container>
-                    <Grid item style={{ paddingRight: '0.6em' }}>
-                      <Typography variant="h6">{`${index + 1}.`}</Typography>
-                    </Grid>
-                    <Grid item maxWidth="22em">
-                      <Typography
-                        variant="body1"
-                        style={{ whiteSpace: 'pre-line', wordWrap: 'break-word' }}
-                      >
-                        {output.outputDescription}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  <Grid item style={{ marginLeft: '1.7em', paddingRight: '1em' }}>
-                    <Typography variant="body2">
-                      <AmountDisplay description={output.outputDescription}>{output.satoshis}</AmountDisplay>
-                    </Typography>
-                  </Grid>
-                </div>
-              )) : ''}
-            </Grid>
-          </div>
-          {fees !== undefined && (
-            <>
-              <Typography variant="h6">Fees</Typography>
-              <div style={{ marginLeft: '0.5em' }}>
-                <Typography variant="body2">
-                  <AmountDisplay description="Transaction and commission fees">{fees}</AmountDisplay>
+          </Paper>
+
+          {/* Inputs Section */}
+          {inputs && inputs.length > 0 && (
+            <Paper elevation={0} className={classes.detailCard}>
+              <div className={classes.sectionTitle}>
+                <CallReceivedIcon color="primary" />
+                <Typography variant="h6">Inputs</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  ({inputs.length})
                 </Typography>
               </div>
-            </>
+              <Grid container direction="column" spacing={2}>
+                {inputs.map((input, index) => (
+                  <Grid item key={index}>
+                    <Paper variant="outlined" style={{ padding: '16px' }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Typography variant="body2" color="textSecondary">
+                            Input #{index + 1}
+                          </Typography>
+                          <Typography variant="body1" style={{ wordBreak: 'break-word' }}>
+                            {input.inputDescription}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <div className={classes.amountChip}>
+                            <AmountDisplay description={input.inputDescription}>
+                              {input.sourceSatoshis}
+                            </AmountDisplay>
+                          </div>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
           )}
-        </div>
+
+          {/* Outputs Section */}
+          {outputs && outputs.length > 0 && (
+            <Paper elevation={0} className={classes.detailCard}>
+              <div className={classes.sectionTitle}>
+                <CallMadeIcon color="primary" />
+                <Typography variant="h6">Outputs</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  ({outputs.length})
+                </Typography>
+              </div>
+              <Grid container direction="column" spacing={2}>
+                {outputs.map((output, index) => (
+                  <Grid item key={index}>
+                    <Paper variant="outlined" style={{ padding: '16px' }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Typography variant="body2" color="textSecondary">
+                            Output #{index + 1}
+                          </Typography>
+                          <Typography variant="body1" style={{ wordBreak: 'break-word' }}>
+                            {output.outputDescription}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <div className={classes.amountChip}>
+                            <AmountDisplay description={output.outputDescription}>
+                              {output.satoshis}
+                            </AmountDisplay>
+                          </div>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          )}
+        </Box>
       </AccordionDetails>
+      <Snackbar
+        open={copied}
+        autoHideDuration={2000}
+        onClose={() => setCopied(false)}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <Alert severity="success">Transaction ID copied!</Alert>
+      </Snackbar>
     </Accordion>
   );
 };

@@ -23,19 +23,18 @@ interface TransformedWalletAction extends WalletAction {
 // Transform function now returns TransformedWalletAction[]
 function transformActions(actions: WalletAction[]): TransformedWalletAction[] {
   return actions.map((action) => {
-    const inputs = action.inputs ?? [];
-    const outputs = action.outputs ?? [];
+    const inputs = action.inputs ?? []
+    const outputs = action.outputs ?? []
 
     // Calculate total input and output amounts
-    const totalInputAmount = inputs.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0);
-    const totalOutputAmount = outputs.reduce((sum, output) => sum + Number(output.satoshis), 0);
+    const totalInputAmount = inputs.reduce((sum, input) => sum + Number(input.sourceSatoshis), 0)
+    const totalOutputAmount = outputs.reduce((sum, output) => sum + Number(output.satoshis), 0)
 
     // Calculate fees
-    const fees = totalInputAmount - totalOutputAmount;
+    const fees = totalInputAmount - totalOutputAmount
 
     // Always show the total output amount as the main amount
-    const amount = totalOutputAmount;
-    console.log('TOTAL', action)
+    const amount = action.satoshis
 
     return {
       ...action,
@@ -43,8 +42,8 @@ function transformActions(actions: WalletAction[]): TransformedWalletAction[] {
       inputs,
       outputs,
       fees: fees > 0 ? fees : undefined
-    };
-  });
+    }
+  })
 }
 
 interface LocationState {
