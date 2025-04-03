@@ -123,7 +123,7 @@ const Apps = () => {
             setLoading(true)
           }
 
-          const appDomains = await getApps({ sortBy: 'label', permissionsManager: managers.permissionsManager, adminOriginator })
+          const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
           parsedAppData = await resolveAppDataFromDomain({ appDomains })
           parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
           // Store the current fetched apps in localStorage for a better UX
@@ -133,7 +133,7 @@ const Apps = () => {
           setFilteredApps(parsedAppData)
 
           // Always fetch recent apps to keep it updated
-          const recentAppsFetched = await getApps({ limit: 4, sortBy: 'whenLastUsed', adminOriginator, permissionsManager: managers.permissionsManager })
+          const recentAppsFetched = await getApps({ limit: 4, adminOriginator, permissionsManager: managers.permissionsManager })
           const parsedRecentAppData = await resolveAppDataFromDomain({ appDomains: recentAppsFetched })
           setRecentApps(parsedRecentAppData)
 

@@ -45,7 +45,7 @@ interface ActionProps {
   inputs: WalletActionInput[];
   outputs: WalletActionOutput[];
   fees?: string | number;
-  timestamp: string;
+  // timestamp: string; // Not supported currently
   onClick?: () => void;
   isExpanded?: boolean;
 }
@@ -57,7 +57,6 @@ const Action: FC<ActionProps> = ({
   inputs,
   outputs,
   fees,
-  timestamp,
   onClick,
   isExpanded,
 }) => {
@@ -107,35 +106,6 @@ const Action: FC<ActionProps> = ({
 
   const [firstLine, secondLine] = splitString(txid, 32);
 
-  const getTimeAgo = (timestamp: string): string => {
-    try {
-      const currentTime = new Date();
-      const diff = currentTime.getTime() - new Date(timestamp).getTime();
-
-      const minutes = Math.floor(diff / (1000 * 60));
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
-      const years = Math.floor(days / 365);
-
-      if (years > 0) {
-        return years === 1 ? `${years} year ago` : `${years} years ago`;
-      } else if (days > 0) {
-        return days === 1 ? `${days} day ago` : `${days} days ago`;
-      } else if (hours > 0) {
-        return hours === 1 ? `${hours} hour ago` : `${hours} hours ago`;
-      } else if (minutes > 0) {
-        return minutes === 1 ? `${minutes} minute ago` : `${minutes} minutes ago`;
-      } else {
-        if (isNaN(minutes)) {
-          return 'Unknown';
-        }
-        return 'Just now';
-      }
-    } catch (error) {
-      return 'Unknown';
-    }
-  };
-
   return (
     <Accordion expanded={expanded} onChange={handleExpand}>
       <AccordionSummary
@@ -158,11 +128,6 @@ const Action: FC<ActionProps> = ({
               <Grid item>
                 <Typography variant="h6" style={{ color: determineAmountColor(amount) }}>
                   <AmountDisplay showPlus>{amount}</AmountDisplay>
-                </Typography>
-              </Grid>
-              <Grid item paddingRight="1em">
-                <Typography variant="body2" style={{ color: 'textSecondary' }}>
-                  {getTimeAgo(timestamp)}
                 </Typography>
               </Grid>
             </Grid>
