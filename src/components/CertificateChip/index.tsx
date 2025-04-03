@@ -51,14 +51,13 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
   if (typeof certType !== 'string') {
     throw new Error('The certType prop in CertificateChip is not a string')
   }
-
   const classes = useStyles()
   const theme = useTheme()
 
   const [certName] = useState('Unknown Cert')
-  const [iconURLState] = useState(iconURL)
   const [descriptionState] = useState(description || `${certType.substr(0, 12)}...`)
-  const [fields] = useState({})
+
+  const fields = (Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0) ? fieldsToDisplay : Object.entries(fieldsToDisplay || {}).map(([k, v]) => `${k}: ${v}`)
 
   return (
     <Box sx={{ 
@@ -67,16 +66,16 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
       flexDirection: 'column', 
       gap: 1 
       }}>
-        <Typography sx={(theme as any).templates.chipLabelTitle({ size })} fontWeight="bold">
+        <Typography variant='h5'>
           {certName}
         </Typography>
         
-        <Typography sx={(theme as any).templates.chipLabelSubtitle}>
+        <Typography variant='body1'>
           {lastAccessed || descriptionState}
         </Typography>
 
         {/* Fields display section */}
-        {Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0 && (
+        {fields.length > 0 && (
           <Box sx={{ 
             ...(theme as any).templates.boxOfChips,
             display: 'flex',
@@ -84,8 +83,8 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
             width: '100%',
             maxWidth: '100%'
           }}>
-            <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
-              fields:
+            <Typography variant="body1" fontWeight="bold">
+              Fields:
             </Typography>
             <Box sx={{ 
               display: 'flex', 
@@ -94,10 +93,10 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
               maxWidth: '100%',
               overflow: 'hidden'
             }}>
-              {fieldsToDisplay.map((y, j) => (
+              {fields.map(y => (
                 <Chip
                   sx={{ margin: '0.4em 0.25em' }}
-                  key={j}
+                  key={`field-${y}`}
                   label={y}
                   size="small"
                 />
@@ -106,55 +105,12 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
           </Box>
         )}
 
-        {typeof fieldsToDisplay === 'object' && !Array.isArray(fieldsToDisplay) && Object.values(fieldsToDisplay).length > 0 && (
-          <Box sx={{ 
-            ...(theme as any).templates.boxOfChips,
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            maxWidth: '100%'
-          }}>
-            <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
-              fields:
-            </Typography>
-            <Box sx={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: 0.5,
-              maxWidth: '100%',
-              overflow: 'hidden'
-            }}>
-              {Object.entries(fieldsToDisplay).map(([k, v], j) => (
-                <Chip
-                  sx={{ margin: '0.4em 0.25em' }}
-                  key={j}
-                  label={`${(fields as any)[k] || k}: ${v}`}
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Box>
-        )}
-
         {/* Issuer section */}
-        {issuer && (
-          <Box sx={{ width: '100%', mt: 1 }}>
-            <Grid container spacing={1} alignItems="center">
-              <Grid>
-                <Typography variant="body2" fontSize="0.9em" fontWeight="normal" mr={1}>
-                  issuer:
-                </Typography>
-              </Grid>
-              <Grid>
-                <CounterpartyChip
-                  counterparty={issuer}
-                  onClick={onIssuerClick}
-                  label="Issuer"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        )}
+        {issuer && <CounterpartyChip
+          counterparty={issuer}
+          onClick={onIssuerClick}
+          label="Issuer"
+        />}
 
         {/* Verifier section */}
         {verifier && 
