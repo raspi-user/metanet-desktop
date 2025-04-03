@@ -120,7 +120,7 @@ const MyIdentity = () => {
     // filter...
     return false
     // return x.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || x.note.toLowerCase().indexOf(search.toLowerCase()) !== -1
-  }).concat(certificates).concat(certificates).concat(certificates).concat(certificates).concat(certificates).concat(certificates)
+  })
 
   return (
     <div className={classes.root}>
