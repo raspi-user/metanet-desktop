@@ -207,14 +207,16 @@ const MyIdentity = () => {
           As you go about your life, people and businesses you interact with can give you certificates and credentials. These verify your qualifications and help you establish trust.
         </Typography>
 
-        <Grid2 container spacing={2}>
-          {shownCertificates.map((cert, i) => (
-            <Grid2 key={i} flex={{ xs: 12, md: 6 }}>
-              <CertificateChip
-                certType={cert.type}
-                issuer={cert.certifier}
-                fieldsToDisplay={cert.decryptedFields}
-              />
+        <Grid2 container spacing={2} justifyContent="space-between" columns={{ xs: 1, sm: 1, md: 1, lg: 2 }}>
+          {shownCertificates.map((cert) => (
+            <Grid2 key={cert.serialNumber} size={1}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', border: 1, borderColor: 'action.main' }}>
+                <CertificateChip
+                  certType={cert.type}
+                  issuer={cert.certifier}
+                  fieldsToDisplay={cert.decryptedFields}
+                />
+              </Box>
             </Grid2>
           ))}
         </Grid2>
