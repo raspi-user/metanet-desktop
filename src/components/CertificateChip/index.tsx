@@ -1,39 +1,44 @@
-import { useState } from 'react'
-import { Chip, Box, Typography } from '@mui/material'
-import Grid from '@mui/material/Grid2'
+import { useContext, useState } from 'react'
+import { Chip, Box, Typography, IconButton } from '@mui/material'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { useTheme, makeStyles } from '@mui/styles'
 import style from './style'
 import CounterpartyChip from '../CounterpartyChip'
+import { Base64String } from '@bsv/sdk'
+import { WalletContext } from '../../UserInterface'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const useStyles = makeStyles(style, {
   name: 'CertificateChip'
 })
 
 interface CertificateChipProps extends RouteComponentProps {
-  certType: string
-  lastAccessed?: string
-  issuer?: string
-  onIssuerClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  certType?: Base64String
+  serialNumber?: Base64String
+  certifier?: string
   verifier?: string
-  onVerifierClick?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  lastAccessed?: string
   fieldsToDisplay?: string[]
   clickable?: boolean
   size?: number
   backgroundColor?: string
   expires?: string
-  onCloseClick?: () => void
   canRevoke?: boolean
   description?: string
   iconURL?: string
+  onIssuerClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onVerifierClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onCloseClick?: () => void
+  onRevoke?: (serialNumber: Base64String) => void
 }
 
 const CertificateChip: React.FC<CertificateChipProps> = ({
-  certType,
   lastAccessed,
-  issuer,
   onIssuerClick,
+  certType,
+  certifier,
+  serialNumber,
   verifier,
   onVerifierClick,
   onClick,
@@ -46,86 +51,137 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
   onCloseClick,
   canRevoke = false,
   description,
-  iconURL
+  iconURL,
+  onRevoke
 }) => {
   if (typeof certType !== 'string') {
-    throw new Error('The certType prop in CertificateChip is not a string')
+    throw new Error('The certType in CertificateChip is not a string')
   }
   const classes = useStyles()
   const theme = useTheme()
 
   const [certName] = useState('Unknown Cert')
   const [descriptionState] = useState(description || `${certType.substr(0, 12)}...`)
+  const [isRevoked, setIsRevoked] = useState(false)
 
   const fields = (Array.isArray(fieldsToDisplay) && fieldsToDisplay.length > 0) ? fieldsToDisplay : Object.entries(fieldsToDisplay || {}).map(([k, v]) => `${k}: ${v}`)
 
+  const {
+    managers
+  } = useContext(WalletContext)
+
+  const handleRelinquishCertificate = async () => {
+    try {
+      const result = await managers.permissionsManager.relinquishCertificate({
+        type: certType,
+        serialNumber: serialNumber,
+        certifier
+      })
+      console.log('Certificate revoked successfully:', result)
+
+      // Set the certificate as revoked locally
+      setIsRevoked(true)
+
+      // Notify parent component about the revocation
+      if (onRevoke) {
+        onRevoke(serialNumber)
+      }
+
+      // Call onCloseClick if provided (for backward compatibility)
+      if (onCloseClick) {
+        onCloseClick()
+      }
+    } catch (error) {
+      console.error('Error revoking certificate:', error)
+    }
+  }
+
+  // If the certificate has been revoked, don't render anything
+  if (isRevoked) {
+    return null
+  }
+
   return (
-    <Box sx={{ 
+    <Box sx={{
       width: '100%',
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 1 
-      }}>
-        <Typography variant='h5'>
-          {certName}
-        </Typography>
-        
-        <Typography variant='body1'>
-          {lastAccessed || descriptionState}
-        </Typography>
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 1
+    }}>
+      <Typography variant='h5'>
+        {certName}
+      </Typography>
 
-        {/* Fields display section */}
-        {fields.length > 0 && (
-          <Box sx={{ 
-            ...(theme as any).templates.boxOfChips,
+      <Typography variant='body1'>
+        {lastAccessed || descriptionState}
+      </Typography>
+
+      {/* Fields display section */}
+      {fields.length > 0 && (
+        <Box sx={{
+          ...(theme as any).templates.boxOfChips,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          maxWidth: '100%'
+        }}>
+          <Typography variant="body1" fontWeight="bold">
+            Fields:
+          </Typography>
+          <Box sx={{
             display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            maxWidth: '100%'
+            flexWrap: 'wrap',
+            gap: 0.5,
+            maxWidth: '100%',
+            overflow: 'hidden'
           }}>
-            <Typography variant="body1" fontWeight="bold">
-              Fields:
-            </Typography>
-            <Box sx={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: 0.5,
-              maxWidth: '100%',
-              overflow: 'hidden'
-            }}>
-              {fields.map(y => (
-                <Chip
-                  sx={{ margin: '0.4em 0.25em' }}
-                  key={`field-${y}`}
-                  label={y}
-                  size="small"
-                />
-              ))}
-            </Box>
+            {fields.map(y => (
+              <Chip
+                sx={{ margin: '0.4em 0.25em' }}
+                key={`field-${y}`}
+                label={y}
+                size="small"
+              />
+            ))}
           </Box>
-        )}
+        </Box>
+      )}
 
-        {/* Issuer section */}
-        {issuer && <CounterpartyChip
-          counterparty={issuer}
-          onClick={onIssuerClick}
-          label="Issuer"
+      {/* Issuer section */}
+      {certifier && <CounterpartyChip
+        counterparty={certifier}
+        onClick={onIssuerClick}
+        label="Issuer"
+      />}
+
+      {/* Verifier section */}
+      {verifier &&
+        <CounterpartyChip
+          counterparty={verifier}
+          onClick={onVerifierClick}
+          clickable
+          size={0.85}
+          label="Verifier"
         />}
+      {expires && (
+        <Typography className={classes.expires}>{expires}</Typography>
+      )}
 
-        {/* Verifier section */}
-        {verifier && 
-          <CounterpartyChip
-            counterparty={verifier}
-            onClick={onVerifierClick}
-            clickable
-            size={0.85}
-            label="Verifier"
-          />}
-        {expires && (
-          <Typography className={classes.expires}>{expires}</Typography>
-        )}
-      </Box>
+      {/* Revoke button - only shown when canRevoke is true */}
+      {canRevoke && (
+        <Box sx={{ ml: 1 }}>
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={handleRelinquishCertificate}
+            aria-label="revoke certificate"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      )}
+    </Box>
   )
 }
 
-  export default withRouter(CertificateChip)
+export default withRouter(CertificateChip)

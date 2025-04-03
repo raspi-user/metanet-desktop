@@ -113,6 +113,20 @@ const MyIdentity = () => {
     }
   }
 
+  // Handle certificate revocation by removing it from the state
+  const handleCertificateRevoke = (serialNumber) => {
+    setCertificates(prevCertificates => {
+      const updatedCertificates = prevCertificates.filter(cert =>
+        cert.serialNumber !== serialNumber
+      )
+
+      // Update the local storage cache with the updated certificates
+      window.localStorage.setItem('provenCertificates', JSON.stringify(updatedCertificates))
+
+      return updatedCertificates
+    })
+  }
+
   const shownCertificates = certificates.filter(x => {
     if (!search) {
       return true
@@ -140,13 +154,13 @@ const MyIdentity = () => {
             <b>Everyday Identity Key:</b>
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontFamily: 'monospace', 
-                bgcolor: 'action.hover', 
-                py: 1, 
-                px: 2, 
+            <Typography
+              variant="body2"
+              sx={{
+                fontFamily: 'monospace',
+                bgcolor: 'action.hover',
+                py: 1,
+                px: 2,
                 flexGrow: 1,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
@@ -164,9 +178,9 @@ const MyIdentity = () => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {privilegedIdentityKey === '...' ? (
-              <Button 
-                variant="outlined" 
-                startIcon={<EyeCon />} 
+              <Button
+                variant="outlined"
+                startIcon={<EyeCon />}
                 onClick={handleRevealPrivilegedKey}
                 size="small"
                 sx={{ mr: 1 }}
@@ -175,13 +189,13 @@ const MyIdentity = () => {
               </Button>
             ) : (
               <>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: 'monospace', 
-                    bgcolor: 'action.hover', 
-                    py: 1, 
-                    px: 2, 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    bgcolor: 'action.hover',
+                    py: 1,
+                    px: 2,
                     borderRadius: 1,
                     flexGrow: 1,
                     overflow: 'hidden',
@@ -213,14 +227,17 @@ const MyIdentity = () => {
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', border: 1, borderColor: 'action.main' }}>
                 <CertificateChip
                   certType={cert.type}
-                  issuer={cert.certifier}
+                  serialNumber={cert.serialNumber}
+                  certifier={cert.certifier}
                   fieldsToDisplay={cert.decryptedFields}
+                  canRevoke={true}
+                  onRevoke={handleCertificateRevoke}
                 />
               </Box>
             </Grid2>
           ))}
         </Grid2>
-        
+
         {shownCertificates.length === 0 && (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="textSecondary">

@@ -67,15 +67,15 @@ const CertificateAccessHandler: FC<{
           renewal,
           reason
         } = args
-        
+
         // Extract certificate data, safely handling potentially undefined values
         const certificate = args.certificate as any
         const certType = certificate?.certType || ''
         const fields = certificate?.fields || {}
-        
+
         // Extract field names as an array for the CertificateChip component
         const fieldsArray = fields ? Object.keys(fields) : []
-        
+
         const verifier = certificate?.verifier || ''
 
         // Focus logic
@@ -84,7 +84,7 @@ const CertificateAccessHandler: FC<{
         if (!currentlyFocused) {
           await onFocusRequested()
         }
-        
+
         // Add to queue
         setPerms(p => {
           const newItem: CertificateAccessRequest = {
@@ -99,7 +99,7 @@ const CertificateAccessHandler: FC<{
           }
           return [...p, newItem]
         })
-        
+
         setOpen(true)
       }
     })
@@ -128,7 +128,7 @@ const CertificateAccessHandler: FC<{
             label={perms[0].originator}
             clickable={false}
           />
-          
+
           <Divider />
 
           {/* Certificate section */}
@@ -165,14 +165,14 @@ const CertificateAccessHandler: FC<{
       </Tooltip>
 
       <DialogActions sx={{ justifyContent: 'space-between' }}>
-        <Button 
+        <Button
           onClick={handleDeny}
           variant="outlined"
           color="inherit"
         >
           Deny
         </Button>
-        <Button 
+        <Button
           onClick={handleGrant}
           variant="contained"
           color="primary"
