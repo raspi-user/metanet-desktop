@@ -28,17 +28,29 @@ import { WalletActionInput, WalletActionOutput } from '@bsv/sdk';
 
 const useStyles = makeStyles({
   txid: {
-    fontFamily: '"Roboto Mono", "Courier New", monospace',
-    color: 'textSecondary',
+    fontFamily: '"Roboto Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace',
+    fontSize: '0.875rem',
+    letterSpacing: 0,
+    lineHeight: '1.4',
+    fontWeight: 400,
+    fontFeatureSettings: '"tnum"',
+    fontVariantNumeric: 'tabular-nums',
     userSelect: 'all',
-    fontSize: '1em',
-    letterSpacing: '0.5px',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-all',
     '@media (max-width: 1000px) and (min-width: 401px)': {
-      fontSize: '0.75em',
+      fontSize: '0.75rem',
     },
     '@media (max-width: 400px) and (min-width: 0px)': {
-      fontSize: '0.7em',
+      fontSize: '0.7rem',
     },
+  },
+  txidLight: {
+    color: 'rgba(0, 0, 0, 0.87)',
+  },
+  txidDark: {
+    color: 'rgba(255, 255, 255, 0.87)',
   },
   txidContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.04)',
@@ -203,21 +215,46 @@ const Action: FC<ActionProps> = ({
               </Tooltip>
             </div>
             <div className={`${classes.txidContainer} ${theme.palette.mode === 'dark' ? classes.txidContainerDark : ''}`}>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" className={classes.txid} component="div">
-                  {firstLine}
+              <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <pre style={{
+                    margin: 0,
+                    fontFamily: 'inherit',
+                    fontSize: 'inherit',
+                    overflow: 'visible',
+                    whiteSpace: 'pre'
+                  }}>
+                    <code className={`${classes.txid} ${theme.palette.mode === 'dark'
+                      ? classes.txidDark
+                      : classes.txidLight
+                      }`}>
+                      {firstLine}
+                    </code>
+                  </pre>
                   {secondLine && (
-                    <Typography variant="body2" className={classes.txid} component="div">
-                      {secondLine}
-                    </Typography>
+                    <pre style={{
+                      margin: 0,
+                      fontFamily: 'inherit',
+                      fontSize: 'inherit',
+                      overflow: 'visible',
+                      whiteSpace: 'pre'
+                    }}>
+                      <code className={`${classes.txid} ${theme.palette.mode === 'dark'
+                        ? classes.txidDark
+                        : classes.txidLight
+                        }`}>
+                        {secondLine}
+                      </code>
+                    </pre>
                   )}
-                </Typography>
+                </div>
               </Box>
               <IconButton
                 onClick={handleCopy}
                 disabled={copied}
                 size="small"
                 sx={{
+                  flexShrink: 0,
                   backgroundColor: theme.palette.mode === 'dark'
                     ? 'rgba(255, 255, 255, 0.08)'
                     : 'rgba(0, 0, 0, 0.08)',
