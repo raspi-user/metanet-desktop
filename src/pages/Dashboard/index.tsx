@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useRef } from 'react'
 import { useBreakpoint } from '../../utils/useBreakpoints.js'
 import { Switch, Route, useHistory, Redirect } from 'react-router-dom'
-import style from '../../layouts/style.js'
+import style from '../../navigation/style.js'
 import { makeStyles } from '@mui/styles'
 import {
   Typography,
@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { WalletContext } from '../../WalletContext.js'
 import PageLoading from '../../components/PageLoading.js'
-import Menu from '../../layouts/Menu.js'
+import Menu from '../../navigation/Menu.js'
 import { Menu as MenuIcon } from '@mui/icons-material'
 import MyIdentity from './MyIdentity/index.js'
 import Trust from './Trust/index.js'
