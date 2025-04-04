@@ -40,6 +40,7 @@ export interface UserContextValue {
     setSpendingAuthorizationModalOpen: Dispatch<SetStateAction<boolean>>;
     pageLoaded: boolean;
     setPageLoaded: Dispatch<SetStateAction<boolean>>;
+    recentApps: any[];
 }
 
 export const UserContext = createContext<UserContextValue>({} as UserContextValue);
@@ -86,7 +87,6 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
         pageLoaded,
         setPageLoaded,
         recentApps,
-        setRecentApps,
     }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded, recentApps]);
 
     return (

@@ -16,18 +16,16 @@ const Apps = () => {
   const theme = useTheme()
   
   const { managers, adminOriginator } = useContext(WalletContext)
-  const { recentApps, setRecentApps } = useContext(UserContext)
+  const { recentApps } = useContext(UserContext)
   const [apps, setApps] = useState(recentApps)
-  const [filteredApps, setFilteredApps] = useState(recentApps)
+  const [filteredApps, setFilteredApps] = useState([])
 
   const [fuseInstance, setFuseInstance] = useState(null)
   const [search, setSearch] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [loadingRecentApps, setLoadingRecentApps] = useState(false)
 
   const inputRef = useRef(null)
-  const cachedAppsKey = 'cached_apps'
 
   // Configure fuse to search by app name
   const options = {
@@ -159,7 +157,7 @@ const Apps = () => {
         />
       </Box>
 
-      {(search === '' && !loadingRecentApps && recentApps.length > 3) && (
+      {(search === '' && recentApps.length > 3) && (
         <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
           <Typography variant="h4" sx={{ mb: 2 }}>
             Recent Applications
@@ -182,12 +180,12 @@ const Apps = () => {
         </Paper>
       )}
 
-      <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.paper' }}>
+      { search !== '' && <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.paper' }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
-          All
+          Search Results
         </Typography>
 
-        {loading && <LinearProgress sx={{ mt: 1, mb: 2 }} />}
+        {loading && <AppLogo size={50} rotate />}
 
         {(filteredApps.length === 0 && !loading) && (
           <Box sx={{ textAlign: 'center', py: 2 }}>
@@ -211,7 +209,7 @@ const Apps = () => {
             </Grid>
           ))}
         </Grid>
-      </Paper>
+      </Paper>}
     </Box>
   )
 }
