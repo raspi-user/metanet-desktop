@@ -124,7 +124,6 @@ export const WalletContext = createContext<WalletContextValue>({
     adminOriginator: ADMIN_ORIGINATOR,
     setPasswordRetriever: () => { },
     setRecoveryKeySaver: () => { },
-    setSpendingAuthorizationCallback: () => { },
     snapshotLoaded: false,
     basketRequests: [],
     certificateRequests: [],
