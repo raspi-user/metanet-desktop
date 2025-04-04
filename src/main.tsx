@@ -19,6 +19,7 @@ import CertificateAccessHandler from './components/CertificateAccessHandler'
 import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
 import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
+import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 
 // Define queries for responsive design
 const queries = {
@@ -46,6 +47,7 @@ if (rootElement) {
                   <BasketAccessHandler />
                   <CertificateAccessHandler />
                   <ProtocolPermissionHandler />
+                  <SpendingAuthorizationHandler />
                   <ToastContainer position='top-center' />
                   <Switch>
                     <Route exact path='/' component={Greeter} />

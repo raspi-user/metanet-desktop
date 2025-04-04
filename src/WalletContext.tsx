@@ -58,14 +58,15 @@ export interface WalletContextValue {
     adminOriginator: string;
     setPasswordRetriever: (retriever: (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>) => void
     setRecoveryKeySaver: (saver: (key: number[]) => Promise<true>) => void
-    setSpendingAuthorizationCallback: (callback: PermissionEventHandler) => void
     snapshotLoaded: boolean
     basketRequests: BasketAccessRequest[]
     certificateRequests: CertificateAccessRequest[]
     protocolRequests: ProtocolAccessRequest[]
+    spendingRequests: SpendingRequest[]
     advanceBasketQueue: () => void
     advanceCertificateQueue: () => void
     advanceProtocolQueue: () => void
+    advanceSpendingQueue: () => void
 }
 
 type PermissionType = 'identity' | 'protocol' | 'renewal' | 'basket';
@@ -101,6 +102,18 @@ type ProtocolAccessRequest = {
     type?: PermissionType
 }
 
+type SpendingRequest = {
+    requestID: string
+    originator: string
+    description?: string
+    transactionAmount: number
+    totalPastSpending: number
+    amountPreviouslyAuthorized: number
+    authorizationAmount: number
+    renewal?: boolean
+    lineItems: any[]
+}
+
 export const WalletContext = createContext<WalletContextValue>({
     managers: {},
     updateManagers: () => { },
@@ -116,9 +129,11 @@ export const WalletContext = createContext<WalletContextValue>({
     basketRequests: [],
     certificateRequests: [],
     protocolRequests: [],
+    spendingRequests: [],
     advanceBasketQueue: () => { },
     advanceCertificateQueue: () => { },
-    advanceProtocolQueue: () => { }
+    advanceProtocolQueue: () => { },
+    advanceSpendingQueue: () => { }
 })
 
 interface WalletContextProps {
@@ -140,6 +155,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     const [basketRequests, setBasketRequests] = useState<BasketAccessRequest[]>([])
     const [certificateRequests, setCertificateRequests] = useState<CertificateAccessRequest[]>([])
     const [protocolRequests, setProtocolRequests] = useState<ProtocolAccessRequest[]>([])
+    const [spendingRequests, setSpendingRequests] = useState<SpendingRequest[]>([])
 
     // Pop the first request from the basket queue, close if empty, relinquish focus if needed
     const advanceBasketQueue = () => {
@@ -183,6 +199,19 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         })
     }
 
+    // Pop the first request from the spending queue, close if empty, relinquish focus if needed
+    const advanceSpendingQueue = () => {
+        setSpendingRequests(prev => {
+            const newQueue = prev.slice(1)
+            if (newQueue.length === 0) {
+                if (!wasOriginallyFocused) {
+                    onFocusRelinquished()
+                }
+            }
+            return newQueue
+        })
+    }
+
     const updateSettings = useCallback(async (newSettings: WalletSettings) => {
         if (!managers.settingsManager) {
             throw new Error('The user must be logged in to update settings!')
@@ -198,8 +227,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     const [recoveryKeySaver, setRecoveryKeySaver] = useState<
         (key: number[]) => Promise<true>
     >();
-    const [spendingAuthorizationCallback, setSpendingAuthorizationCallback] =
-        useState<PermissionEventHandler>(() => { });
 
 
     // Provide a handler for basket-access requests that enqueues them
@@ -355,6 +382,68 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         })
     }, [isFocused, onFocusRequested])
 
+    // Provide a handler for spending authorization requests that enqueues them
+    const spendingAuthorizationCallback = useCallback(async (args: PermissionRequest & { requestID: string }): Promise<void> => {
+        const {
+            requestID,
+            originator,
+            reason,
+            renewal,
+            spending
+        } = args
+        
+        if (!requestID || !spending) {
+            return Promise.resolve()
+        }
+        
+        let {
+            satoshis,
+            lineItems
+        } = spending
+        
+        if (!lineItems) {
+            lineItems = []
+        }
+
+        // TODO: support these
+        const transactionAmount = 0
+        const totalPastSpending = 0
+        const amountPreviouslyAuthorized = 0
+
+        // Create the new permission request
+        const newItem: SpendingRequest = {
+            requestID,
+            originator,
+            description: reason,
+            transactionAmount,
+            totalPastSpending,
+            amountPreviouslyAuthorized,
+            authorizationAmount: satoshis,
+            renewal,
+            lineItems
+        }
+        
+        // Enqueue the new request
+        return new Promise<void>(resolve => {
+            setSpendingRequests(prev => {
+                const wasEmpty = prev.length === 0
+                
+                // If no requests were queued, handle focusing logic right away
+                if (wasEmpty) {
+                    isFocused().then(currentlyFocused => {
+                        setWasOriginallyFocused(currentlyFocused)
+                        if (!currentlyFocused) {
+                            onFocusRequested()
+                        }
+                    })
+                }
+                
+                resolve()
+                return [...prev, newItem]
+            })
+        })
+    }, [isFocused, onFocusRequested])
+
     // ---- WAB + network + storage configuration ----
     const [wabUrl, setWabUrl] = useState<string>(DEFAULT_WAB_URL);
     const [wabInfo, setWabInfo] = useState<{
@@ -480,11 +569,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
             // Setup permissions with provided callbacks.
             const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
                 seekPermissionsForPublicKeyRevelation: false,
-                seekProtocolPermissionsForSigning: false,
-                seekProtocolPermissionsForEncrypting: true,
                 seekProtocolPermissionsForHMAC: false,
-                seekPermissionsForIdentityKeyRevelation: false,
-                seekPermissionsForKeyLinkageRevelation: false
+                seekPermissionsForIdentityKeyRevelation: false
             });
 
             if (protocolPermissionCallback) {
@@ -644,55 +730,47 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         setSnapshotLoaded(false);
     }, []);
 
-    const wallet = useMemo(() => ({
+    const contextValue = useMemo<WalletContextValue>(() => ({
         managers,
-        updateManagers: (newManagers: ManagerState) => setManagers(prev => ({ ...prev, ...newManagers })),
+        updateManagers: setManagers,
         settings,
         updateSettings,
-        network: selectedNetwork === 'main' ? 'mainnet' : 'testnet' as 'mainnet' | 'testnet',
+        network: selectedNetwork === 'test' ? 'testnet' : 'mainnet',
         logout,
         adminOriginator,
-        snapshotLoaded,
         setPasswordRetriever,
         setRecoveryKeySaver,
-        setSpendingAuthorizationCallback,
+        snapshotLoaded,
         basketRequests,
         certificateRequests,
         protocolRequests,
+        spendingRequests,
         advanceBasketQueue,
         advanceCertificateQueue,
-        advanceProtocolQueue
+        advanceProtocolQueue,
+        advanceSpendingQueue
     }), [
         managers,
         settings,
         updateSettings,
         selectedNetwork,
         logout,
+        adminOriginator,
+        setPasswordRetriever,
+        setRecoveryKeySaver,
+        snapshotLoaded,
         basketRequests,
         certificateRequests,
         protocolRequests,
+        spendingRequests,
+        advanceBasketQueue,
+        advanceCertificateQueue,
+        advanceProtocolQueue,
+        advanceSpendingQueue
     ]);
 
     return (
-        <WalletContext.Provider value={{
-            managers,
-            updateManagers: (newManagers: ManagerState) => setManagers(m => ({ ...m, ...newManagers })),
-            settings,
-            updateSettings,
-            network: selectedNetwork === 'main' ? 'mainnet' : 'testnet',
-            logout,
-            adminOriginator,
-            setPasswordRetriever,
-            setRecoveryKeySaver,
-            setSpendingAuthorizationCallback,
-            snapshotLoaded,
-            basketRequests,
-            certificateRequests,
-            protocolRequests,
-            advanceBasketQueue,
-            advanceCertificateQueue,
-            advanceProtocolQueue
-        }}>
+        <WalletContext.Provider value={contextValue}>
             {children}
         </WalletContext.Provider>
     )
