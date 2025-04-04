@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from 'react'
 import AmountDisplay from './AmountDisplay'
 // import confederacyHost from '../utils/confederacyHost'
-import { Stack, Typography } from '@mui/material'
+import { Skeleton, Stack, Typography } from '@mui/material'
 import { WalletContext } from '../WalletContext'
 import AppLogo from './AppLogo'
 
@@ -44,10 +44,6 @@ const Profile = () => {
     refreshBalance()
   }, [refreshBalance])
 
-  if (!managers?.permissionsManager) {
-    return <AppLogo size={200} rotate />
-  }
-
   return (<Stack>
     <Typography variant='h5' color='textSecondary'>
       Your Balance
@@ -58,8 +54,8 @@ const Profile = () => {
       variant='h2'
       style={{ cursor: 'pointer' }}
     >
-      {balanceLoading
-        ? '---'
+      {!managers?.permissionsManager || balanceLoading
+        ? <Skeleton width={120} />
         : <AmountDisplay abbreviate>{accountBalance}</AmountDisplay>}
     </Typography>
   </Stack>)
