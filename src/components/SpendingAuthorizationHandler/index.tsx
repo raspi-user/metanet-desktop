@@ -1,9 +1,7 @@
 import { useContext, useState, useEffect } from 'react'
 import {
   DialogContent,
-  Typography,
-  Fab,
-  Tooltip,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -67,15 +65,12 @@ const SpendingAuthorizationHandler: React.FC = () => {
   // Get the current permission request
   const currentPerm = spendingRequests[0]
 
-  console.log({ spendingRequests })
-
   return (
     <CustomDialog
       open={spendingAuthorizationModalOpen}
       title={!currentPerm.renewal ? 'Spending Request' : 'Spending Check-in'}
     >
       <DialogContent>
-        <br />
         <Stack alignItems="center">
           <AppChip
             size={2.5}
@@ -84,26 +79,36 @@ const SpendingAuthorizationHandler: React.FC = () => {
             showDomain
           />
           <Box mt={2} />
-        </Stack>
-        
-        <Typography align='center'>
-          would like to spend
-        </Typography>
-        
-        <Typography variant='h3' align='center' sx={{ mb: 2 }} color='textPrimary'>
-          <AmountDisplay>{currentPerm.authorizationAmount}</AmountDisplay>
-        </Typography>
-
-        <Typography align='center'>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 250 }} aria-label='simple table' size='small'>
+          <TableContainer 
+            component={Paper} 
+            sx={{ 
+              overflow: 'hidden',
+              my: 3,
+              width: '100%'
+            }}
+          >
+            <Table 
+              sx={{ 
+                width: '100%',
+                '& th, & td': { 
+                  px: 3,
+                  py: 1.5
+                }
+              }} 
+              aria-label='spending details table' 
+              size='medium'
+            >
               <TableHead>
                 <TableRow
                   sx={{
-                    borderBottom: '2px solid black',
+                    color: 'text.primary',
                     '& th': {
-                      fontSize: '14px',
-                      fontWeight: 'bold'
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      letterSpacing: '0.01em',
+                      borderBottom: '1px solid',
+                      borderColor: 'primary.light',
                     }
                   }}
                 >
@@ -115,47 +120,108 @@ const SpendingAuthorizationHandler: React.FC = () => {
                 {currentPerm.lineItems.map((item, idx) => (
                   <TableRow
                     key={`item-${idx}-${item.description || 'unnamed'}`}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ 
+                      '&:last-child td, &:last-child th': { 
+                        border: 0 
+                      },
+                      '&:nth-of-type(odd)': { 
+                        bgcolor: 'background.default' 
+                      },
+                      transition: 'background-color 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      }
+                    }}
                   >
-                    <TableCell component='th' scope='row'>
+                    <TableCell 
+                      component='th' 
+                      scope='row'
+                      sx={{
+                        fontWeight: 500,
+                        color: 'text.primary'
+                      }}
+                    >
                       {item.description || '—'}
                     </TableCell>
-                    <TableCell align='right'>
+                    <TableCell 
+                      align='right'
+                      sx={{
+                        fontWeight: 600,
+                        color: 'secondary.main'
+                      }}
+                    >
                       <AmountDisplay>
                         {item.satoshis}
                       </AmountDisplay>
                     </TableCell>
                   </TableRow>
                 ))}
+                {/* Show total row if there are multiple items */}
+                {currentPerm.lineItems.length > 1 && (
+                  <TableRow
+                    sx={{ 
+                      bgcolor: 'primary.light',
+                      '& td': {
+                        py: 2,
+                        fontWeight: 700,
+                        color: 'primary.contrastText',
+                        borderTop: '1px solid',
+                        borderColor: 'divider'
+                      }
+                    }}
+                  >
+                    <TableCell>Total</TableCell>
+                    <TableCell align="right">
+                      <AmountDisplay>
+                        {currentPerm.authorizationAmount}
+                      </AmountDisplay>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
-        </Typography>
+        </Stack>
         
         <Box sx={{ 
           display: 'flex', 
-          justifyContent: 'space-around', 
-          mt: 3 
+          justifyContent: 'space-between', 
+          mt: 3,
+          px: 2
         }}>
-          <Tooltip title='Deny'>
-            <Fab
-              size='small'
-              onClick={handleCancel}
-              color='default'
-            >
-              <Cancel />
-            </Fab>
-          </Tooltip>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleCancel}
+            sx={{
+              height: '40px'
+            }}
+          >
+            Deny
+          </Button>
+
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleGrant({ amount: 10 * currentPerm.authorizationAmount, singular: false })}
+            sx={{ 
+              minWidth: '120px',
+              height: '40px'
+            }}
+          >
+            Allow up to {10 * currentPerm.authorizationAmount}
+          </Button>
           
-          <Tooltip title='Grant'>
-            <Fab
-              size='small'
-              onClick={() => handleGrant({ singular: true })}
-              color='primary'
-            >
-              <Send />
-            </Fab>
-          </Tooltip>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleGrant({ singular: true })}
+            sx={{ 
+              height: '40px'
+            }}
+          >
+            Spend
+          </Button>
         </Box>
       </DialogContent>
     </CustomDialog>
