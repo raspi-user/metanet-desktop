@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - preview/*
     # uncomment after first official release.
     # tags:
     #   - 'v*.*.*'
