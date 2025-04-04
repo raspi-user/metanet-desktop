@@ -146,7 +146,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     const [managers, setManagers] = useState<ManagerState>({});
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
     const [adminOriginator, setAdminOriginator] = useState(ADMIN_ORIGINATOR);
-    const { isFocused, onFocusRequested, onFocusRelinquished, setBasketAccessModalOpen, setCertificateAccessModalOpen, setProtocolAccessModalOpen } = useContext(UserContext);
+    const { isFocused, onFocusRequested, onFocusRelinquished, setBasketAccessModalOpen, setCertificateAccessModalOpen, setProtocolAccessModalOpen, setSpendingAuthorizationModalOpen } = useContext(UserContext);
 
     // Track if we were originally focused
     const [wasOriginallyFocused, setWasOriginallyFocused] = useState(false)
@@ -204,6 +204,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         setSpendingRequests(prev => {
             const newQueue = prev.slice(1)
             if (newQueue.length === 0) {
+                setSpendingAuthorizationModalOpen(false)
                 if (!wasOriginallyFocused) {
                     onFocusRelinquished()
                 }
@@ -435,6 +436,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                         if (!currentlyFocused) {
                             onFocusRequested()
                         }
+                        setSpendingAuthorizationModalOpen(true)
                     })
                 }
                 

@@ -20,6 +20,7 @@ import CustomDialog from '../CustomDialog/index.js'
 import { WalletContext } from '../../WalletContext'
 import AppChip from '../AppChip/index.js'
 import { Services } from '@bsv/wallet-toolbox-client'
+import { UserContext } from '../../UserContext.js'
 
 const services = new Services('main')
 
@@ -28,8 +29,9 @@ const SpendingAuthorizationHandler: React.FC = () => {
     managers, spendingRequests, advanceSpendingQueue
   } = useContext(WalletContext)
   
+  const { spendingAuthorizationModalOpen } = useContext(UserContext)
+  
   const [usdPerBsv, setUsdPerBSV] = useState(35)
-  const [open, setOpen] = useState(false)
 
   const handleCancel = () => {
     if (spendingRequests.length > 0) {
@@ -50,17 +52,13 @@ const SpendingAuthorizationHandler: React.FC = () => {
   }
 
   useEffect(() => {
-    // Check if we have spending requests and update the UI state
-    if (spendingRequests.length > 0 && !open) {
-      setOpen(true)
-      // Fetch exchange rate when we have spending requests
+    // Fetch exchange rate when we have spending requests
+    if (spendingRequests.length > 0) {
       services.getBsvExchangeRate().then(rate => {
         setUsdPerBSV(rate)
       })
-    } else if (spendingRequests.length === 0 && open) {
-      setOpen(false)
     }
-  }, [spendingRequests, open])
+  }, [spendingRequests])
 
   if (spendingRequests.length === 0) {
     return null
@@ -71,7 +69,7 @@ const SpendingAuthorizationHandler: React.FC = () => {
 
   return (
     <CustomDialog
-      open={open}
+      open={spendingAuthorizationModalOpen}
       title={!currentPerm.renewal ? 'Spending Request' : 'Spending Check-in'}
     >
       <DialogContent>
