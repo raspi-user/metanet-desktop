@@ -24,7 +24,7 @@ import {
 import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { WalletBridge } from './wallet/interface'
+import { WalletBridge } from './WalletBridge'
 import { DEFAULT_WAB_URL, DEFAULT_STORAGE_URL, DEFAULT_CHAIN, ADMIN_ORIGINATOR } from './config'
 import { UserContext } from './UserContext'
 
@@ -671,12 +671,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
 
                 // Set initial managers state to prevent null references
                 setManagers(m => ({ ...m, walletManager: exampleWalletManager }));
-
-                // Fire the parent callback to let parent components know
-                // that the wallet is ready
-                if (WalletBridge) {
-                    WalletBridge(exampleWalletManager);
-                }
 
                 // Load snapshot if available
                 loadWalletSnapshot(exampleWalletManager);
