@@ -21,7 +21,6 @@ import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 import AuthRedirector from './navigation/AuthRedirector'
-import { WalletBridge } from './WalletBridge'
 
 // Define queries for responsive design
 const queries = {
@@ -40,7 +39,6 @@ if (rootElement) {
     <React.StrictMode>
       <UserContextProvider>
         <WalletContextProvider>
-          <WalletBridge />
           <ExchangeRateContextProvider>
             <Router>
               <AuthRedirector />

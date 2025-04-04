@@ -26,10 +26,8 @@ import {
   WERR_REVIEW_ACTIONS
 } from '@bsv/sdk';
 import { listen, emit } from '@tauri-apps/api/event'
-import { WalletContext } from './WalletContext';
-import { useContext, useEffect } from 'react';
 
-const asyncListen = async (wallet: WalletInterface) => {
+export const walletBridgeAsyncListen = async (wallet: WalletInterface): Promise<(() => void) | undefined> => {
     return await listen('http-request', async (event) => {
         let response
 
@@ -775,34 +773,4 @@ const asyncListen = async (wallet: WalletInterface) => {
         console.error("Error handling http-request event:", e)
         }
     })
-}
-
-export const WalletBridge: React.FC = () => {
-    const { managers } = useContext(WalletContext)
-    const wallet = managers?.walletManager;
-
-    useEffect(() => {
-        if (wallet) {
-            let unlistenFn: (() => void) | undefined;
-            
-            const setupListener = async () => {
-                unlistenFn = await asyncListen(wallet);
-                console.log('THE INTERFACE IS UP! WALLET:', wallet);
-            };
-            
-            setupListener();
-            
-            return () => {
-                if (unlistenFn) {
-                    console.log('THE INTERFACE IS DOWN!');
-                    unlistenFn();
-                }
-            };
-        }
-    }, [wallet]);
-
-    // For debugging / testing
-    (window as any).externallyCallableWallet = wallet;
-
-    return null;
 }

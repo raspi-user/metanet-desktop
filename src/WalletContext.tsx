@@ -4,7 +4,6 @@ import {
     WalletPermissionsManager,
     PrivilegedKeyManager,
     WalletStorageManager,
-    PermissionEventHandler,
     WalletAuthenticationManager,
     OverlayUMPTokenInteractor,
     WalletSigner,
@@ -24,16 +23,9 @@ import {
 import { DEFAULT_SETTINGS, WalletSettings, WalletSettingsManager } from '@bsv/wallet-toolbox-client/out/src/WalletSettingsManager'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { WalletBridge } from './WalletBridge'
+import { walletBridgeAsyncListen } from './walletBridgeAsyncListen'
 import { DEFAULT_WAB_URL, DEFAULT_STORAGE_URL, DEFAULT_CHAIN, ADMIN_ORIGINATOR } from './config'
 import { UserContext } from './UserContext'
-
-// Define a type for the config from WalletConfig component
-type WalletConfigType = {
-    wabUrl: string;
-    selectedAuthMethod: string;
-    selectedNetwork: 'main' | 'test';
-}
 
 // -----
 // Context Types
@@ -652,7 +644,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                 const phoneInteractor = new TwilioPhoneInteractor();
 
                 // Create the wallet manager with proper error handling
-                const exampleWalletManager = new WalletAuthenticationManager(
+                const walletManager = new WalletAuthenticationManager(
                     adminOriginator,
                     buildWallet,
                     new OverlayUMPTokenInteractor(
@@ -667,13 +659,13 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                 );
 
                 // Store in window for debugging
-                (window as any).walletManager = exampleWalletManager;
+                (window as any).walletManager = walletManager;
 
                 // Set initial managers state to prevent null references
-                setManagers(m => ({ ...m, walletManager: exampleWalletManager }));
+                setManagers(m => ({ ...m, walletManager }));
 
                 // Load snapshot if available
-                loadWalletSnapshot(exampleWalletManager);
+                loadWalletSnapshot(walletManager);
 
             } catch (err: any) {
                 console.error("Error initializing wallet manager:", err);
@@ -689,9 +681,9 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         managers.walletManager,
         selectedNetwork,
         wabUrl,
-        WalletBridge,
         buildWallet,
         loadWalletSnapshot,
+        walletBridgeAsyncListen,
         adminOriginator
     ]);
 
@@ -724,6 +716,27 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         setConfigComplete(false);
         setSnapshotLoaded(false);
     }, []);
+
+    useEffect(() => {
+        if (managers?.walletManager?.authenticated) {
+            const wallet = managers.walletManager;
+            let unlistenFn: (() => void) | undefined;
+            
+            const setupListener = async () => {
+                unlistenFn = await walletBridgeAsyncListen(wallet);
+                console.log('THE INTERFACE IS UP! WALLET:', wallet);
+            };
+            
+            setupListener();
+            
+            return () => {
+                if (unlistenFn) {
+                    console.log('THE INTERFACE IS DOWN!');
+                    unlistenFn();
+                }
+            };
+        }
+    }, [managers]);
 
     const contextValue = useMemo<WalletContextValue>(() => ({
         managers,
