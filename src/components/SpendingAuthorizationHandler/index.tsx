@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, useCallback } from 'react'
 import {
   DialogContent,
   Button,
@@ -47,6 +47,28 @@ const SpendingAuthorizationHandler: React.FC = () => {
       })
     }
     advanceSpendingQueue()
+  }
+
+    // Helper function to figure out the upgrade amount (note: consider moving to utils)
+  const determineUpgradeAmount = (previousAmountInSats: any, returnType = 'sats') => {
+    let usdAmount
+    const previousAmountInUsd = previousAmountInSats * (usdPerBsv / 100000000)
+
+    // The supported spending limits are $5, $10, $20, $50
+    if (previousAmountInUsd <= 5) {
+      usdAmount = 5
+    } else if (previousAmountInUsd <= 10) {
+      usdAmount = 10
+    } else if (previousAmountInUsd <= 20) {
+      usdAmount = 20
+    } else {
+      usdAmount = 50
+    }
+
+    if (returnType === 'sats') {
+      return Math.round(usdAmount / (usdPerBsv / 100000000))
+    }
+    return usdAmount
   }
 
   useEffect(() => {
@@ -203,13 +225,13 @@ const SpendingAuthorizationHandler: React.FC = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleGrant({ amount: 10 * currentPerm.authorizationAmount, singular: false })}
+            onClick={() => handleGrant({ singular: false, amount: determineUpgradeAmount(currentPerm.amountPreviouslyAuthorized) })}
             sx={{ 
               minWidth: '120px',
               height: '40px'
             }}
           >
-            Allow up to {10 * currentPerm.authorizationAmount}
+            Allow up to &nbsp;<AmountDisplay showFiatAsInteger>{determineUpgradeAmount(currentPerm.amountPreviouslyAuthorized)}</AmountDisplay>
           </Button>
           
           <Button
