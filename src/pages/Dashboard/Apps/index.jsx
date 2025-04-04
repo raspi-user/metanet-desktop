@@ -10,24 +10,16 @@ import Fuse from 'fuse.js'
 // import POPULAR_APPS from '../../../constants/popularApps'
 import getApps from './getApps'
 import { WalletContext } from '../../../WalletContext'
+import { UserContext } from '../../../UserContext'
 
 const Apps = () => {
   const theme = useTheme()
-  const [apps, setApps] = useState([])
-  const loadRecentApps = () => {
-    try {
-      const storedApps = window.localStorage.getItem('recentApps')
-      return storedApps ? JSON.parse(storedApps) : []
-    } catch (error) {
-      return []
-    }
-  }
+  
   const { managers, adminOriginator } = useContext(WalletContext)
+  const { recentApps, setRecentApps } = useContext(UserContext)
+  const [apps, setApps] = useState(recentApps)
+  const [filteredApps, setFilteredApps] = useState(recentApps)
 
-  // Initialize recentApps with value from localStorage or fallback to empty array
-  const [recentApps, setRecentApps] = useState(loadRecentApps)
-
-  const [filteredApps, setFilteredApps] = useState([])
   const [fuseInstance, setFuseInstance] = useState(null)
   const [search, setSearch] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
@@ -81,8 +73,9 @@ const Apps = () => {
       let appIconImageUrl
       let appName = domain
       try {
-        if (await isImageUrl(`https://${domain}/favicon.ico`)) {
-          appIconImageUrl = `https://${domain}/favicon.ico`
+        const url = domain.startsWith('http') ? domain : `https://${domain}/favicon.ico`
+        if (await isImageUrl(url)) {
+          appIconImageUrl = url
         }
         // Try to parse the app manifest to find the app info
         const manifest = await parseAppManifest({ domain })
@@ -99,46 +92,23 @@ const Apps = () => {
   }
 
   useEffect(() => {
-    if (typeof adminOriginator === 'string') {
+    if (typeof adminOriginator === 'string' && managers?.permissionsManager) {
       (async () => {
-        // Obtain a list of all apps ordered alphabetically
         try {
-          // Show cached recent apps first
-          if (window.localStorage.getItem('recentApps')) {
-            setRecentApps(JSON.parse(window.localStorage.getItem('recentApps')))
-          } else {
-            setLoadingRecentApps(true)
-          }
-
-          // Check if there is storage app data for this session
-          let parsedAppData = JSON.parse(window.localStorage.getItem(cachedAppsKey))
-
-          // Parse out the app data from the domains
-          if (parsedAppData) {
-            try {
-              setApps(parsedAppData)
-              setFilteredApps(parsedAppData)
-            } catch (e) { }
+          if (recentApps.length > 0) {
+            setApps(recentApps)
           } else {
             setLoading(true)
           }
 
+          // Parse out the app data from the domains
           const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
-          parsedAppData = await resolveAppDataFromDomain({ appDomains })
+          const parsedAppData = await resolveAppDataFromDomain({ appDomains })
           parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
-          // Store the current fetched apps in localStorage for a better UX
-          window.localStorage.setItem(cachedAppsKey, JSON.stringify(parsedAppData))
-
           setApps(parsedAppData)
-          setFilteredApps(parsedAppData)
-
-          // Always fetch recent apps to keep it updated
-          const recentAppsFetched = await getApps({ limit: 4, adminOriginator, permissionsManager: managers.permissionsManager })
-          const parsedRecentAppData = await resolveAppDataFromDomain({ appDomains: recentAppsFetched })
-          setRecentApps(parsedRecentAppData)
 
           // Temp local storage for to remove render delay
-          window.localStorage.setItem('recentApps', JSON.stringify(parsedRecentAppData))
+          window.localStorage.setItem('recentApps', JSON.stringify(parsedAppData))
 
           // Initialize fuse for filtering apps
           const fuse = new Fuse(parsedAppData, options)
@@ -147,10 +117,9 @@ const Apps = () => {
           console.error(error)
         }
         setLoading(false)
-        setLoadingRecentApps(false)
       })()
     }
-  }, [adminOriginator])
+  }, [recentApps, adminOriginator, managers?.permissionsManager])
 
   return (
     <Box sx={{ padding: theme.spacing(3), maxWidth: '800px', margin: '0 auto' }}>
@@ -197,9 +166,9 @@ const Apps = () => {
           </Typography>
 
           <Grid container spacing={2}>
-            {recentApps.map((app, index) => (
+            {recentApps.map((app) => (
               <Grid
-                key={index}
+                key={app.domain}
                 sx={{ xs: 12, sm: 6, md: 3 }}
               >
                 <MetanetApp
@@ -229,9 +198,9 @@ const Apps = () => {
         )}
 
         <Grid container spacing={2}>
-          {filteredApps.map((app, index) => (
+          {filteredApps.map((app) => (
             <Grid
-              key={index}
+              key={app.domain}
               sx={{  xs: 12, sm: 6, md: 3 }}
             >
               <MetanetApp

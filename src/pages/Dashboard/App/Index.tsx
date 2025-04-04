@@ -181,6 +181,8 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
     allActionsShown,
   };
 
+  const url = (appDomain.startsWith('http') ? appDomain : `https://${appDomain}`)
+
   return (
     <Grid container spacing={3} direction="column">
       {/* Page Header */}
@@ -191,10 +193,10 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
           subheading={
             <div>
               <Typography variant="caption" color="textSecondary">
-                {`https://${appDomain}`}
+                {url}
                 <IconButton
                   size="small"
-                  onClick={() => handleCopy(appDomain, 'id')}
+                  onClick={() => handleCopy(url, 'id')}
                   disabled={copied.id}
                 >
                   {copied.id ? <CheckIcon /> : <ContentCopyIcon fontSize="small" />}
@@ -205,7 +207,7 @@ const Apps: React.FC<AppsProps> = ({ history }) => {
           icon={appIcon}
           buttonTitle="Launch"
           onClick={() => {
-            window.open(`https://${appDomain}`, '_blank');
+            window.open(url, '_blank');
           }}
         />
       </Grid>

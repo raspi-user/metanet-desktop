@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, SetStateAction, useMemo, useState } from 'react'
+import React, { createContext, Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
 import packageJson from '../package.json'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -60,6 +60,14 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
     const [protocolAccessModalOpen, setProtocolAccessModalOpen] = useState(false)
     const [spendingAuthorizationModalOpen, setSpendingAuthorizationModalOpen] = useState(false)
     const [pageLoaded, setPageLoaded] = useState(false)
+    const [recentApps, setRecentApps] = useState([])
+
+    useEffect(() => {
+        const storedApps = window.localStorage.getItem('recentApps')
+        if (storedApps) {
+            setRecentApps(JSON.parse(storedApps))
+        }
+    }, [])
 
     const userContext = useMemo(() => ({
         isFocused,
@@ -76,8 +84,10 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
         spendingAuthorizationModalOpen,
         setSpendingAuthorizationModalOpen,
         pageLoaded,
-        setPageLoaded
-    }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded]);
+        setPageLoaded,
+        recentApps,
+        setRecentApps,
+    }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded, recentApps]);
 
     return (
         <UserContext.Provider value={userContext}>
