@@ -40,7 +40,6 @@ export interface UserContextValue {
     setSpendingAuthorizationModalOpen: Dispatch<SetStateAction<boolean>>;
     pageLoaded: boolean;
     setPageLoaded: Dispatch<SetStateAction<boolean>>;
-    recentApps: any[];
 }
 
 export const UserContext = createContext<UserContextValue>({} as UserContextValue);
@@ -61,14 +60,6 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
     const [protocolAccessModalOpen, setProtocolAccessModalOpen] = useState(false)
     const [spendingAuthorizationModalOpen, setSpendingAuthorizationModalOpen] = useState(false)
     const [pageLoaded, setPageLoaded] = useState(false)
-    const [recentApps, setRecentApps] = useState([])
-
-    useEffect(() => {
-        const storedApps = window.localStorage.getItem('recentApps')
-        if (storedApps) {
-            setRecentApps(JSON.parse(storedApps))
-        }
-    }, [])
 
     const userContext = useMemo(() => ({
         isFocused,
@@ -86,7 +77,6 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
         setSpendingAuthorizationModalOpen,
         pageLoaded,
         setPageLoaded,
-        recentApps,
     }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded, recentApps]);
 
     return (

@@ -26,6 +26,9 @@ import 'react-toastify/dist/ReactToastify.css'
 import { walletBridgeAsyncListen } from './walletBridgeAsyncListen'
 import { DEFAULT_WAB_URL, DEFAULT_STORAGE_URL, DEFAULT_CHAIN, ADMIN_ORIGINATOR } from './config'
 import { UserContext } from './UserContext'
+import getApps from './pages/Dashboard/Apps/getApps'
+import isImageUrl from './utils/isImageUrl'
+import parseAppManifest from './utils/parseAppManifest'
 
 // -----
 // Context Types
@@ -59,6 +62,7 @@ export interface WalletContextValue {
     advanceCertificateQueue: () => void
     advanceProtocolQueue: () => void
     advanceSpendingQueue: () => void
+    recentApps: any[]
 }
 
 type PermissionType = 'identity' | 'protocol' | 'renewal' | 'basket';
@@ -124,7 +128,8 @@ export const WalletContext = createContext<WalletContextValue>({
     advanceBasketQueue: () => { },
     advanceCertificateQueue: () => { },
     advanceProtocolQueue: () => { },
-    advanceSpendingQueue: () => { }
+    advanceSpendingQueue: () => { },
+    recentApps: []
 })
 
 interface WalletContextProps {
@@ -137,6 +142,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     const [managers, setManagers] = useState<ManagerState>({});
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
     const [adminOriginator, setAdminOriginator] = useState(ADMIN_ORIGINATOR);
+    const [recentApps, setRecentApps] = useState([])
+
     const { isFocused, onFocusRequested, onFocusRelinquished, setBasketAccessModalOpen, setCertificateAccessModalOpen, setProtocolAccessModalOpen, setSpendingAuthorizationModalOpen } = useContext(UserContext);
 
     // Track if we were originally focused
@@ -738,6 +745,46 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         }
     }, [managers]);
 
+    const resolveAppDataFromDomain = async ({ appDomains }) => {
+        const dataPromises = appDomains.map(async (domain, index) => {
+        let appIconImageUrl
+        let appName = domain
+        try {
+            const url = domain.startsWith('http') ? domain : `https://${domain}/favicon.ico`
+            if (await isImageUrl(url)) {
+            appIconImageUrl = url
+            }
+            // Try to parse the app manifest to find the app info
+            const manifest = await parseAppManifest({ domain })
+            if (manifest && typeof manifest.name === 'string') {
+            appName = manifest.name
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        return { appName, appIconImageUrl, domain }
+        })
+        return Promise.all(dataPromises)
+    }
+
+    useEffect(() => {
+        (async () => {
+            const storedApps = window.localStorage.getItem('recentApps')
+            if (storedApps) {
+                setRecentApps(JSON.parse(storedApps))
+            }
+            // Parse out the app data from the domains
+            const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
+            const parsedAppData = await resolveAppDataFromDomain({ appDomains })
+            parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
+            setRecentApps(parsedAppData)
+
+            // store for next app load
+            window.localStorage.setItem('recentApps', JSON.stringify(parsedAppData))
+        })()
+    }, [adminOriginator, managers?.permissionsManager])
+
     const contextValue = useMemo<WalletContextValue>(() => ({
         managers,
         updateManagers: setManagers,
@@ -756,7 +803,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceBasketQueue,
         advanceCertificateQueue,
         advanceProtocolQueue,
-        advanceSpendingQueue
+        advanceSpendingQueue,
+        recentApps
     }), [
         managers,
         settings,
@@ -774,7 +822,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceBasketQueue,
         advanceCertificateQueue,
         advanceProtocolQueue,
-        advanceSpendingQueue
+        advanceSpendingQueue,
+        recentApps
     ]);
 
     return (

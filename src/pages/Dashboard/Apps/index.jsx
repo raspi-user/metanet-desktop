@@ -4,26 +4,18 @@ import Grid from '@mui/material/Grid2'
 import { useTheme } from '@mui/styles'
 import MetanetApp from '../../../components/MetanetApp'
 import SearchIcon from '@mui/icons-material/Search'
-import parseAppManifest from '../../../utils/parseAppManifest'
-import isImageUrl from '../../../utils/isImageUrl'
 import Fuse from 'fuse.js'
-// import POPULAR_APPS from '../../../constants/popularApps'
-import getApps from './getApps'
 import { WalletContext } from '../../../WalletContext'
-import { UserContext } from '../../../UserContext'
 
 const Apps = () => {
   const theme = useTheme()
-  
-  const { managers, adminOriginator } = useContext(WalletContext)
-  const { recentApps } = useContext(UserContext)
-  const [apps, setApps] = useState(recentApps)
+  const { recentApps } = useContext(WalletContext)
   const [filteredApps, setFilteredApps] = useState([])
 
   const [fuseInstance, setFuseInstance] = useState(null)
   const [search, setSearch] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const inputRef = useRef(null)
 
@@ -44,7 +36,7 @@ const Apps = () => {
 
     // Clear the filtered apps once the text box is empty (instead of searching for empty)
     if (value === '') {
-      setFilteredApps(apps)
+      setFilteredApps(recentApps)
       return
     }
     // Search for a matching app by name
@@ -66,58 +58,12 @@ const Apps = () => {
     inputRef.current.focus()
   }
 
-  const resolveAppDataFromDomain = async ({ appDomains }) => {
-    const dataPromises = appDomains.map(async (domain, index) => {
-      let appIconImageUrl
-      let appName = domain
-      try {
-        const url = domain.startsWith('http') ? domain : `https://${domain}/favicon.ico`
-        if (await isImageUrl(url)) {
-          appIconImageUrl = url
-        }
-        // Try to parse the app manifest to find the app info
-        const manifest = await parseAppManifest({ domain })
-        if (manifest && typeof manifest.name === 'string') {
-          appName = manifest.name
-        }
-      } catch (e) {
-        console.error(e)
-      }
-
-      return { appName, appIconImageUrl, domain }
-    })
-    return Promise.all(dataPromises)
-  }
 
   useEffect(() => {
-    if (typeof adminOriginator === 'string' && managers?.permissionsManager) {
-      (async () => {
-        try {
-          if (recentApps.length > 0) {
-            setApps(recentApps)
-          } else {
-            setLoading(true)
-          }
-
-          // Parse out the app data from the domains
-          const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
-          const parsedAppData = await resolveAppDataFromDomain({ appDomains })
-          parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
-          setApps(parsedAppData)
-
-          // Temp local storage for to remove render delay
-          window.localStorage.setItem('recentApps', JSON.stringify(parsedAppData))
-
-          // Initialize fuse for filtering apps
-          const fuse = new Fuse(parsedAppData, options)
-          setFuseInstance(fuse)
-        } catch (error) {
-          console.error(error)
-        }
-        setLoading(false)
-      })()
-    }
-  }, [recentApps, adminOriginator, managers?.permissionsManager])
+    const fuse = new Fuse(recentApps, options)
+    setFuseInstance(fuse)
+    setLoading(false)
+  }, [recentApps])
 
   return (
     <Box sx={{ padding: theme.spacing(3), maxWidth: '800px', margin: '0 auto' }}>
