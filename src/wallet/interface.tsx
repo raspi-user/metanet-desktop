@@ -32,7 +32,7 @@ export const WalletBridge = async (wallet: WalletInterface) => {
     console.log('THE INTERFACE IS UP! WALLET:', wallet)
 
     // Listen for "http-request" events from the Rust backend.
-    await listen('http-request', async (event) => {
+    const unlisten = await listen('http-request', async (event) => {
         let response
 
         try {
@@ -777,4 +777,10 @@ export const WalletBridge = async (wallet: WalletInterface) => {
         console.error("Error handling http-request event:", e)
         }
     })
+
+    return () => {
+        console.log('THE INTERFACE IS DOWN!')
+        unlisten()
+    }
+
 }

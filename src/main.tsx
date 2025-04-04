@@ -21,7 +21,6 @@ import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 import AuthRedirector from './navigation/AuthRedirector'
-import PageLoading from './components/PageLoading'
 
 // Define queries for responsive design
 const queries = {
