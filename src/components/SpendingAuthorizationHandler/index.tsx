@@ -67,6 +67,8 @@ const SpendingAuthorizationHandler: React.FC = () => {
   // Get the current permission request
   const currentPerm = spendingRequests[0]
 
+  console.log({ spendingRequests })
+
   return (
     <CustomDialog
       open={spendingAuthorizationModalOpen}
@@ -89,7 +91,7 @@ const SpendingAuthorizationHandler: React.FC = () => {
         </Typography>
         
         <Typography variant='h3' align='center' sx={{ mb: 2 }} color='textPrimary'>
-          <AmountDisplay>{currentPerm.transactionAmount}</AmountDisplay>
+          <AmountDisplay>{currentPerm.authorizationAmount}</AmountDisplay>
         </Typography>
 
         <Typography align='center'>
@@ -120,7 +122,7 @@ const SpendingAuthorizationHandler: React.FC = () => {
                     </TableCell>
                     <TableCell align='right'>
                       <AmountDisplay>
-                        {item.amount}
+                        {item.satoshis}
                       </AmountDisplay>
                     </TableCell>
                   </TableRow>
