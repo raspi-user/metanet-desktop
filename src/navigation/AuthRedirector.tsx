@@ -1,23 +1,24 @@
 import { useContext, useEffect } from "react"
-import { useHistory } from "react-router"
+import { useHistory } from "react-router-dom"
 import { WalletContext } from "../WalletContext"
+import { UserContext } from "../UserContext"
 
 // -----
 // AuthRedirector: Handles auto-login redirect when snapshot has loaded
 // -----
-const AuthRedirector: React.FC<{ snapshotLoaded: boolean }> = ({ snapshotLoaded }) => {
+export default function AuthRedirector() {
     const history = useHistory()
-    const { managers } = useContext(WalletContext)
+    const { managers, snapshotLoaded } = useContext(WalletContext)
+    const { setPageLoaded } = useContext(UserContext)
 
     useEffect(() => {
         if (
-            managers.walletManager &&
-            snapshotLoaded &&
-            (managers.walletManager as any).authenticated
+            managers?.walletManager?.authenticated && snapshotLoaded
         ) {
             history.push('/dashboard/apps')
         }
-    }, [managers.walletManager, snapshotLoaded, history])
+        setPageLoaded(true)
+    }, [managers?.walletManager?.authenticated, snapshotLoaded, history])
 
     return null
 }

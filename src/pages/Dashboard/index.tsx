@@ -1,6 +1,6 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useContext, useRef } from 'react'
 import { useBreakpoint } from '../../utils/useBreakpoints.js'
-import { Switch, Route, useHistory, Redirect } from 'react-router-dom'
+import { Switch, Route, Redirect } from 'react-router-dom'
 import style from '../../navigation/style.js'
 import { makeStyles } from '@mui/styles'
 import {
@@ -8,7 +8,6 @@ import {
   IconButton,
   Toolbar
 } from '@mui/material'
-import { WalletContext } from '../../WalletContext.js'
 import PageLoading from '../../components/PageLoading.js'
 import Menu from '../../navigation/Menu.js'
 import { Menu as MenuIcon } from '@mui/icons-material'
@@ -18,6 +17,7 @@ import Apps from './Apps/index.jsx'
 import App from './App/Index.jsx'
 import Settings from './Settings/index.js'
 import Security from './Security/index.js'
+import { UserContext } from '../../UserContext.js'
 
 const useStyles = makeStyles(style as any, {
   name: 'Dashboard'
@@ -27,13 +27,11 @@ const useStyles = makeStyles(style as any, {
  * Renders the Apps page and menu by default
  */
 export default function Dashboard() {
+  const { pageLoaded } = useContext(UserContext)
   const breakpoints = useBreakpoint()
   const classes = useStyles({ breakpoints })
-  const history = useHistory()
   const menuRef = useRef(null)
   const [menuOpen, setMenuOpen] = useState(true)
-  const { managers } = useContext(WalletContext)
-  const [pageLoading, setPageLoading] = useState(true)
   const [myIdentityKey, setMyIdentityKey] = useState('self')
 
 
@@ -44,26 +42,7 @@ export default function Dashboard() {
     return '0px'
   }
 
-  // Check if this is first login and redirect to settings if needed
-  useEffect(() => {
-    (async () => {
-      if (managers?.walletManager?.authenticated) {
-        setPageLoading(false)
-        const { publicKey } = await managers.walletManager.getPublicKey({ identityKey: true })
-        setMyIdentityKey(publicKey)
-
-        // Check if this is a first-time login
-        const isFirstTime = !localStorage.getItem('hasCompletedSetup');
-        if (isFirstTime) {
-          localStorage.setItem('hasCompletedSetup', 'true');
-          // Navigate to settings page for new users
-          history.push('/dashboard/settings');
-        }
-      }
-    })()
-  }, [managers, history])
-
-  if (pageLoading) {
+  if (!pageLoaded) {
     return <PageLoading />
   }
 

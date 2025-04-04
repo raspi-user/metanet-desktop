@@ -237,8 +237,8 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
 
 // Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
-  const { managers, snapshotLoaded } = useContext(WalletContext)
-  const { appVersion, appName } = useContext(UserContext)
+  const { managers } = useContext(WalletContext)
+  const { appVersion, appName, pageLoaded } = useContext(UserContext)
   const theme = useTheme()
 
   // We keep the same Accordion steps: phone, code, password
@@ -250,7 +250,6 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [accountStatus, setAccountStatus] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [pageLoaded, setPageLoaded] = useState(false)
   
   // Wallet configuration state
   const [showWalletConfig, setShowWalletConfig] = useState(false)
@@ -312,15 +311,6 @@ const Greeter: React.FC<any> = ({ history }) => {
     setShowWalletConfig(false)
     fetchWalletConfig().then(() => toast.success("Wallet configuration applied"))
   }
-
-  useEffect(() => {
-    if (
-      managers?.walletManager?.authenticated && snapshotLoaded
-    ) {
-      history.push('/dashboard/apps')
-    }
-    setPageLoaded(true)
-  }, [managers?.walletManager?.authenticated, snapshotLoaded, history])
 
   // Force the manager to use the "presentation-key-and-password" flow:
   useEffect(() => {
