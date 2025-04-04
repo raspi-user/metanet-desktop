@@ -568,9 +568,12 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
 
             // Setup permissions with provided callbacks.
             const permissionsManager = new WalletPermissionsManager(wallet, adminOriginator, {
-                seekPermissionsForPublicKeyRevelation: false,
+                seekProtocolPermissionsForSigning: false,
+                seekProtocolPermissionsForEncrypting: false,
                 seekProtocolPermissionsForHMAC: false,
-                seekPermissionsForIdentityKeyRevelation: false
+                seekPermissionsForPublicKeyRevelation: false,
+                seekPermissionsForIdentityKeyRevelation: false,
+                seekPermissionsForIdentityResolution: false,
             });
 
             if (protocolPermissionCallback) {

@@ -76,8 +76,8 @@ export const UserContextProvider: React.FC<UserContextProps> = ({
         spendingAuthorizationModalOpen,
         setSpendingAuthorizationModalOpen,
         pageLoaded,
-        setPageLoaded,
-    }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded, recentApps]);
+        setPageLoaded
+    }), [appVersion, appName, basketAccessModalOpen, certificateAccessModalOpen, protocolAccessModalOpen, spendingAuthorizationModalOpen, pageLoaded]);
 
     return (
         <UserContext.Provider value={userContext}>
