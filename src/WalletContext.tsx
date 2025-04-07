@@ -617,8 +617,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
             try {
                 const snapArr = Utils.toArray(localStorage.snap, 'base64');
                 await walletManager.loadSnapshot(snapArr);
-                console.log("Snapshot loaded successfully");
-                setSnapshotLoaded(true);
+                // We'll handle setting snapshotLoaded in a separate effect watching authenticated state
             } catch (err: any) {
                 console.error("Error loading snapshot", err);
                 localStorage.removeItem('snap'); // Clear invalid snapshot
@@ -626,6 +625,13 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
             }
         }
     }, []);
+
+    // Watch for wallet authentication after snapshot is loaded
+    useEffect(() => {
+        if (managers?.walletManager?.authenticated && localStorage.snap) {
+            setSnapshotLoaded(true);
+        }
+    }, [managers?.walletManager?.authenticated]);
 
     // ---- Build the wallet manager once all required inputs are ready.
     useEffect(() => {
