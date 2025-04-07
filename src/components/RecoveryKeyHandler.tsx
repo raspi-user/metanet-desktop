@@ -19,7 +19,7 @@ import { Utils } from '@bsv/sdk';
 import { WalletContext } from '../WalletContext'
 
 const RecoveryKeyHandler: FC = () => {
-  const { setRecoveryKeySaver } = useContext(WalletContext)
+  const { managers, setRecoveryKeySaver } = useContext(WalletContext)
   const [open, setOpen] = useState(false)
   const [recoveryKey, setRecoveryKey] = useState<string>('')
   const [affirmative1, setAffirmative1] = useState(false)
@@ -41,7 +41,7 @@ const RecoveryKeyHandler: FC = () => {
         })
       }
     })
-  }, [])
+  }, [managers])
 
   const onKeySaved = async (): Promise<void> => {
     resolve(true)

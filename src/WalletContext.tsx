@@ -693,7 +693,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         wabUrl,
         buildWallet,
         loadWalletSnapshot,
-        walletBridgeAsyncListen,
         adminOriginator
     ]);
 
