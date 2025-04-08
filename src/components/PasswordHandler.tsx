@@ -6,10 +6,6 @@ import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { toast } from 'react-toastify';
 import { WalletContext } from '../WalletContext'
 
-type PasswordHandlerProps = {
-  setPasswordRetriever: (retriever: (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>) => void
-}
-
 const PasswordHandler: React.FC = () => {
   const {
     onFocusRequested,
@@ -27,6 +23,7 @@ const PasswordHandler: React.FC = () => {
   const { setPasswordRetriever } = useContext(WalletContext)
 
   useEffect(() => {
+    console.log('setPasswordRetriever')
     setPasswordRetriever((): any => {
       return (reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
         return new Promise<string>(async (resolve, reject) => {

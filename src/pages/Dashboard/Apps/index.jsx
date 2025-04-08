@@ -6,6 +6,7 @@ import MetanetApp from '../../../components/MetanetApp'
 import SearchIcon from '@mui/icons-material/Search'
 import Fuse from 'fuse.js'
 import { WalletContext } from '../../../WalletContext'
+import AppLogo from '../../../components/AppLogo'
 
 const Apps = () => {
   const theme = useTheme()
@@ -130,8 +131,6 @@ const Apps = () => {
         <Typography variant="h4" sx={{ mb: 2 }}>
           Search Results
         </Typography>
-
-        {loading && <AppLogo size={50} rotate />}
 
         {(filteredApps.length === 0 && !loading) && (
           <Box sx={{ textAlign: 'center', py: 2 }}>

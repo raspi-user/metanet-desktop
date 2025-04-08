@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useCallback } from 'react'
 import {
   Typography, Button, CircularProgress
 } from '@mui/material'
@@ -29,12 +29,14 @@ const RecoveryKeySettings: React.FC<RecoveryKeySettingsProps> = ({ history, onVi
 
   const handleViewKey = async () => {
     try {
+      console.log({ recoveryKey })
       if (recoveryKey) {
         setRecoveryKey('')
         return
       }
       setShowLoading(true)
       const key = Utils.toBase64(await managers.walletManager.getRecoveryKey())
+      console.log({ key })
       setRecoveryKey(key)
       if (onViewKey) {
         onViewKey(key)
