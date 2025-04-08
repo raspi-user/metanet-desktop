@@ -758,14 +758,12 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
             
             const setupListener = async () => {
                 unlistenFn = await walletBridgeAsyncListen(wallet);
-                console.log('THE INTERFACE IS UP! WALLET:', wallet);
             };
             
             setupListener();
             
             return () => {
                 if (unlistenFn) {
-                    console.log('THE INTERFACE IS DOWN!');
                     unlistenFn();
                 }
             };

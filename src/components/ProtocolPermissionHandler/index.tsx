@@ -60,10 +60,7 @@ const ProtocolPermissionHandler = () => {
   }
 
   if (!protocolAccessModalOpen || !protocolRequests.length) return null
-
   const currentPerm = protocolRequests[0]
-  console.log({ currentPerm })
-
   // Get permission type document
   const getPermissionTypeDoc = () => {
     // Default to protocol if type is undefined

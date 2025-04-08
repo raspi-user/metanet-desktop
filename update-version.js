@@ -56,7 +56,7 @@ const filesToUpdate = [
 // Update each file
 filesToUpdate.forEach(file => {
   const filePath = path.resolve(file.path);
-  
+
   try {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8');
@@ -77,11 +77,11 @@ try {
   // Commit the changes
   execSync('git add .');
   execSync(`git commit -m "Bump version to ${newVersion}"`);
-  
+
   // Tag the commit
   const tagName = `v${newVersion}`;
   execSync(`git tag ${tagName}`);
-  
+
   console.log(`Created git tag: ${tagName}`);
   console.log('To push changes and tag, run: git push && git push --tags');
 } catch (error) {
