@@ -63,6 +63,7 @@ export interface WalletContextValue {
     advanceProtocolQueue: () => void
     advanceSpendingQueue: () => void
     recentApps: any[]
+    finalizeConfig: (wabConfig: WABConfig) => boolean
 }
 
 type PermissionType = 'identity' | 'protocol' | 'renewal' | 'basket';
@@ -129,8 +130,17 @@ export const WalletContext = createContext<WalletContextValue>({
     advanceCertificateQueue: () => { },
     advanceProtocolQueue: () => { },
     advanceSpendingQueue: () => { },
-    recentApps: []
+    recentApps: [],
+    finalizeConfig: () => false
 })
+
+interface WABConfig {
+    wabUrl: string;
+    wabInfo: any;
+    method: string;
+    network: 'main' | 'test';
+    storageUrl: string;
+}
 
 interface WalletContextProps {
     children?: React.ReactNode;
@@ -461,8 +471,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     const [configComplete, setConfigComplete] = useState<boolean>(!!localStorage.snap);
     // Used to trigger a re-render after snapshot load completes.
     const [snapshotLoaded, setSnapshotLoaded] = useState<boolean>(false);
-    // Flag to indicate if wallet configuration is in edit mode
-    const [showWalletConfigEdit, setShowWalletConfigEdit] = useState<boolean>(false);
 
     // Fetch WAB info for first-time configuration
     const fetchWabInfo = useCallback(async () => {
@@ -506,45 +514,46 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         }
     }, [wabUrl, configComplete, fetchWabInfo]);
 
-    const onSelectAuthMethod = useCallback((method: string) => {
-        setSelectedAuthMethod(method);
-    }, []);
-
     // For new users: mark configuration complete when WalletConfig is submitted.
-    const finalizeConfig = useCallback(() => {
-        if (!wabInfo || !selectedAuthMethod) {
-            toast.error("Please select an Auth Method from the WAB info first.");
-            return;
-        }
-
+    const finalizeConfig = (wabConfig: WABConfig) => {
+        const { wabUrl, wabInfo, method, network, storageUrl } = wabConfig
         try {
-            // Make sure we have all the required configuration
             if (!wabUrl) {
                 toast.error("WAB Server URL is required");
                 return;
             }
 
-            if (!selectedNetwork) {
+            if (!wabInfo || !method) {
+                toast.error("Auth Method selection is required");
+                return;
+            }
+
+            if (!network) {
                 toast.error("Network selection is required");
                 return;
             }
 
-            if (!selectedStorageUrl) {
+            if (!storageUrl) {
                 toast.error("Storage URL is required");
                 return;
             }
 
-            // Save the configuration
-            toast.success("Default configuration applied successfully!");
-            setConfigComplete(true);
+            setWabUrl(wabUrl)
+            setWabInfo(wabInfo)
+            setSelectedAuthMethod(method)
+            setSelectedNetwork(network)
+            setSelectedStorageUrl(storageUrl)
 
-            // Close the configuration dialog
-            setShowWalletConfigEdit(false);
+            // Save the configuration
+            toast.success("Configuration applied successfully!");
+            setConfigComplete(true);
+            return true
         } catch (error: any) {
             console.error("Error applying configuration:", error);
             toast.error("Failed to apply configuration: " + (error.message || "Unknown error"));
+            return false
         }
-    }, [wabInfo, selectedAuthMethod, wabUrl, selectedNetwork, selectedStorageUrl]);
+    }
 
     // Build wallet function
     const buildWallet = useCallback(async (
@@ -812,7 +821,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceCertificateQueue,
         advanceProtocolQueue,
         advanceSpendingQueue,
-        recentApps
+        recentApps,
+        finalizeConfig
     }), [
         managers,
         settings,
@@ -831,7 +841,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceCertificateQueue,
         advanceProtocolQueue,
         advanceSpendingQueue,
-        recentApps
+        recentApps,
+        finalizeConfig
     ]);
 
     return (

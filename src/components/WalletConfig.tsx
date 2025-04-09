@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -14,7 +14,7 @@ import { DEFAULT_WAB_URL, DEFAULT_CHAIN, DEFAULT_STORAGE_URL } from '../config';
 import { WalletContext } from '../WalletContext';
 
 const WalletConfig: React.FC = () => {
-  const { managers } = useContext(WalletContext)
+  const { managers, finalizeConfig } = useContext(WalletContext)
   
   // Wallet configuration state
   const [showWalletConfig, setShowWalletConfig] = useState(false)
@@ -24,9 +24,9 @@ const WalletConfig: React.FC = () => {
     faucetEnabled: boolean;
     faucetAmount: number;
   } | null>(null)
-  const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("")
-  const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>(DEFAULT_CHAIN)
-  const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(DEFAULT_STORAGE_URL)
+  const [method, setMethod] = useState<string>("")
+  const [network, setNetwork] = useState<'main' | 'test'>(DEFAULT_CHAIN)
+  const [storageUrl, setStorageUrl] = useState<string>(DEFAULT_STORAGE_URL)
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
 
   // Access the manager:
@@ -49,11 +49,12 @@ const WalletConfig: React.FC = () => {
         throw new Error(`Failed to fetch info: ${res.status}`)
       }
       const info = await res.json()
+      console.log({ info })
       setWabInfo(info)
       
       // Auto-select the first supported authentication method
       if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
-        setSelectedAuthMethod(info.supportedAuthMethods[0])
+        setMethod(info.supportedAuthMethods[0])
       }
     } catch (error: any) {
       console.error("Error fetching wallet config:", error)
@@ -64,14 +65,16 @@ const WalletConfig: React.FC = () => {
   }
 
   // Apply wallet configuration
-  const applyWalletConfig = () => {
-    if (!wabInfo || !selectedAuthMethod) {
-      toast.error("Please select an authentication method")
-      return
-    }
-    setShowWalletConfig(false)
-    fetchWalletConfig().then(() => toast.success("Wallet configuration applied"))
-  }
+  const applyWalletConfig = useCallback(() => {
+    const valid = finalizeConfig({
+      wabUrl,
+      wabInfo,
+      method,
+      network,
+      storageUrl
+    })
+    if (valid) setShowWalletConfig(false)
+  }, [wabUrl, wabInfo, method, network, storageUrl, finalizeConfig, setShowWalletConfig])
 
   // Force the manager to use the "presentation-key-and-password" flow:
   useEffect(() => {
@@ -134,15 +137,15 @@ const WalletConfig: React.FC = () => {
                             Service which will be used to verify your phone number:
                           </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {wabInfo.supportedAuthMethods.map((method) => (
+                            {wabInfo.supportedAuthMethods.map((methodOption) => (
                               <Button
-                                key={method}
-                                variant={selectedAuthMethod === method ? "contained" : "outlined"}
+                                key={methodOption}
+                                variant={method === methodOption ? "contained" : "outlined"}
                                 size="small"
-                                onClick={() => setSelectedAuthMethod(method)}
+                                onClick={() => setMethod(methodOption)}
                                 sx={{ textTransform: 'none' }}
                               >
-                                {method}
+                                {methodOption}
                               </Button>
                             ))}
                           </Box>
@@ -155,17 +158,17 @@ const WalletConfig: React.FC = () => {
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                           <Button
-                            variant={selectedNetwork === 'main' ? "contained" : "outlined"}
+                            variant={network === 'main' ? "contained" : "outlined"}
                             size="small"
-                            onClick={() => setSelectedNetwork('main')}
+                            onClick={() => setNetwork('main')}
                             sx={{ textTransform: 'none' }}
                           >
                             Mainnet
                           </Button>
                           <Button
-                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
+                            variant={network === 'test' ? "contained" : "outlined"}
                             size="small"
-                            onClick={() => setSelectedNetwork('test')}
+                            onClick={() => setNetwork('test')}
                             sx={{ textTransform: 'none' }}
                           >
                             Testnet
@@ -180,8 +183,8 @@ const WalletConfig: React.FC = () => {
                         label="Storage URL"
                         fullWidth
                         variant="outlined"
-                        value={selectedStorageUrl}
-                        onChange={(e) => setSelectedStorageUrl(e.target.value)}
+                        value={storageUrl}
+                        onChange={(e) => setStorageUrl(e.target.value)}
                         margin="normal"
                         size="small"
                       />
@@ -192,7 +195,7 @@ const WalletConfig: React.FC = () => {
                           size="small"
                           color="primary"
                           onClick={applyWalletConfig}
-                          disabled={!wabInfo || !selectedAuthMethod}
+                          disabled={!wabInfo || !method}
                         >
                           Apply Configuration
                         </Button>
