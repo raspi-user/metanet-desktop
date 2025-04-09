@@ -1,159 +1,213 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Divider
-} from '@mui/material'
-import Grid from '@mui/material/Grid2'
+  Divider,
+  CircularProgress,
+  Collapse
+} from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { toast } from 'react-toastify';
+import { DEFAULT_WAB_URL, DEFAULT_CHAIN, DEFAULT_STORAGE_URL } from '../config';
+import { WalletContext } from '../WalletContext';
 
-interface WalletConfigProps {
-  noManagerYet: boolean
-  wabUrl: string
-  setWabUrl: (url: string) => void
-  fetchWabInfo: () => void
-  wabInfo?: {
-    supportedAuthMethods: string[]
-    faucetEnabled: boolean
-    faucetAmount: number
+const WalletConfig: React.FC = () => {
+  const { managers } = useContext(WalletContext)
+  
+  // Wallet configuration state
+  const [showWalletConfig, setShowWalletConfig] = useState(false)
+  const [wabUrl, setWabUrl] = useState<string>(DEFAULT_WAB_URL)
+  const [wabInfo, setWabInfo] = useState<{
+    supportedAuthMethods: string[];
+    faucetEnabled: boolean;
+    faucetAmount: number;
+  } | null>(null)
+  const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("")
+  const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>(DEFAULT_CHAIN)
+  const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(DEFAULT_STORAGE_URL)
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false)
+
+  // Access the manager:
+  const walletManager = managers.walletManager
+
+  // Auto-fetch wallet configuration info when component mounts
+  useEffect(() => {
+    if (!wabInfo && !walletManager?.authenticated) {
+      fetchWalletConfig()
+    }
+  }, [])
+
+  // Fetch wallet configuration info
+  const fetchWalletConfig = async () => {
+    setIsLoadingConfig(true)
+    try {
+      console.log({ wabUrl, wabInfo })
+      const res = await fetch(`${wabUrl}/info`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch info: ${res.status}`)
+      }
+      const info = await res.json()
+      setWabInfo(info)
+      
+      // Auto-select the first supported authentication method
+      if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
+        setSelectedAuthMethod(info.supportedAuthMethods[0])
+      }
+    } catch (error: any) {
+      console.error("Error fetching wallet config:", error)
+      toast.error("Could not fetch wallet configuration: " + error.message)
+    } finally {
+      setIsLoadingConfig(false)
+    }
   }
-  selectedAuthMethod: string
-  onSelectAuthMethod: (method: string) => void
-  selectedNetwork: string
-  setSelectedNetwork: (network: 'main' | 'test') => void
-  selectedStorageUrl: string
-  setSelectedStorageUrl: (url: string) => void
-  finalizeConfig: () => void
-}
 
-const WalletConfig: React.FC<WalletConfigProps> = ({
-  noManagerYet,
-  wabUrl,
-  setWabUrl,
-  fetchWabInfo,
-  wabInfo,
-  selectedAuthMethod,
-  onSelectAuthMethod,
-  selectedNetwork,
-  setSelectedNetwork,
-  selectedStorageUrl,
-  setSelectedStorageUrl,
-  finalizeConfig
-}) => {
-  if (!noManagerYet) return null
+  // Apply wallet configuration
+  const applyWalletConfig = () => {
+    if (!wabInfo || !selectedAuthMethod) {
+      toast.error("Please select an authentication method")
+      return
+    }
+    setShowWalletConfig(false)
+    fetchWalletConfig().then(() => toast.success("Wallet configuration applied"))
+  }
 
-  // Conditions to enable the finalize button
-  const canFinalize = !!wabInfo && !!selectedAuthMethod
+  // Force the manager to use the "presentation-key-and-password" flow:
+  useEffect(() => {
+    if (walletManager) {
+      walletManager.authenticationMode = 'presentation-key-and-password'
+    }
+  }, [walletManager])
 
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-      <Card sx={{ width: { xs: '90%', md: 600 } }}>
-        <CardContent>
-          <Typography variant='h5' gutterBottom>
-            Configure Your Wallet
-          </Typography>
-          <Typography variant='body2' color='textSecondary' pb={2}>
-            Configure your wallet with a Wallet Authentication Backend
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid flex={12}>
-              <TextField
-                fullWidth
-                label='WAB Server URL'
-                variant='outlined'
-                value={wabUrl}
-                onChange={e => setWabUrl(e.target.value)}
-              />
-            </Grid>
-            <Grid flex={12}>
-              <Button variant='contained' color='primary' onClick={fetchWabInfo}>
-                Fetch Info
+  return <Box sx={{ mb: 3 }}>
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Button 
+                startIcon={<SettingsIcon />}
+                onClick={() => setShowWalletConfig(!showWalletConfig)}
+                variant="text"
+                color='secondary'
+                size="small"
+              >
+                {showWalletConfig ? 'Hide Details' : 'Show Config'}
               </Button>
-            </Grid>
-
-            {wabInfo && (
+            </Box>            
+            {isLoadingConfig ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
               <>
-                <Grid flex={12}>
-                  <Typography variant='subtitle1'>
-                    Supported Methods: {wabInfo.supportedAuthMethods.join(', ')}
+                {wabInfo ? (            
+                  <Collapse in={showWalletConfig}>
+                    <Typography variant="h4" color="primary">
+                      Configuration
+                    </Typography>
+                    <Box sx={{ py: 2 }}>
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Authentication Backend (WAB) provides 2 of 3 backup and recovery functionality for your root key.
+                      </Typography>
+                      <TextField
+                        label="WAB URL"
+                        fullWidth
+                        variant="outlined"
+                        value={wabUrl}
+                        onChange={(e) => setWabUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <Button 
+                          variant="outlined" 
+                          size="small" 
+                          onClick={fetchWalletConfig}
+                          disabled={isLoadingConfig}
+                        >
+                          Refresh Info
+                        </Button>
+                      </Box>
+                      <Divider />
+                      {wabInfo.supportedAuthMethods && wabInfo.supportedAuthMethods.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="body2" gutterBottom>
+                            Service which will be used to verify your phone number:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {wabInfo.supportedAuthMethods.map((method) => (
+                              <Button
+                                key={method}
+                                variant={selectedAuthMethod === method ? "contained" : "outlined"}
+                                size="small"
+                                onClick={() => setSelectedAuthMethod(method)}
+                                sx={{ textTransform: 'none' }}
+                              >
+                                {method}
+                              </Button>
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                      
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" gutterBottom>
+                          BSV Network:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                          <Button
+                            variant={selectedNetwork === 'main' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('main')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Mainnet
+                          </Button>
+                          <Button
+                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
+                            size="small"
+                            onClick={() => setSelectedNetwork('test')}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Testnet
+                          </Button>
+                        </Box>
+                      </Box>
+                      
+                      <Typography variant="body2" gutterBottom>
+                        Wallet Storage Provider to use for your transactions and metadata:
+                      </Typography>
+                      <TextField
+                        label="Storage URL"
+                        fullWidth
+                        variant="outlined"
+                        value={selectedStorageUrl}
+                        onChange={(e) => setSelectedStorageUrl(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                          onClick={applyWalletConfig}
+                          disabled={!wabInfo || !selectedAuthMethod}
+                        >
+                          Apply Configuration
+                        </Button>
+                    </Box>
+                  </Collapse>
+                ) : (
+                  <Typography variant="body2" color="error">
+                    Failed to load wallet configuration
                   </Typography>
-                  <Typography variant='subtitle1'>
-                    Faucet: {wabInfo.faucetEnabled ? 'Enabled' : 'Disabled'} (Amount: {wabInfo.faucetAmount})
-                  </Typography>
-                </Grid>
-                <Grid flex={12}>
-                  <FormControl fullWidth variant='outlined'>
-                    <InputLabel id='auth-method-label'>Choose Auth Method</InputLabel>
-                    <Select
-                      labelId='auth-method-label'
-                      value={selectedAuthMethod}
-                      onChange={e => onSelectAuthMethod(e.target.value)}
-                      label='Choose Auth Method'
-                    >
-                      <MenuItem value=''>
-                        <em>(Select method)</em>
-                      </MenuItem>
-                      {wabInfo.supportedAuthMethods.map(method => (
-                        <MenuItem key={method} value={method}>
-                          {method}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                )}
               </>
             )}
-
-            <Grid flex={12}>
-              <FormControl fullWidth variant='outlined'>
-                <InputLabel id='network-label'>Chain/Network</InputLabel>
-                <Select
-                  labelId='network-label'
-                  value={selectedNetwork}
-                  onChange={e => setSelectedNetwork(e.target.value as ('main' | 'test'))}
-                  label='Chain/Network'
-                >
-                  <MenuItem value='main'>Mainnet</MenuItem>
-                  <MenuItem value='test'>Testnet</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid flex={12}>
-              <TextField
-                fullWidth
-                label='Storage URL'
-                variant='outlined'
-                value={selectedStorageUrl}
-                onChange={e => setSelectedStorageUrl(e.target.value)}
-              />
-            </Grid>
-
-            {/* Render button always, but disable it until conditions are met */}
-            <Grid flex={12}>
-              <Button
-                variant='contained'
-                color='secondary'
-                onClick={finalizeConfig}
-                fullWidth
-                disabled={!canFinalize}
-              >
-                Finalize Config & Create Manager
-              </Button>
-            </Grid>
-          </Grid>
-          <Divider sx={{ my: 2 }} />
-        </CardContent>
-      </Card>
-    </Box>
-  )
+          </Box>
+        </Box>
 }
 
-export default WalletConfig
+
+export default WalletConfig;
