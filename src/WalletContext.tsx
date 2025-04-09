@@ -649,7 +649,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     // ---- Build the wallet manager once all required inputs are ready.
     useEffect(() => {
         if (
-            configStatus === 'configured' && // either user configured or snapshot exists
+            configStatus !== 'editing' && // either user configured or snapshot exists
             !managers.walletManager // build only once
         ) {
             try {
