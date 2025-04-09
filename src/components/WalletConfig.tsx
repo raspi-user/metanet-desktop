@@ -14,7 +14,7 @@ import { DEFAULT_WAB_URL, DEFAULT_CHAIN, DEFAULT_STORAGE_URL } from '../config';
 import { WalletContext } from '../WalletContext';
 
 const WalletConfig: React.FC = () => {
-  const { managers, finalizeConfig } = useContext(WalletContext)
+  const { managers, finalizeConfig, setConfigStatus } = useContext(WalletContext)
   
   // Wallet configuration state
   const [showWalletConfig, setShowWalletConfig] = useState(false)
@@ -83,12 +83,26 @@ const WalletConfig: React.FC = () => {
     }
   }, [walletManager])
 
+  const configIncomplete = () => {
+    setShowWalletConfig(true)
+    setConfigStatus('editing')
+    if (managers?.walletManager) {
+      delete managers.walletManager
+    }
+    if (managers?.permissionsManager) {
+      delete managers.permissionsManager
+    }
+    if (managers?.settingsManager) {
+      delete managers.settingsManager
+    }
+  }
+
   return <Box sx={{ mb: 3 }}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <Button 
                 startIcon={<SettingsIcon />}
-                onClick={() => setShowWalletConfig(!showWalletConfig)}
+                onClick={configIncomplete}
                 variant="text"
                 color='secondary'
                 size="small"

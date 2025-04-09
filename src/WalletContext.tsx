@@ -40,6 +40,8 @@ interface ManagerState {
     settingsManager?: WalletSettingsManager;
 }
 
+type ConfigStatus = 'editing' | 'configured' | 'initial'
+
 export interface WalletContextValue {
     // Managers:
     managers: ManagerState;
@@ -64,6 +66,7 @@ export interface WalletContextValue {
     advanceSpendingQueue: () => void
     recentApps: any[]
     finalizeConfig: (wabConfig: WABConfig) => boolean
+    setConfigStatus: (status: ConfigStatus) => void
 }
 
 type PermissionType = 'identity' | 'protocol' | 'renewal' | 'basket';
@@ -131,7 +134,8 @@ export const WalletContext = createContext<WalletContextValue>({
     advanceProtocolQueue: () => { },
     advanceSpendingQueue: () => { },
     recentApps: [],
-    finalizeConfig: () => false
+    finalizeConfig: () => false,
+    setConfigStatus: () => { }
 })
 
 interface WABConfig {
@@ -468,7 +472,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
 
     // Flag that indicates configuration is complete. For returning users,
     // if a snapshot exists we auto-mark configComplete.
-    const [configComplete, setConfigComplete] = useState<boolean>(!!localStorage.snap);
+    const [configStatus, setConfigStatus] = useState<ConfigStatus>('initial');
     // Used to trigger a re-render after snapshot load completes.
     const [snapshotLoaded, setSnapshotLoaded] = useState<boolean>(false);
 
@@ -497,7 +501,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
 
     // Auto-fetch WAB info and apply default configuration when component mounts
     useEffect(() => {
-        if (!localStorage.snap && !configComplete) {
+        if (!localStorage.snap && configStatus === 'initial') {
             (async () => {
                 try {
                     const info = await fetchWabInfo();
@@ -505,14 +509,14 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                     if (info && info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
                         setSelectedAuthMethod(info.supportedAuthMethods[0]);
                         // Automatically apply default configuration
-                        setConfigComplete(true);
+                        setConfigStatus('configured');
                     }
                 } catch (error: any) {
                     console.error("Error in initial WAB setup", error);
                 }
             })();
         }
-    }, [wabUrl, configComplete, fetchWabInfo]);
+    }, [wabUrl, configStatus, fetchWabInfo]);
 
     // For new users: mark configuration complete when WalletConfig is submitted.
     const finalizeConfig = (wabConfig: WABConfig) => {
@@ -546,7 +550,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
 
             // Save the configuration
             toast.success("Configuration applied successfully!");
-            setConfigComplete(true);
+            setConfigStatus('configured');
             return true
         } catch (error: any) {
             console.error("Error applying configuration:", error);
@@ -645,7 +649,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     // ---- Build the wallet manager once all required inputs are ready.
     useEffect(() => {
         if (
-            configComplete && // either user configured or snapshot exists
+            configStatus === 'configured' && // either user configured or snapshot exists
             !managers.walletManager // build only once
         ) {
             try {
@@ -668,6 +672,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                 // Create a phone interactor
                 const phoneInteractor = new TwilioPhoneInteractor();
 
+                console.log('building WAB manager', { wabUrl, selectedAuthMethod, selectedNetwork, selectedStorageUrl })
                 // Create the wallet manager with proper error handling
                 const walletManager = new WalletAuthenticationManager(
                     adminOriginator,
@@ -696,13 +701,13 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                 console.error("Error initializing wallet manager:", err);
                 toast.error("Failed to initialize wallet: " + err.message);
                 // Reset configuration if wallet initialization fails
-                setConfigComplete(false);
+                setConfigStatus('editing');
             }
         }
     }, [
         passwordRetriever,
         recoveryKeySaver,
-        configComplete,
+        configStatus,
         managers.walletManager,
         selectedNetwork,
         wabUrl,
@@ -737,7 +742,7 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         setManagers({});
 
         // Reset configuration state
-        setConfigComplete(false);
+        setConfigStatus('editing');
         setSnapshotLoaded(false);
     }, []);
 
@@ -822,7 +827,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceProtocolQueue,
         advanceSpendingQueue,
         recentApps,
-        finalizeConfig
+        finalizeConfig,
+        setConfigStatus
     }), [
         managers,
         settings,
@@ -842,7 +848,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceProtocolQueue,
         advanceSpendingQueue,
         recentApps,
-        finalizeConfig
+        finalizeConfig,
+        setConfigStatus
     ]);
 
     return (
