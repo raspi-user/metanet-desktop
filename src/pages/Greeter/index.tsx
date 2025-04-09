@@ -24,7 +24,8 @@ import {
   Lock as LockIcon,
   Restore as RestoreIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
 import AppLogo from '../../components/AppLogo'
