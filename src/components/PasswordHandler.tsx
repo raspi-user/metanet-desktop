@@ -31,21 +31,10 @@ const PasswordHandler: React.FC = () => {
     })
   }, [isFocused, onFocusRequested])
 
-  const attachUiToFunction = useCallback((reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
-    return new Promise<string>((resolve: Function, reject: Function) => {
-      setReason(() => { return reason })
-      setTest(() => { return test })
-      setResolve(() => { return resolve })
-      setReject(() => { return reject })
-      setOpen(true)
-      manageFocus()
-    })
-  }, [manageFocus])
-
   // (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>
 
   useEffect(() => {
-    setPasswordRetriever(() => {
+    setPasswordRetriever((): any => {
       return (reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
         return new Promise<string>((resolve: Function, reject: Function) => {
           setReason(() => { return reason })
