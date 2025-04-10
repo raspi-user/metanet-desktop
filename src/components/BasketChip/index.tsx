@@ -97,7 +97,6 @@ const BasketChip: React.FC<BasketChipProps> = ({
             }
           }
           const basket = results[mostTrustedIndex]
-          console.log('BASKET', basket)
 
           // Update state and cache the results
           setBasketName(basket.name)

@@ -44,13 +44,11 @@ const WalletConfig: React.FC = () => {
   const fetchWalletConfig = async () => {
     setIsLoadingConfig(true)
     try {
-      console.log({ wabUrl, wabInfo })
       const res = await fetch(`${wabUrl}/info`)
       if (!res.ok) {
         throw new Error(`Failed to fetch info: ${res.status}`)
       }
       const info = await res.json()
-      console.log({ info })
       setWabInfo(info)
       
       // Auto-select the first supported authentication method

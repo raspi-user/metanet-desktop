@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Metanet Desktop - BSV Blockchain Wallet</title>
     <meta property="og:title" content="Metanet Desktop: BSV Blockchain Wallet" />
-    <meta property="og:description" content="Metanet Desktop is an open source BSV Blockchain wallet that provides a secure and accessible way to manage your BSV assets and identity." />
+    <meta property="og:description"
+        content="Metanet Desktop is an open source BSV Blockchain wallet that provides a secure and accessible way to manage your BSV assets and identity." />
     <meta property="og:image" content="https://metanet.bsvb.tech/og.png" />
     <meta property="og:url" content="https://metanet.bsvb.tech" />
     <meta property="og:type" content="software" />
@@ -13,23 +15,23 @@
     <meta property="og:locale" content="en_US" />
     <style>
         :root {
-          --color-background: #0e0f1c;
-          --color-background-gradient: linear-gradient(90deg, #101323 0%, #1a1633 100%);
-          --color-surface: #1c1d2f;
-          --color-surface-alt: #25263a;
-          --color-text-primary: #ffffff;
-          --color-text-secondary: #b0b2c3;
-          --color-accent-purple: #a86efc;
-          --color-accent-blue: #3ebdf2;
-          --color-accent-indigo: #646cff;
-          --color-icon-blue: #36b3e1;
-          --color-icon-purple: #7d6eff;
-          --color-icon-teal: #50c4ba;
-          --color-button-gradient-start: #646cff;
-          --color-button-gradient-end: #a86efc;
-          --color-border: #2d2e41;
+            --color-background: #0e0f1c;
+            --color-background-gradient: linear-gradient(90deg, #101323 0%, #1a1633 100%);
+            --color-surface: #1c1d2f;
+            --color-surface-alt: #25263a;
+            --color-text-primary: #ffffff;
+            --color-text-secondary: #b0b2c3;
+            --color-accent-purple: #a86efc;
+            --color-accent-blue: #3ebdf2;
+            --color-accent-indigo: #646cff;
+            --color-icon-blue: #36b3e1;
+            --color-icon-purple: #7d6eff;
+            --color-icon-teal: #50c4ba;
+            --color-button-gradient-start: #646cff;
+            --color-button-gradient-end: #a86efc;
+            --color-border: #2d2e41;
         }
-        
+
         body {
             font-family: Helvetica, Arial, sans-serif;
             margin: 0;
@@ -40,22 +42,26 @@
             background-image: var(--color-background-gradient);
             min-height: 100vh;
         }
+
         .container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 2rem;
             text-align: center;
         }
+
         .header-container {
             margin: 7rem 0;
             position: relative;
             display: inline-block;
         }
+
         .header-container h2 {
             font-weight: lighter;
             margin-top: -20px;
             color: rgba(255, 255, 255, 0.7);
         }
+
         .alpha-tag {
             position: absolute;
             top: 45px;
@@ -67,6 +73,7 @@
             border-radius: 4px;
             letter-spacing: 1px;
         }
+
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
@@ -76,12 +83,14 @@
             color: transparent;
             text-shadow: 0 0 15px rgba(230, 226, 241, 0.2);
         }
+
         .description {
             font-size: 1.4rem;
             color: var(--color-text-primary);
             margin-bottom: 2.5rem;
             opacity: 0.9;
         }
+
         .download-btn {
             display: inline-block;
             background: linear-gradient(135deg, var(--color-button-gradient-start), var(--color-button-gradient-end));
@@ -94,14 +103,17 @@
             border: none;
             box-shadow: 0 4px 20px rgba(110, 70, 229, 0.3);
         }
+
         .download-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(110, 70, 229, 0.4);
         }
+
         .platform-options {
             margin-top: 2.5rem;
             color: var(--color-text-primary);
         }
+
         .platform-btn {
             display: inline-block;
             background: rgba(100, 108, 255, 0.1);
@@ -113,11 +125,13 @@
             border-radius: 6px;
             transition: all 0.3s;
         }
+
         .platform-btn:hover {
             background: rgba(100, 108, 255, 0.2);
             border-color: rgba(100, 108, 255, 0.5);
             transform: translateY(-1px);
         }
+
         .features-section {
             margin: 3rem auto;
             max-width: 1280px;
@@ -126,12 +140,14 @@
             border-radius: 10px;
             border: 1px solid var(--color-border);
         }
+
         .features-section h2 {
             text-align: center;
             font-size: 2rem;
             margin-bottom: 2rem;
             color: var(--color-text-primary);
         }
+
         .features-section p {
             text-align: center;
             margin-bottom: 2.5rem;
@@ -139,12 +155,14 @@
             margin-left: auto;
             margin-right: auto;
         }
+
         .features-section b {
             background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
+
         .features-container {
             display: flex;
             flex-wrap: wrap;
@@ -152,6 +170,7 @@
             gap: 2rem;
             margin: 0 auto;
         }
+
         .feature-item {
             width: 320px;
             margin-bottom: 2rem;
@@ -161,22 +180,26 @@
             border: 1px solid var(--color-border);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         .feature-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
+
         .feature-item h3 {
             font-size: 1.4rem;
             margin-bottom: 0.5rem;
             color: white;
             display: inline-block;
         }
+
         .feature-item p {
             color: var(--color-text-secondary);
             line-height: 1.6;
             text-align: left;
             margin-bottom: 0;
         }
+
         .screenshot-section {
             display: flex;
             align-items: center;
@@ -188,58 +211,70 @@
             border: 1px solid var(--color-border);
             flex-direction: row;
         }
+
         .screenshot-container {
             display: flex;
             flex-wrap: wrap;
             padding: 2rem;
             gap: 2rem;
         }
+
         @media (max-width: 960px) {
             .screenshot-section {
                 flex-direction: column;
             }
+
             .screenshot-container {
                 flex-direction: column;
             }
+
             .alpha-tag {
                 top: 25px;
                 right: -5px;
             }
+
             h1 {
                 font-size: 2.5rem;
             }
+
             .header-container h2 {
                 font-size: 1rem;
             }
         }
+
         .screenshot-content {
             flex: 1;
             padding: 1rem;
         }
+
         .screenshot-content h2 {
             font-size: 1.8rem;
             margin-bottom: 1rem;
             color: white;
             text-align: left;
         }
+
         .screenshot-content h2 b {
             background: linear-gradient(135deg, var(--color-accent-indigo), var(--color-accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
+
         .screenshot-content p {
             margin-bottom: 1.5rem;
             line-height: 1.6;
             color: var(--color-text-secondary);
             text-align: left;
         }
+
         .feature-list {
             list-style: none;
             padding: 0;
             margin: 0;
             text-align: left;
         }
+
         .feature-list li {
             margin-bottom: 0.8rem;
             padding-left: 1.5rem;
@@ -247,6 +282,7 @@
             line-height: 1.4;
             color: var(--color-text-secondary);
         }
+
         .feature-list li:before {
             content: "✓";
             position: absolute;
@@ -254,30 +290,36 @@
             color: var(--color-accent-purple);
             font-weight: bold;
         }
+
         .screenshot-image {
             flex: 1;
             text-align: center;
             padding: 1rem;
         }
+
         .screenshot-image img {
             max-width: 100%;
             border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--color-border);
         }
+
         .release-notes {
             margin-top: 1.5rem;
             font-size: 0.9rem;
             opacity: 0.8;
             color: var(--color-text-secondary);
         }
+
         .release-notes a {
             color: var(--color-accent-purple);
             text-decoration: none;
         }
+
         .release-notes a:hover {
             text-decoration: underline;
         }
+
         .footer-section {
             margin-top: 5rem;
             padding: 3rem 0;
@@ -285,6 +327,7 @@
             border-top: 1px solid var(--color-border);
             text-align: center;
         }
+
         .footer-links {
             display: flex;
             justify-content: center;
@@ -292,6 +335,7 @@
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }
+
         .footer-link {
             color: var(--color-text-secondary);
             text-decoration: none;
@@ -302,14 +346,17 @@
             padding: 0.5rem 1rem;
             border-radius: 4px;
         }
+
         .footer-link:hover {
             color: var(--color-accent-purple);
             background: rgba(168, 110, 252, 0.1);
         }
+
         .footer-link svg {
             width: 20px;
             height: 20px;
         }
+
         .footer-copyright {
             color: var(--color-text-secondary);
             font-size: 0.9rem;
@@ -317,6 +364,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header-container">
@@ -335,57 +383,70 @@
             <div class="features-container">
                 <div class="feature-item">
                     <h3>Vendor <b>Interoperable</b></h3>
-                    <p>Implements the BRC-100 Wallet Interface. Configure with any Wallet Authentication Backend and Storage Infrastructure.</p>
+                    <p>Implements the BRC-100 Wallet Interface. Configure with any Wallet Authentication Backend and
+                        Storage Infrastructure.</p>
                 </div>
                 <div class="feature-item">
                     <h3><b>Secure</b> Management</h3>
-                    <p>Linked key derivation, robust cryptographic signatures, secure encryption, and strict access permissions safeguard your keys.</p>
+                    <p>Linked key derivation, robust cryptographic signatures, secure encryption, and strict access
+                        permissions safeguard your keys.</p>
                 </div>
                 <div class="feature-item">
                     <h3><b>Decentralized</b> Identity</h3>
-                    <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity securely and privately without centralized liabilities.</p>
+                    <p>Leverage cryptographic identity certificates for selective data revelation. Manage identity
+                        securely and privately without centralized liabilities.</p>
                 </div>
             </div>
         </div>
 
         <div class="screenshot-section">
-          <div class="screenshot-container">
-            <div class="screenshot-content">
-                <h2>Unleash the <b>BSV Blockchain</b></h2>
-                <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both beginners and experts to take full advantage of BSV Blockchain technology.</p>
-                <ul class="feature-list">
-                    <li>Action oriented design with transparent controls and rich metadata</li>
-                    <li>Robust AES-256-GCM Encryption and ECDSA Signatures</li>
-                    <li>Identity & Certificate Manager for selective data revelation</li>
-                    <li>SPV Scalability using BEEF Transaction data standards</li>
-                    <li>Auditable Proofs & Key Linkages for enhanced privacy</li>
-                    <li>Flexible Asset & Key Permissions through named baskets</li>
-                </ul>
+            <div class="screenshot-container">
+                <div class="screenshot-content">
+                    <h2>Unleash the <b>BSV Blockchain</b></h2>
+                    <p>Metanet Desktop combines powerful features with a user-friendly interface, allowing both
+                        beginners and experts to take full advantage of BSV Blockchain technology.</p>
+                    <ul class="feature-list">
+                        <li>Action oriented design with transparent controls and rich metadata</li>
+                        <li>Robust AES-256-GCM Encryption and ECDSA Signatures</li>
+                        <li>Identity & Certificate Manager for selective data revelation</li>
+                        <li>SPV Scalability using BEEF Transaction data standards</li>
+                        <li>Auditable Proofs & Key Linkages for enhanced privacy</li>
+                        <li>Flexible Asset & Key Permissions through named baskets</li>
+                    </ul>
+                </div>
+                <div class="screenshot-image">
+                    <img src="screen.jpg" alt="Metanet Desktop Screenshot">
+                </div>
             </div>
-            <div class="screenshot-image">
-                <img src="screen.jpg" alt="Metanet Desktop Screenshot">
-            </div>
-          </div>
         </div>
         <div class="footer-section">
             <div class="footer-links">
                 <a href="https://github.com/bitcoin-sv/metanet-desktop/releases" class="footer-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                        </path>
                     </svg>
                     Previous Releases
                 </a>
                 <a href="https://bsvblockchain.org" class="footer-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
                     </svg>
                     BSV Blockchain
                 </a>
                 <a href="https://x.com/bsvblockchain" class="footer-link">
-                    <svg width="1200" height="1227" viewBox="0 0 1200 1227" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" fill="white"/>
+                    <svg width="1200" height="1227" viewBox="0 0 1200 1227" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"
+                            fill="white" />
                     </svg>
                     @bsvblockchain
                 </a>
@@ -399,21 +460,21 @@
     <script>
         function detectPlatform() {
             const ua = navigator.userAgent.toLowerCase();
-            
+
             // Check for macOS
             if (ua.includes('mac')) {
                 // More reliable Apple Silicon detection methods
-                
+
                 // Method 1: Check for ARM64 in the user agent
                 if (ua.includes('arm64') || ua.includes('arm 64')) {
                     return 'macos-arm64';
                 }
-                
+
                 // Method 2: Use navigator.platform (though deprecated, it still helps)
                 if (navigator.platform && (navigator.platform.includes('arm') || navigator.platform.includes('ARM'))) {
                     return 'macos-arm64';
                 }
-                
+
                 // Method 3: Check CPU cores as Intel and ARM CPUs typically have different core counts
                 // Apple Silicon Macs often have 8+ cores
                 if (navigator.hardwareConcurrency >= 8) {
@@ -425,11 +486,11 @@
                         return 'macos-arm64';
                     }
                 }
-                
+
                 // Default to x64 if ARM/Apple Silicon couldn't be detected
                 return 'macos-x64';
             }
-            
+
             if (ua.includes('win')) return 'windows';
             if (ua.includes('linux')) return 'linux';
             return null;
@@ -440,14 +501,12 @@
             try {
                 // Access the GitHub API directly
                 const response = await fetch('https://api.github.com/repos/bitcoin-sv/metanet-desktop/releases/latest');
-                
+
                 if (!response.ok) {
                     throw new Error(`Failed to fetch release info: ${response.status} ${response.statusText}`);
                 }
-                
+
                 const releaseData = await response.json();
-                console.log('GitHub release data:', releaseData);
-                
                 // Transform the GitHub API response into our format
                 return {
                     release_version: releaseData.tag_name,
@@ -474,36 +533,36 @@
         // Function to find the appropriate download for a platform
         function findDownloadForPlatform(assets, platform) {
             if (!assets || !assets.length) return null;
-            
+
             let assetFilter;
             switch (platform) {
                 case 'windows':
-                    assetFilter = asset => 
-                        asset.name.includes('.exe') || 
-                        asset.name.includes('.msi') || 
+                    assetFilter = asset =>
+                        asset.name.includes('.exe') ||
+                        asset.name.includes('.msi') ||
                         asset.name.toLowerCase().includes('windows');
                     break;
                 case 'macos-arm64':
-                    assetFilter = asset => 
-                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) && 
+                    assetFilter = asset =>
+                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) &&
                         (asset.name.includes('arm64') || asset.name.includes('aarch64'));
                     break;
                 case 'macos-x64':
-                    assetFilter = asset => 
-                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) && 
+                    assetFilter = asset =>
+                        (asset.name.includes('.dmg') || asset.name.toLowerCase().includes('mac') || asset.name.includes('darwin')) &&
                         (asset.name.includes('x86_64') || asset.name.includes('x64'));
                     break;
                 case 'linux':
-                    assetFilter = asset => 
-                        asset.name.includes('.AppImage') || 
-                        asset.name.toLowerCase().includes('linux') || 
-                        asset.name.includes('.deb') || 
+                    assetFilter = asset =>
+                        asset.name.includes('.AppImage') ||
+                        asset.name.toLowerCase().includes('linux') ||
+                        asset.name.includes('.deb') ||
                         asset.name.includes('.rpm');
                     break;
                 default:
                     return null;
             }
-            
+
             return assets.find(assetFilter) || null;
         }
 
@@ -524,7 +583,7 @@
             const platform = detectPlatform();
             const container = document.getElementById('download-section');
             const allPlatforms = ['windows', 'macos-arm64', 'macos-x64', 'linux'];
-            
+
             // If we couldn't fetch release info, show an error message with link to GitHub releases
             if (!releaseInfo) {
                 container.innerHTML = `
@@ -538,22 +597,22 @@
                 `;
                 return;
             }
-            
+
             // Create HTML for a download button for the given platform
             const createDownloadButton = (platform) => {
                 const asset = findDownloadForPlatform(releaseInfo.assets, platform);
                 if (!asset) return '';
-                
+
                 return `
                     <a href="${asset.browser_download_url}" class="platform-btn">
                         ${getPlatformDisplay(platform)} ${asset.size ? `(${(asset.size / 1024 / 1024).toFixed(1)} MB)` : ''}
                     </a>
                 `;
             };
-            
+
             // Main download button for detected platform
             const mainDownloadAsset = platform ? findDownloadForPlatform(releaseInfo.assets, platform) : null;
-            
+
             if (platform && mainDownloadAsset) {
                 container.innerHTML = `
                     <a href="${mainDownloadAsset.browser_download_url}" class="download-btn">
@@ -561,10 +620,10 @@
                     </a>
                     <div class="platform-options">
                         ${allPlatforms
-                            .filter(p => p !== platform)
-                            .map(p => createDownloadButton(p))
-                            .filter(Boolean)
-                            .join('')}
+                        .filter(p => p !== platform)
+                        .map(p => createDownloadButton(p))
+                        .filter(Boolean)
+                        .join('')}
                     </div>
                     <p class="release-notes">
                         Version ${releaseInfo.release_version}
@@ -576,9 +635,9 @@
                     <div class="platform-options">
                         <p>Select your platform:</p>
                         ${allPlatforms
-                            .map(p => createDownloadButton(p))
-                            .filter(Boolean)
-                            .join('')}
+                        .map(p => createDownloadButton(p))
+                        .filter(Boolean)
+                        .join('')}
                     </div>
                     <p class="release-notes">
                         Version ${releaseInfo.release_version} | 
@@ -592,4 +651,5 @@
         document.addEventListener('DOMContentLoaded', createDownloadSection);
     </script>
 </body>
+
 </html>

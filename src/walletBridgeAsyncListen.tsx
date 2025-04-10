@@ -33,13 +33,6 @@ export const walletBridgeAsyncListen = async (wallet: WalletInterface): Promise<
 
         try {
             const req = JSON.parse(event.payload as string)
-            console.log("Received HTTP request:")
-            console.log("Method:", req.method)
-            console.log("Path:", req.path)
-            console.log("Headers:", req.headers)
-            console.log("Body:", req.body)
-            console.log("Request ID:", req.request_id)
-
             req.headers = (req.headers as string[][]).map(([k, v]) => {
                 return [
                 k.toLowerCase(),
@@ -51,8 +44,6 @@ export const walletBridgeAsyncListen = async (wallet: WalletInterface): Promise<
             if (req.headers.originator && !req.headers.origin) {
                 req.headers.origin = req.headers.originator
             }
-
-            console.log(req.headers)
 
             if (!req.headers['origin']) {
                 emit('ts-response', {

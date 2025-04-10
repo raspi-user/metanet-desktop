@@ -90,7 +90,6 @@ const Settings = () => {
   }, [settings]);
 
   const handleThemeChange = async (themeOption: string) => {
-    console.log({ themeOption })
     if (selectedTheme === themeOption) return;
     
     try {

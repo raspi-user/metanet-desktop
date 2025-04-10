@@ -77,7 +77,6 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
         serialNumber: serialNumber,
         certifier
       })
-      console.log('Certificate revoked successfully:', result)
 
       // Set the certificate as revoked locally
       setIsRevoked(true)

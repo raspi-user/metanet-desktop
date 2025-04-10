@@ -100,17 +100,12 @@ const MyIdentity = () => {
   }, [setCertificates, setPrimaryIdentityKey, adminOriginator])
 
   const handleRevealPrivilegedKey = async () => {
-    try {
-      console.log('handleRevealPrivilegedKey')
-      const { publicKey } = await managers.permissionsManager.getPublicKey({
-        identityKey: true,
-        privileged: true,
-        privilegedReason: 'Reveal your privileged identity key alongside your everyday one.'
-      })
-      setPrivilegedIdentityKey(publicKey)
-    } catch (e) {
-      console.log(e)
-    }
+    const { publicKey } = await managers.permissionsManager.getPublicKey({
+      identityKey: true,
+      privileged: true,
+      privilegedReason: 'Reveal your privileged identity key alongside your everyday one.'
+    })
+    setPrivilegedIdentityKey(publicKey)
   }
 
   // Handle certificate revocation by removing it from the state

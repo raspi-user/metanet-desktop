@@ -1,6 +1,5 @@
-import { useContext, useState, useEffect, useRef, useCallback } from 'react'
+import { useContext, useState, useRef, useCallback } from 'react'
 import { open } from '@tauri-apps/plugin-shell'
-import style from './style'
 import {
   Typography,
   Button,
