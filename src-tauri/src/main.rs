@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{Emitter, Listener, Window};
 use tokio::sync::oneshot;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{command, AppHandle, Manager};
 
 use std::fs;
@@ -133,11 +133,38 @@ fn relinquish_focus(window: Window) {
 
 #[command]
 async fn download(app_handle: AppHandle, filename: String, content: Vec<u8>) -> Result<(), String> {
-    let downloads_dir = app_handle.path().download_dir().unwrap();
-    let mut path = PathBuf::from(downloads_dir);
-    path.push(filename);
+    let downloads_dir = app_handle
+        .path()
+        .download_dir()
+        .map_err(|e| e.to_string())?;
+    let path = PathBuf::from(downloads_dir);
 
-    fs::write(&path, content).map_err(|e| e.to_string())
+    // Split the filename into stem and extension (if any)
+    let path_obj = Path::new(&filename);
+    let stem = path_obj
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("file");
+    let ext = path_obj.extension().and_then(|e| e.to_str()).unwrap_or("");
+
+    // Initial path attempt
+    let mut final_path = path.clone();
+    final_path.push(&filename);
+
+    // Check if file exists and increment if necessary
+    let mut counter = 1;
+    while final_path.exists() {
+        let new_filename = if ext.is_empty() {
+            format!("{} ({}).{}", stem, counter, ext)
+        } else {
+            format!("{} ({}).{}", stem, counter, ext)
+        };
+        final_path = path.clone();
+        final_path.push(new_filename);
+        counter += 1;
+    }
+
+    fs::write(&final_path, content).map_err(|e| e.to_string())
 }
 
 fn main() {
