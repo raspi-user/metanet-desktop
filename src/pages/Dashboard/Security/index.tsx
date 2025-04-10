@@ -23,6 +23,7 @@ import { UserContext } from '../../../UserContext'
 import PageLoading from '../../../components/PageLoading.js'
 import { downloadFile } from '../../../utils/exportDataToFile.js'
 import { Utils } from '@bsv/sdk'
+import { toast } from 'react-toastify'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -74,7 +75,12 @@ const Security: React.FC = () => {
 
   const handleDownload = async (): Promise<void> => {
     const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
-    downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
+    const success = await downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
+    if (success) {
+      toast.success('Recovery key downloaded successfully')
+    } else {
+      toast.error('Failed to download recovery key')
+    }
   }
 
   if (!pageLoaded) {

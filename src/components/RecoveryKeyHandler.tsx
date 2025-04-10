@@ -16,11 +16,12 @@ import {
 import CustomDialog from './CustomDialog/index.jsx'
 import LockIcon from '@mui/icons-material/Lock'
 import DownloadIcon from '@mui/icons-material/Download'
-import exportDataToFile from '../utils/exportDataToFile'
+import exportDataToFile, { downloadFile } from '../utils/exportDataToFile'
 import { Utils } from '@bsv/sdk';
 import { WalletContext } from '../WalletContext'
 import CheckIcon from '@mui/icons-material/Check'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { toast } from 'react-toastify'
 
 const RecoveryKeyHandler: FC = () => {
   const { managers, setRecoveryKeySaver } = useContext(WalletContext)
@@ -68,11 +69,12 @@ const RecoveryKeyHandler: FC = () => {
 
   const handleDownload = async (): Promise<void> => {
     const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
-    exportDataToFile({
-      data: recoveryKeyData,
-      filename: 'Metanet Recovery Key.txt',
-      type: 'text/plain'
-    })
+    const success = await downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
+    if (success) {
+      toast.success('Recovery key downloaded successfully')
+    } else {
+      toast.error('Failed to download recovery key')
+    }
   }
 
 

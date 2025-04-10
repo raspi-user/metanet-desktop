@@ -43,12 +43,14 @@ const exportDataToFile = ({ data, filename, type }: ExportDataParams): void => {
 
 export default exportDataToFile
 
-export async function downloadFile(filename: string, fileContent: number[]) {
+export async function downloadFile(filename: string, fileContent: number[]): Promise<boolean> {
   const content = new Uint8Array(fileContent); // binary content
   try {
     await invoke('download', { app_handle: 'Metanet Desktop', filename, content });
     console.log('File downloaded to Downloads folder.');
+    return true;  
   } catch (e) {
     console.error('Error downloading file:', e);
+    return false;
   }
 }
