@@ -22,31 +22,42 @@ const PasswordHandler: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const { setPasswordRetriever } = useContext(WalletContext)
 
-  const manageFocus = useCallback(async () => {
-    const wasOriginallyFocused = await isFocused()
-    setWasOriginallyFocused(wasOriginallyFocused)
-    if (!wasOriginallyFocused) {
-      await onFocusRequested()
-    }
+  const manageFocus = useCallback(() => {
+    isFocused().then(wasOriginallyFocused => {
+      setWasOriginallyFocused(wasOriginallyFocused)
+      if (!wasOriginallyFocused) {
+        onFocusRequested()
+      }
+    })
   }, [isFocused, onFocusRequested])
 
-  const attachUiToFunction = useCallback(async (resolve: Function, reject: Function) => {
-    setReason(() => { return reason })
-    setTest(() => { return test })
-    setResolve(() => { return resolve })
-    setReject(() => { return reject })
-    setOpen(true)
-    await manageFocus()
+  const attachUiToFunction = useCallback((reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
+    return new Promise<string>((resolve: Function, reject: Function) => {
+      setReason(() => { return reason })
+      setTest(() => { return test })
+      setResolve(() => { return resolve })
+      setReject(() => { return reject })
+      setOpen(true)
+      manageFocus()
+    })
   }, [manageFocus])
 
   // (reason: string, test: (passwordCandidate: string) => boolean) => Promise<string>
-  const passRet = useCallback((reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
-      return new Promise<string>(attachUiToFunction)
-    }, [attachUiToFunction])
 
   useEffect(() => {
-    setPasswordRetriever(() => { return passRet })
-  }, [passRet, setPasswordRetriever])
+    setPasswordRetriever(() => {
+      return (reason: string, test: (passwordCandidate: string) => boolean): Promise<string> => {
+        return new Promise<string>((resolve: Function, reject: Function) => {
+          setReason(() => { return reason })
+          setTest(() => { return test })
+          setResolve(() => { return resolve })
+          setReject(() => { return reject })
+          setOpen(true)
+          manageFocus()
+        })
+      }
+    })
+  }, [manageFocus, setPasswordRetriever])
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
