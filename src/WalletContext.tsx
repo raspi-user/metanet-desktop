@@ -67,7 +67,33 @@ export interface WalletContextValue {
     recentApps: any[]
     finalizeConfig: (wabConfig: WABConfig) => boolean
     setConfigStatus: (status: ConfigStatus) => void
+    configStatus: ConfigStatus
 }
+
+export const WalletContext = createContext<WalletContextValue>({
+    managers: {},
+    updateManagers: () => { },
+    settings: DEFAULT_SETTINGS,
+    updateSettings: async () => { },
+    network: 'mainnet',
+    logout: () => { },
+    adminOriginator: ADMIN_ORIGINATOR,
+    setPasswordRetriever: () => { },
+    setRecoveryKeySaver: () => { },
+    snapshotLoaded: false,
+    basketRequests: [],
+    certificateRequests: [],
+    protocolRequests: [],
+    spendingRequests: [],
+    advanceBasketQueue: () => { },
+    advanceCertificateQueue: () => { },
+    advanceProtocolQueue: () => { },
+    advanceSpendingQueue: () => { },
+    recentApps: [],
+    finalizeConfig: () => false,
+    setConfigStatus: () => { },
+    configStatus: 'initial'
+})
 
 type PermissionType = 'identity' | 'protocol' | 'renewal' | 'basket';
 
@@ -114,31 +140,7 @@ type SpendingRequest = {
     lineItems: any[]
 }
 
-export const WalletContext = createContext<WalletContextValue>({
-    managers: {},
-    updateManagers: () => { },
-    settings: DEFAULT_SETTINGS,
-    updateSettings: async () => { },
-    network: 'mainnet',
-    logout: () => { },
-    adminOriginator: ADMIN_ORIGINATOR,
-    setPasswordRetriever: () => { },
-    setRecoveryKeySaver: () => { },
-    snapshotLoaded: false,
-    basketRequests: [],
-    certificateRequests: [],
-    protocolRequests: [],
-    spendingRequests: [],
-    advanceBasketQueue: () => { },
-    advanceCertificateQueue: () => { },
-    advanceProtocolQueue: () => { },
-    advanceSpendingQueue: () => { },
-    recentApps: [],
-    finalizeConfig: () => false,
-    setConfigStatus: () => { }
-})
-
-interface WABConfig {
+export interface WABConfig {
     wabUrl: string;
     wabInfo: any;
     method: string;
@@ -831,7 +833,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceSpendingQueue,
         recentApps,
         finalizeConfig,
-        setConfigStatus
+        setConfigStatus,
+        configStatus
     }), [
         managers,
         settings,
@@ -852,7 +855,8 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
         advanceSpendingQueue,
         recentApps,
         finalizeConfig,
-        setConfigStatus
+        setConfigStatus,
+        configStatus,
     ]);
 
     return (

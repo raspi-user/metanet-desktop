@@ -11,7 +11,7 @@ import {
 import SettingsIcon from '@mui/icons-material/Settings';
 import { toast } from 'react-toastify';
 import { DEFAULT_WAB_URL, DEFAULT_CHAIN, DEFAULT_STORAGE_URL } from '../config';
-import { WalletContext } from '../WalletContext';
+import { WalletContext, WABConfig } from '../WalletContext';
 
 const WalletConfig: React.FC = () => {
   const { managers, finalizeConfig, setConfigStatus } = useContext(WalletContext)
@@ -28,6 +28,7 @@ const WalletConfig: React.FC = () => {
   const [network, setNetwork] = useState<'main' | 'test'>(DEFAULT_CHAIN)
   const [storageUrl, setStorageUrl] = useState<string>(DEFAULT_STORAGE_URL)
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
+  const [backupConfig, setBackupConfig] = useState<WABConfig>()
 
   // Access the manager:
   const walletManager = managers.walletManager
@@ -83,9 +84,14 @@ const WalletConfig: React.FC = () => {
     }
   }, [walletManager])
 
-  const configIncomplete = () => {
-    setShowWalletConfig(true)
-    setConfigStatus('editing')
+  const layAwayCurrentConfig = () => {
+    setBackupConfig({
+      wabUrl,
+      wabInfo,
+      method,
+      network,
+      storageUrl
+    })
     if (managers?.walletManager) {
       delete managers.walletManager
     }
@@ -97,12 +103,31 @@ const WalletConfig: React.FC = () => {
     }
   }
 
+  const resetCurrentConfig = useCallback(() => {
+    finalizeConfig(backupConfig)
+  }, [backupConfig, finalizeConfig])
+
+  const toggle = () => {
+    setShowWalletConfig(s => {
+      if (s) {
+        // we're closing the dialogue
+        setConfigStatus('configured')
+        resetCurrentConfig()
+      } else {
+        // we're opening the dialogue to edit so don't autobuild anything
+        setConfigStatus('editing')
+        layAwayCurrentConfig()
+      }
+      return !s
+    })
+  }
+
   return <Box sx={{ mb: 3 }}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <Button 
                 startIcon={<SettingsIcon />}
-                onClick={configIncomplete}
+                onClick={toggle}
                 variant="text"
                 color='secondary'
                 size="small"
