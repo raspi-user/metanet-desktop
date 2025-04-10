@@ -657,7 +657,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
             !managers.walletManager // build only once
         ) {
             try {
-                console.log('building wallet', { passwordRetriever, recoveryKeySaver })
                 // Create network service based on selected network
                 const networkPreset = selectedNetwork === 'main' ? 'mainnet' : 'testnet';
 
@@ -677,7 +676,6 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
                 // Create a phone interactor
                 const phoneInteractor = new TwilioPhoneInteractor();
 
-                console.log('building WAB manager', { wabUrl, selectedAuthMethod, selectedNetwork, selectedStorageUrl })
                 // Create the wallet manager with proper error handling
                 const walletManager = new WalletAuthenticationManager(
                     adminOriginator,
