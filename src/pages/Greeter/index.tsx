@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from 'react'
+import { useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { open } from '@tauri-apps/plugin-shell'
 import style from './style'
 import {
@@ -13,7 +13,6 @@ import {
   Box,
   Container,
   useTheme,
-  Collapse,
   Stepper,
   Step,
   StepLabel,
@@ -21,13 +20,12 @@ import {
 } from '@mui/material'
 import {
   SettingsPhone as PhoneIcon,
-  CheckCircle as CheckCircleIcon,
   PermPhoneMsg as SMSIcon,
   Lock as LockIcon,
-  Settings as SettingsIcon,
   Restore as RestoreIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import PhoneEntry from '../../components/PhoneEntry.js'
 import AppLogo from '../../components/AppLogo'
@@ -36,11 +34,8 @@ import { WalletContext } from '../../WalletContext'
 import { UserContext } from '../../UserContext'
 import PageLoading from '../../components/PageLoading.js'
 import { Utils } from '@bsv/sdk'
-import { makeStyles } from '@mui/styles'
 import { Link as RouterLink } from 'react-router-dom'
-import { DEFAULT_CHAIN, DEFAULT_WAB_URL, DEFAULT_STORAGE_URL } from '../../config.js'
-
-const useStyles = makeStyles(style as any, { name: 'Greeter' })
+import WalletConfig from '../../components/WalletConfig.js'
 
 // Helper functions for the Stepper
 const viewToStepIndex = {
@@ -158,6 +153,7 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
 
 // Password form component
 const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordFieldRef }) => {
+  const theme = useTheme();
   return (
     <form onSubmit={handleSubmitPassword}>
       <TextField
@@ -223,7 +219,8 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
         type='submit'
         disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
         fullWidth
-        sx={{ 
+        sx={{
+          borderRadius: theme.shape.borderRadius,
           mt: 2,
           textTransform: 'none',
           py: 1.2
@@ -237,7 +234,7 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
 
 // Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
-  const { managers } = useContext(WalletContext)
+  const { managers, configStatus } = useContext(WalletContext)
   const { appVersion, appName, pageLoaded } = useContext(UserContext)
   const theme = useTheme()
 
@@ -250,77 +247,15 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [accountStatus, setAccountStatus] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  
-  // Wallet configuration state
-  const [showWalletConfig, setShowWalletConfig] = useState(false)
-  const [wabUrl, setWabUrl] = useState<string>(DEFAULT_WAB_URL)
-  const [wabInfo, setWabInfo] = useState<{
-    supportedAuthMethods: string[];
-    faucetEnabled: boolean;
-    faucetAmount: number;
-  } | null>(null)
-  const [selectedAuthMethod, setSelectedAuthMethod] = useState<string>("")
-  const [selectedNetwork, setSelectedNetwork] = useState<'main' | 'test'>(DEFAULT_CHAIN)
-  const [selectedStorageUrl, setSelectedStorageUrl] = useState<string>(DEFAULT_STORAGE_URL)
-  const [isLoadingConfig, setIsLoadingConfig] = useState(false)
 
   const phoneFieldRef = useRef(null)
   const codeFieldRef = useRef(null)
   const passwordFieldRef = useRef(null)
 
-  // Access the manager:
-  const walletManager = managers.walletManager
-
-  // Auto-fetch wallet configuration info when component mounts
-  useEffect(() => {
-    if (!wabInfo && !walletManager?.authenticated) {
-      fetchWalletConfig()
-    }
-  }, [])
-
-  // Fetch wallet configuration info
-  const fetchWalletConfig = async () => {
-    setIsLoadingConfig(true)
-    try {
-      console.log({ wabUrl, wabInfo })
-      const res = await fetch(`${wabUrl}/info`)
-      if (!res.ok) {
-        throw new Error(`Failed to fetch info: ${res.status}`)
-      }
-      const info = await res.json()
-      setWabInfo(info)
-      
-      // Auto-select the first supported authentication method
-      if (info.supportedAuthMethods && info.supportedAuthMethods.length > 0) {
-        setSelectedAuthMethod(info.supportedAuthMethods[0])
-      }
-    } catch (error: any) {
-      console.error("Error fetching wallet config:", error)
-      toast.error("Could not fetch wallet configuration: " + error.message)
-    } finally {
-      setIsLoadingConfig(false)
-    }
-  }
-
-  // Apply wallet configuration
-  const applyWalletConfig = () => {
-    if (!wabInfo || !selectedAuthMethod) {
-      toast.error("Please select an authentication method")
-      return
-    }
-    setShowWalletConfig(false)
-    fetchWalletConfig().then(() => toast.success("Wallet configuration applied"))
-  }
-
-  // Force the manager to use the "presentation-key-and-password" flow:
-  useEffect(() => {
-    if (walletManager) {
-      walletManager.authenticationMode = 'presentation-key-and-password'
-    }
-  }, [walletManager])
+  const walletManager = managers?.walletManager
 
   // Step 1: The user enters a phone number, we call manager.startAuth(...)
-  const handleSubmitPhone = async (e: React.FormEvent) => {
+  const handleSubmitPhone = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
       toast.error("Wallet Manager not ready yet.")
@@ -328,7 +263,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     }
     try {
       setLoading(true)
-      await walletManager.startAuth({ phoneNumber: phone })
+      await walletManager?.startAuth({ phoneNumber: phone })
       setStep('code')
       toast.success('A code has been sent to your phone.')
       // Move focus to code field
@@ -341,10 +276,10 @@ const Greeter: React.FC<any> = ({ history }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [walletManager, phone])
 
   // Step 2: The user enters the OTP code, we call manager.completeAuth(...)
-  const handleSubmitCode = async (e: React.FormEvent) => {
+  const handleSubmitCode = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
       toast.error("Wallet Manager not ready yet.")
@@ -370,10 +305,10 @@ const Greeter: React.FC<any> = ({ history }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [walletManager, phone, code])
 
   // Optional "resend code" that just calls startAuth again
-  const handleResendCode = async () => {
+  const handleResendCode = useCallback(async () => {
     if (!walletManager) return
     try {
       setLoading(true)
@@ -387,10 +322,10 @@ const Greeter: React.FC<any> = ({ history }) => {
       await new Promise(resolve => setTimeout(resolve, 2000))
       setLoading(false)
     }
-  }
+  }, [walletManager, phone])
 
   // Step 3: Provide a password for the final step.
-  const handleSubmitPassword = async (e: React.FormEvent) => {
+  const handleSubmitPassword = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!walletManager) {
       toast.error("Wallet Manager not ready yet.")
@@ -421,7 +356,7 @@ const Greeter: React.FC<any> = ({ history }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [walletManager, password, confirmPassword])
 
   if (!pageLoaded) {
     return <PageLoading />
@@ -481,137 +416,11 @@ const Greeter: React.FC<any> = ({ history }) => {
           </Typography>
         </Box>
 
-        {/* Wallet Configuration Card */}
-        <Box sx={{ mb: 3 }}>
-          <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Button 
-                startIcon={<SettingsIcon />}
-                onClick={() => setShowWalletConfig(!showWalletConfig)}
-                variant="text"
-                color='secondary'
-                size="small"
-              >
-                {showWalletConfig ? 'Hide Details' : 'Show Config'}
-              </Button>
-            </Box>            
-            {isLoadingConfig ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                <CircularProgress size={24} />
-              </Box>
-            ) : (
-              <>
-                {wabInfo ? (            
-                  <Collapse in={showWalletConfig}>
-                    <Typography variant="h4" color="primary">
-                      Configuration
-                    </Typography>
-                    <Box sx={{ py: 2 }}>
-                      <Typography variant="body2" gutterBottom>
-                        Wallet Authentication Backend (WAB) provides 2 of 3 backup and recovery functionality for your root key.
-                      </Typography>
-                      <TextField
-                        label="WAB URL"
-                        fullWidth
-                        variant="outlined"
-                        value={wabUrl}
-                        onChange={(e) => setWabUrl(e.target.value)}
-                        margin="normal"
-                        size="small"
-                      />
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <Button 
-                          variant="outlined" 
-                          size="small" 
-                          onClick={fetchWalletConfig}
-                          disabled={isLoadingConfig}
-                        >
-                          Refresh Info
-                        </Button>
-                      </Box>
-                      <Divider />
-                      {wabInfo.supportedAuthMethods && wabInfo.supportedAuthMethods.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" gutterBottom>
-                            Service which will be used to verify your phone number:
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {wabInfo.supportedAuthMethods.map((method) => (
-                              <Button
-                                key={method}
-                                variant={selectedAuthMethod === method ? "contained" : "outlined"}
-                                size="small"
-                                onClick={() => setSelectedAuthMethod(method)}
-                                sx={{ textTransform: 'none' }}
-                              >
-                                {method}
-                              </Button>
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-                      
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" gutterBottom>
-                          BSV Network:
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                          <Button
-                            variant={selectedNetwork === 'main' ? "contained" : "outlined"}
-                            size="small"
-                            onClick={() => setSelectedNetwork('main')}
-                            sx={{ textTransform: 'none' }}
-                          >
-                            Mainnet
-                          </Button>
-                          <Button
-                            variant={selectedNetwork === 'test' ? "contained" : "outlined"}
-                            size="small"
-                            onClick={() => setSelectedNetwork('test')}
-                            sx={{ textTransform: 'none' }}
-                          >
-                            Testnet
-                          </Button>
-                        </Box>
-                      </Box>
-                      
-                      <Typography variant="body2" gutterBottom>
-                        Wallet Storage Provider to use for your transactions and metadata:
-                      </Typography>
-                      <TextField
-                        label="Storage URL"
-                        fullWidth
-                        variant="outlined"
-                        value={selectedStorageUrl}
-                        onChange={(e) => setSelectedStorageUrl(e.target.value)}
-                        margin="normal"
-                        size="small"
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="primary"
-                          onClick={applyWalletConfig}
-                          disabled={!wabInfo || !selectedAuthMethod}
-                        >
-                          Apply Configuration
-                        </Button>
-                    </Box>
-                  </Collapse>
-                ) : (
-                  <Typography variant="body2" color="error">
-                    Failed to load wallet configuration
-                  </Typography>
-                )}
-              </>
-            )}
-          </Box>
-        </Box>
-
+        <WalletConfig />
+        
         {/* Authentication Stepper - replaces Accordions for clearer progression */}
-        <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
+        {configStatus === 'configured' && (
+          <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
           {steps.map((step, index) => (
             <Step key={step.label}>
               <StepLabel 
@@ -665,7 +474,8 @@ const Greeter: React.FC<any> = ({ history }) => {
               </StepContent>
             </Step>
           ))}
-        </Stepper>
+          </Stepper>
+        )}
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
           <RouterLink to='/recovery' style={{ textDecoration: 'none' }}>

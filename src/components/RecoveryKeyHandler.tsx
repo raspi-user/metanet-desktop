@@ -9,14 +9,19 @@ import {
   Typography,
   useTheme,
   Box,
-  Grid2
+  IconButton,
+  Grid2,
+  Stack
 } from '@mui/material'
 import CustomDialog from './CustomDialog/index.jsx'
 import LockIcon from '@mui/icons-material/Lock'
 import DownloadIcon from '@mui/icons-material/Download'
-import exportDataToFile from '../utils/exportDataToFile'
+import exportDataToFile, { downloadFile } from '../utils/exportDataToFile'
 import { Utils } from '@bsv/sdk';
 import { WalletContext } from '../WalletContext'
+import CheckIcon from '@mui/icons-material/Check'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { toast } from 'react-toastify'
 
 const RecoveryKeyHandler: FC = () => {
   const { managers, setRecoveryKeySaver } = useContext(WalletContext)
@@ -28,6 +33,15 @@ const RecoveryKeyHandler: FC = () => {
 
   const [resolve, setResolve] = useState<Function>(() => { })
   const [reject, setReject] = useState<Function>(() => { })
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (data) => {
+    navigator.clipboard.writeText(data)
+    setCopied(true)
+    setTimeout(() => {
+      setCopied(false)
+    }, 2000)
+  }
 
   useEffect(() => {
     setRecoveryKeySaver((): any => {
@@ -55,12 +69,14 @@ const RecoveryKeyHandler: FC = () => {
 
   const handleDownload = async (): Promise<void> => {
     const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
-    exportDataToFile({
-      data: recoveryKeyData,
-      filename: 'Metanet Recovery Key.txt',
-      type: 'text/plain'
-    })
+    const success = await downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
+    if (success) {
+      toast.success('Recovery key downloaded successfully')
+    } else {
+      toast.error('Failed to download recovery key')
+    }
   }
+
 
   const theme = useTheme()
 
@@ -75,18 +91,22 @@ const RecoveryKeyHandler: FC = () => {
             Save Your Recovery Key Now:
           </DialogContentText>
           <Grid2 container spacing={2} width='100%'>
-            <Box sx={{ border: '1px solid', borderColor: theme.palette.divider, p: 3, height: '100%' }}>
-              <Typography variant='body1'
+            <Stack sx={{ my: 3 }} direction="row" alignItems="center" justifyContent="space-between">
+            <Typography 
+                variant='body1'
                 sx={{
                   userSelect: 'all',
                   overflow: 'hidden',
                   wordBreak: 'break-all'
                 }}
-                color={theme.palette.getContrastText(theme.palette.background.default)}
-              >
-                {recoveryKey}
-              </Typography>
-            </Box>
+                color={theme.palette.getContrastText(theme.palette.background.default)}>
+              {recoveryKey}
+            </Typography>
+            <Stack>
+              <IconButton size='large' onClick={() => handleCopy(recoveryKey)} disabled={copied} sx={{ ml: 1 }}>
+                {copied ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
+              </IconButton></Stack>
+            </Stack>
             <Button
               variant='contained'
               color='primary'

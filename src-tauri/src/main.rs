@@ -20,8 +20,13 @@ use hyper::{
     Body, Request, Response, Server, StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{Emitter, Listener, Manager, Window};
+use tauri::{Emitter, Listener, Window};
 use tokio::sync::oneshot;
+
+use std::path::{Path, PathBuf};
+use tauri::{command, AppHandle, Manager};
+
+use std::fs;
 
 static MAIN_WINDOW_NAME: &str = "main";
 
@@ -124,6 +129,42 @@ fn relinquish_focus(window: Window) {
             eprintln!("(Linux) minimize error: {}", e);
         }
     }
+}
+
+#[command]
+async fn download(app_handle: AppHandle, filename: String, content: Vec<u8>) -> Result<(), String> {
+    let downloads_dir = app_handle
+        .path()
+        .download_dir()
+        .map_err(|e| e.to_string())?;
+    let path = PathBuf::from(downloads_dir);
+
+    // Split the filename into stem and extension (if any)
+    let path_obj = Path::new(&filename);
+    let stem = path_obj
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("file");
+    let ext = path_obj.extension().and_then(|e| e.to_str()).unwrap_or("");
+
+    // Initial path attempt
+    let mut final_path = path.clone();
+    final_path.push(&filename);
+
+    // Check if file exists and increment if necessary
+    let mut counter = 1;
+    while final_path.exists() {
+        let new_filename = if ext.is_empty() {
+            format!("{} ({}).{}", stem, counter, ext)
+        } else {
+            format!("{} ({}).{}", stem, counter, ext)
+        };
+        final_path = path.clone();
+        final_path.push(new_filename);
+        counter += 1;
+    }
+
+    fs::write(&final_path, content).map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -336,8 +377,11 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             is_focused,
             request_focus,
-            relinquish_focus
+            relinquish_focus,
+            download
         ])
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .run(tauri::generate_context!())
         .expect("Error while running Tauri application");
 }

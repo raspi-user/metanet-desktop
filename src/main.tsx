@@ -21,6 +21,7 @@ import PasswordHandler from './components/PasswordHandler'
 import RecoveryKeyHandler from './components/RecoveryKeyHandler'
 import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
 import AuthRedirector from './navigation/AuthRedirector'
+import ThemedToastContainer from './components/ThemedToastContainer'
 
 // Define queries for responsive design
 const queries = {
@@ -50,7 +51,7 @@ if (rootElement) {
                   <CertificateAccessHandler />
                   <ProtocolPermissionHandler />
                   <SpendingAuthorizationHandler />
-                  <ToastContainer position='top-center' />
+                  <ThemedToastContainer />
                   <Switch>
                     <Route exact path='/' component={Greeter} />
                     <Route path='/dashboard' component={Dashboard} />

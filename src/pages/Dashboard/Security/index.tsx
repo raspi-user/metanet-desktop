@@ -9,13 +9,21 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-  Paper
+  Paper,
+  IconButton,
+  Stack
 } from '@mui/material'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import CheckIcon from '@mui/icons-material/Check'
+import DownloadIcon from '@mui/icons-material/Download'
 import { useHistory } from 'react-router-dom'
 import ChangePassword from '../Settings/Password'
 import RecoveryKey from '../Settings/RecoveryKey'
 import { UserContext } from '../../../UserContext'
 import PageLoading from '../../../components/PageLoading.js'
+import { downloadFile } from '../../../utils/exportDataToFile.js'
+import { Utils } from '@bsv/sdk'
+import { toast } from 'react-toastify'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -32,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontFamily: 'monospace',
     fontSize: '1.1em',
     padding: theme.spacing(2),
+    width: '100%',
     background: theme.palette.action.hover,
     borderRadius: theme.shape.borderRadius,
     textAlign: 'center'
@@ -44,6 +53,15 @@ const Security: React.FC = () => {
   const [showKeyDialog, setShowKeyDialog] = useState(false)
   const [recoveryKey, setRecoveryKey] = useState('')
   const { pageLoaded } = useContext(UserContext)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (data: string) => {
+    navigator.clipboard.writeText(data)
+    setCopied(true)
+    setTimeout(() => {
+      setCopied(false)
+    }, 2000)
+  }
 
   const handleViewKey = (key: string) => {
     setRecoveryKey(key)
@@ -53,6 +71,16 @@ const Security: React.FC = () => {
   const handleCloseDialog = () => {
     setShowKeyDialog(false)
     setRecoveryKey('')
+  }
+
+  const handleDownload = async (): Promise<void> => {
+    const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
+    const success = await downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
+    if (success) {
+      toast.success('Recovery key downloaded successfully')
+    } else {
+      toast.error('Failed to download recovery key')
+    }
   }
 
   if (!pageLoaded) {
@@ -90,9 +118,24 @@ const Security: React.FC = () => {
           <DialogContentText color="textSecondary" sx={{ mb: 2 }}>
             Please save this key in a secure location. You will need it to recover your account if you forget your password.
           </DialogContentText>
-          <Typography className={classes.key}>
-            {recoveryKey}
-          </Typography>
+          <Stack sx={{ my: 3 }} direction="row" alignItems="center" justifyContent="space-between">
+            <Typography className={classes.key}>
+              {recoveryKey}
+            </Typography>
+            <Stack><IconButton size='large' onClick={() => handleCopy(recoveryKey)} disabled={copied} sx={{ ml: 1 }}>
+              {copied ? <CheckIcon /> : <ContentCopyIcon fontSize='small' />}
+            </IconButton></Stack>
+          </Stack>
+          <Button
+              variant='contained'
+              color='primary'
+              startIcon={<DownloadIcon />}
+            onClick={handleDownload}
+            fullWidth
+            sx={{ p: 2 }}
+          >
+            Save as a File
+          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
