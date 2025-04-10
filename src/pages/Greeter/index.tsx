@@ -153,6 +153,7 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
 
 // Password form component
 const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordFieldRef }) => {
+  const theme = useTheme();
   return (
     <form onSubmit={handleSubmitPassword}>
       <TextField
@@ -218,7 +219,8 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
         type='submit'
         disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
         fullWidth
-        sx={{ 
+        sx={{
+          borderRadius: theme.shape.borderRadius,
           mt: 2,
           textTransform: 'none',
           py: 1.2
@@ -232,7 +234,7 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
 
 // Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
-  const { managers } = useContext(WalletContext)
+  const { managers, configStatus } = useContext(WalletContext)
   const { appVersion, appName, pageLoaded } = useContext(UserContext)
   const theme = useTheme()
 
@@ -417,7 +419,8 @@ const Greeter: React.FC<any> = ({ history }) => {
         <WalletConfig />
         
         {/* Authentication Stepper - replaces Accordions for clearer progression */}
-        <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
+        {configStatus === 'configured' && (
+          <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
           {steps.map((step, index) => (
             <Step key={step.label}>
               <StepLabel 
@@ -471,7 +474,8 @@ const Greeter: React.FC<any> = ({ history }) => {
               </StepContent>
             </Step>
           ))}
-        </Stepper>
+          </Stepper>
+        )}
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
           <RouterLink to='/recovery' style={{ textDecoration: 'none' }}>

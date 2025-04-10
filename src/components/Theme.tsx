@@ -220,7 +220,7 @@ export function AppThemeProvider({ children }: ThemeProps) {
           styleOverrides: {
             root: {
               textTransform: 'none',
-              borderRadius: 1,
+              borderRadius: 2,
               '&.MuiButton-contained': {
                 backgroundColor: mode === 'light' ? '#1B365D' : '#FFFFFF',
                 color: mode === 'light' ? '#FFFFFF' : '#1B365D',
@@ -283,7 +283,7 @@ export function AppThemeProvider({ children }: ThemeProps) {
         }
       },
       shape: {
-        borderRadius: 4
+        borderRadius: 2
       },
       templates: {
         page_wrap: {
