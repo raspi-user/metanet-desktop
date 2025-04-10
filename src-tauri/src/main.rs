@@ -20,8 +20,13 @@ use hyper::{
     Body, Request, Response, Server, StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{Emitter, Listener, Manager, Window};
+use tauri::{Emitter, Listener, Window};
 use tokio::sync::oneshot;
+
+use std::path::PathBuf;
+use tauri::{command, AppHandle, Manager};
+
+use std::fs;
 
 static MAIN_WINDOW_NAME: &str = "main";
 
@@ -124,6 +129,15 @@ fn relinquish_focus(window: Window) {
             eprintln!("(Linux) minimize error: {}", e);
         }
     }
+}
+
+#[command]
+async fn download(app_handle: AppHandle, filename: String, content: Vec<u8>) -> Result<(), String> {
+    let downloads_dir = app_handle.path().download_dir().unwrap();
+    let mut path = PathBuf::from(downloads_dir);
+    path.push(filename);
+
+    fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -336,8 +350,11 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             is_focused,
             request_focus,
-            relinquish_focus
+            relinquish_focus,
+            download
         ])
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .run(tauri::generate_context!())
         .expect("Error while running Tauri application");
 }

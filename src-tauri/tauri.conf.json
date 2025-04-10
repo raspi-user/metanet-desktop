@@ -22,9 +22,7 @@
     }
   },
   "plugins": {
-    "shell": {
-      "open": true
-    }
+    "opener": null
   },
   "bundle": {
     "active": true,

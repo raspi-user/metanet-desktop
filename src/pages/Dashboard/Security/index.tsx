@@ -21,7 +21,8 @@ import ChangePassword from '../Settings/Password'
 import RecoveryKey from '../Settings/RecoveryKey'
 import { UserContext } from '../../../UserContext'
 import PageLoading from '../../../components/PageLoading.js'
-import exportDataToFile from '../../../utils/exportDataToFile.js'
+import { downloadFile } from '../../../utils/exportDataToFile.js'
+import { Utils } from '@bsv/sdk'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -73,11 +74,7 @@ const Security: React.FC = () => {
 
   const handleDownload = async (): Promise<void> => {
     const recoveryKeyData = `Metanet Recovery Key:\n\n${recoveryKey}\n\nSaved: ${new Date()}`
-    exportDataToFile({
-      data: recoveryKeyData,
-      filename: 'Metanet Recovery Key.txt',
-      type: 'text/plain'
-    })
+    downloadFile('Metanet Recovery Key.txt', Utils.toArray(recoveryKeyData, 'utf8'))
   }
 
   if (!pageLoaded) {
