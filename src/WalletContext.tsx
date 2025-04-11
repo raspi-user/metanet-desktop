@@ -792,20 +792,22 @@ export const WalletContextProvider: React.FC<WalletContextProps> = ({
     }
 
     useEffect(() => {
-        (async () => {
-            const storedApps = window.localStorage.getItem('recentApps')
-            if (storedApps) {
-                setRecentApps(JSON.parse(storedApps))
-            }
-            // Parse out the app data from the domains
-            const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
-            const parsedAppData = await resolveAppDataFromDomain({ appDomains })
-            parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
-            setRecentApps(parsedAppData)
+        if (typeof managers.permissionsManager === 'object') {
+            (async () => {
+                const storedApps = window.localStorage.getItem('recentApps')
+                if (storedApps) {
+                    setRecentApps(JSON.parse(storedApps))
+                }
+                // Parse out the app data from the domains
+                const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
+                const parsedAppData = await resolveAppDataFromDomain({ appDomains })
+                parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
+                setRecentApps(parsedAppData)
 
-            // store for next app load
-            window.localStorage.setItem('recentApps', JSON.stringify(parsedAppData))
-        })()
+                // store for next app load
+                window.localStorage.setItem('recentApps', JSON.stringify(parsedAppData))
+            })()
+        }
     }, [adminOriginator, managers?.permissionsManager])
 
     const contextValue = useMemo<WalletContextValue>(() => ({

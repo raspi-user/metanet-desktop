@@ -99,6 +99,12 @@ const Apps: React.FC = () => {
     appDomains: string[]
   }): Promise<AppData[]> => {
     const dataPromises = appDomains.map(async domain => {
+      if (domain.startsWith('https://')) {
+        domain = domain.substring(8)
+      }
+      if (domain.startsWith('http://')) {
+        domain = domain.substring(7)
+      }
       let appIconImageUrl: string | undefined
       let appName: string = domain
 
@@ -123,40 +129,42 @@ const Apps: React.FC = () => {
 
   // On mount, load the apps & recent apps
   useEffect(() => {
-    (async () => {
-      try {
-        // Check if there is storage app data for this session
-        let parsedAppData: AppData[] | null = JSON.parse(
-          window.localStorage.getItem(cachedAppsKey) || 'null'
-        )
+    if (typeof managers.permissionsManager === 'object') {
+      (async () => {
+        try {
+          // Check if there is storage app data for this session
+          let parsedAppData: AppData[] | null = JSON.parse(
+            window.localStorage.getItem(cachedAppsKey) || 'null'
+          )
 
-        if (parsedAppData) {
+          if (parsedAppData) {
+            setApps(parsedAppData)
+            setFilteredApps(parsedAppData)
+          } else {
+            setLoading(true)
+          }
+
+          // Fetch app domains
+          const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
+          parsedAppData = await resolveAppDataFromDomain({ appDomains })
+          parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
+
+          // Cache them
+          window.localStorage.setItem(cachedAppsKey, JSON.stringify(parsedAppData))
+
           setApps(parsedAppData)
           setFilteredApps(parsedAppData)
-        } else {
-          setLoading(true)
+
+          // Initialize Fuse
+          const fuse = new Fuse(parsedAppData, options)
+          setFuseInstance(fuse)
+        } catch (error) {
+          console.error(error)
         }
-
-        // Fetch app domains
-        const appDomains = await getApps({ permissionsManager: managers.permissionsManager, adminOriginator })
-        parsedAppData = await resolveAppDataFromDomain({ appDomains })
-        parsedAppData.sort((a, b) => a.appName.localeCompare(b.appName))
-
-        // Cache them
-        window.localStorage.setItem(cachedAppsKey, JSON.stringify(parsedAppData))
-
-        setApps(parsedAppData)
-        setFilteredApps(parsedAppData)
-
-        // Initialize Fuse
-        const fuse = new Fuse(parsedAppData, options)
-        setFuseInstance(fuse)
-      } catch (error) {
-        console.error(error)
-      }
-      setLoading(false)
-    })()
-  }, [])
+        setLoading(false)
+      })()
+    }
+  }, [managers?.permissionsManager])
 
   return (
     <div className={classes.apps_view}>
