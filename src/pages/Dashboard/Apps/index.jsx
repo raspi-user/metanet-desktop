@@ -67,7 +67,14 @@ const Apps = () => {
   }, [recentApps])
 
   return (
-    <Box sx={{ padding: theme.spacing(3), maxWidth: '800px', margin: '0 auto' }}>
+    <Box sx={{ 
+      padding: theme.spacing(3), 
+      maxWidth: { xs: '100%', sm: '90%', md: '1200px' }, 
+      margin: '0 auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
       <Typography variant="h1" color="textPrimary" sx={{ mb: 2 }}>
         Applications
       </Typography>
@@ -105,16 +112,30 @@ const Apps = () => {
       </Box>
 
       {(search === '' && recentApps.length > 3) && (
-        <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
+        <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, mb: 4, bgcolor: 'background.paper', borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography variant="h4" sx={{ mb: 2 }}>
             Recent Applications
           </Typography>
 
-          <Grid container spacing={2}>
+          <Grid 
+            container 
+            spacing={{ xs: 1, sm: 2, md: 3 }}
+            justifyContent="center"
+          >
             {recentApps.map((app) => (
               <Grid
                 key={app.domain}
-                sx={{ xs: 12, sm: 6, md: 3 }}
+                xs={4}
+                sm={3}
+                md={2}
+                lg={1.5}
+                xl={1}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  mb: { xs: 1, sm: 2 }
+                }}
               >
                 <MetanetApp
                   appName={app.appName}
@@ -127,7 +148,7 @@ const Apps = () => {
         </Paper>
       )}
 
-      { search !== '' && <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.paper' }}>
+      { search !== '' && <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Search Results
         </Typography>
@@ -140,11 +161,25 @@ const Apps = () => {
           </Box>
         )}
 
-        <Grid container spacing={2}>
+        <Grid 
+          container 
+          spacing={{ xs: 1, sm: 2, md: 3 }}
+          justifyContent="center"
+        >
           {filteredApps.map((app) => (
             <Grid
               key={app.domain}
-              sx={{  xs: 12, sm: 6, md: 3 }}
+              xs={4}
+              sm={3}
+              md={2}
+              lg={1.5}
+              xl={1}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                mb: { xs: 1, sm: 2 }
+              }}
             >
               <MetanetApp
                 appName={app.appName}

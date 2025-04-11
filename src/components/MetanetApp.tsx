@@ -1,10 +1,11 @@
 import React from 'react'
-import { Card, CardContent, Typography } from '@mui/material'
+import { Card, CardContent, Typography, Box } from '@mui/material'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import isImageUrl from '../utils/isImageUrl'
 import { useTheme } from '@mui/styles'
 import { generateDefaultIcon } from '../constants/popularApps'
 import { Img } from '@bsv/uhrp-react'
+
 
 interface MetanetAppProps extends RouteComponentProps {
   iconImageUrl?: string
@@ -57,10 +58,20 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
         display: 'flex',
         flexDirection: 'column', // Stack items vertically
         height: '100%', // Fill the container height
+        width: '100%',
+        // Responsive card width
+        maxWidth: {
+          xs: '100px', // Smaller on mobile
+          sm: '110px', // Medium on tablets
+          md: '130px', // Larger on desktop
+          lg: '140px', // Even larger on big screens
+          xl: '150px', // Extra large screens
+        },
         justifyContent: 'center',
         transition: 'background 0.3s ease',
         backgroundColor: 'transparent',
         backgroundImage: 'none',
+        margin: '0 auto', // Center the card
         '&:hover': {
           backgroundColor: (theme as any).palette.action?.hover || 'rgba(0, 0, 0, 0.04)'
         },
@@ -69,16 +80,48 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
     >
       <CardContent>
         <div>
-          <Img
-            src={iconImageUrl}
-            alt={displayName}
-            style={{ height: '4.25em', paddingTop: '0.4em' }}
-          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingTop: '0.4em',
+              // Responsive container sizing
+              width: {
+                xs: '48px',  // Smaller on mobile
+                sm: '56px',  // Medium on tablets
+                md: '72px',  // Larger on desktop
+                lg: '80px',  // Even larger on big screens
+                xl: '84px',  // Extra large screens
+              },
+              height: {
+                xs: '48px',
+                sm: '56px',
+                md: '72px',
+                lg: '80px',
+                xl: '84px',
+              },
+              maxWidth: '96px',  // Increased maximum size
+              maxHeight: '96px',
+              margin: '0 auto',
+            }}
+          >
+            <Img
+              src={iconImageUrl}
+              alt={displayName}
+              style={{
+                objectFit: 'contain',
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          </Box>
         </div>
         {/*
           TODO: Remove references to webkit once browsers mature to a good level
         */}
         <Typography
+          variant="body2"
           sx={{
             color: (theme as any).palette.text?.primary || 'inherit',
             paddingTop: '0.4em',
@@ -86,6 +129,13 @@ const MetanetApp: React.FC<MetanetAppProps> = ({
             overflow: 'hidden',
             WebkitBoxOrient: 'vertical',
             WebkitLineClamp: 1,
+            fontSize: {
+              xs: '0.75rem',
+              sm: '0.8rem',
+              md: '0.875rem',
+            },
+            width: '100%',
+            textAlign: 'center',
           }}
         >
           {displayName}
