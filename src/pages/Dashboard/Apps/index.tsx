@@ -164,7 +164,7 @@ const Apps: React.FC = () => {
         setLoading(false)
       })()
     }
-  }, [])
+  }, [managers?.permissionsManager])
 
   return (
     <div className={classes.apps_view}>
