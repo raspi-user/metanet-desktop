@@ -169,6 +169,7 @@ async fn download(app_handle: AppHandle, filename: String, content: Vec<u8>) -> 
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             // Retrieve the main window (we only want to communicate with this window).
             let main_window = app.get_webview_window(MAIN_WINDOW_NAME)
@@ -225,131 +226,151 @@ fn main() {
                     let addr: SocketAddr = "127.0.0.1:3321".parse().expect("Invalid socket address");
                     println!("HTTP server listening on http://{}", addr);
 
-                    // Create our Hyper service.
-                    let make_svc = make_service_fn(move |_conn| {
-                        // Clone handles for each connection.
-                        let pending_requests = pending_requests_clone.clone();
-                        let main_window = main_window_clone.clone();
-                        let request_counter = request_counter_clone.clone();
-
-                        async move {
-                            Ok::<_, Infallible>(service_fn(move |req: Request<Body>| {
-                                // Clone per-request handles.
-                                let pending_requests = pending_requests.clone();
-                                let main_window = main_window.clone();
-                                let request_counter = request_counter.clone();
+                    // Attempt to bind the server and check for address in use error
+                    match Server::try_bind(&addr) {
+                        Ok(builder) => {
+                            // Create our Hyper service.
+                            let make_svc = make_service_fn(move |_conn| {
+                                // Clone handles for each connection.
+                                let pending_requests = pending_requests_clone.clone();
+                                let main_window = main_window_clone.clone();
+                                let request_counter = request_counter_clone.clone();
 
                                 async move {
+                                    Ok::<_, Infallible>(service_fn(move |req: Request<Body>| {
+                                        // Clone per-request handles.
+                                        let pending_requests = pending_requests.clone();
+                                        let main_window = main_window.clone();
+                                        let request_counter = request_counter.clone();
 
-                                    // Intercept any OPTIONS requests
-                                    if req.method() == hyper::Method::OPTIONS {
-                                        let mut res = Response::new(Body::empty());
-                                        res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
-                                        return Ok::<_, Infallible>(res);
-                                    }
+                                        async move {
 
-                                    // Generate a unique request ID.
-                                    let request_id = request_counter.fetch_add(1, Ordering::Relaxed);
+                                            // Intercept any OPTIONS requests
+                                            if req.method() == hyper::Method::OPTIONS {
+                                                let mut res = Response::new(Body::empty());
+                                                res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                                return Ok::<_, Infallible>(res);
+                                            }
 
-                                    // Extract the HTTP method, URI, and headers.
-                                    let method = req.method().clone();
-                                    let uri = req.uri().clone();
-                                    let headers = req.headers().iter()
-                                        .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or("").to_string()))
-                                        .collect::<Vec<(String, String)>>();
+                                            // Generate a unique request ID.
+                                            let request_id = request_counter.fetch_add(1, Ordering::Relaxed);
 
-                                    // Read the full request body.
-                                    let whole_body = hyper::body::to_bytes(req.into_body()).await.unwrap_or_default();
-                                    let body_str = String::from_utf8_lossy(&whole_body).to_string();
+                                            // Extract the HTTP method, URI, and headers.
+                                            let method = req.method().clone();
+                                            let uri = req.uri().clone();
+                                            let headers = req.headers().iter()
+                                                .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or("").to_string()))
+                                                .collect::<Vec<(String, String)>>();
 
-                                    // Create a oneshot channel for awaiting the frontend response.
-                                    let (tx, rx) = oneshot::channel::<TsResponse>();
-                                    pending_requests.insert(request_id, tx);
+                                            // Read the full request body.
+                                            let whole_body = hyper::body::to_bytes(req.into_body()).await.unwrap_or_default();
+                                            let body_str = String::from_utf8_lossy(&whole_body).to_string();
 
-                                    // Prepare the event payload.
-                                    let event_payload = HttpRequestEvent {
-                                        method: method.to_string(),
-                                        path: uri.to_string(),
-                                        headers,
-                                        body: body_str,
-                                        request_id,
-                                    };
+                                            // Create a oneshot channel for awaiting the frontend response.
+                                            let (tx, rx) = oneshot::channel::<TsResponse>();
+                                            pending_requests.insert(request_id, tx);
 
-                                    // Serialize the payload to JSON.
-                                    let event_json = match serde_json::to_string(&event_payload) {
-                                        Ok(json) => json,
-                                        Err(e) => {
-                                            eprintln!("Failed to serialize HTTP event: {:?}", e);
-                                            let mut res = Response::new(Body::from("Internal Server Error"));
-                                            *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
-                                            // Append CORS headers
-                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
-                                            // Remove pending request since we cannot proceed.
-                                            pending_requests.remove(&request_id);
-                                            return Ok::<_, Infallible>(res);
+                                            // Prepare the event payload.
+                                            let event_payload = HttpRequestEvent {
+                                                method: method.to_string(),
+                                                path: uri.to_string(),
+                                                headers,
+                                                body: body_str,
+                                                request_id,
+                                            };
+
+                                            // Serialize the payload to JSON.
+                                            let event_json = match serde_json::to_string(&event_payload) {
+                                                Ok(json) => json,
+                                                Err(e) => {
+                                                    eprintln!("Failed to serialize HTTP event: {:?}", e);
+                                                    let mut res = Response::new(Body::from("Internal Server Error"));
+                                                    *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                                    // Append CORS headers
+                                                    res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                                    // Remove pending request since we cannot proceed.
+                                                    pending_requests.remove(&request_id);
+                                                    return Ok::<_, Infallible>(res);
+                                                }
+                                            };
+
+                                            // Emit the "http-request" event to the main window.
+                                            if let Err(err) = main_window.emit("http-request", event_json) {
+                                                eprintln!("Failed to emit http-request event: {:?}", err);
+                                                pending_requests.remove(&request_id);
+                                                let mut res = Response::new(Body::from("Internal Server Error"));
+                                                *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                                // Append CORS headers
+                                                res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                                res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                                return Ok::<_, Infallible>(res);
+                                            }
+
+                                            // Wait asynchronously for the frontend's response.
+                                            match rx.await {
+                                                Ok(ts_response) => {
+                                                    let mut res = Response::new(Body::from(ts_response.body));
+                                                    *res.status_mut() = StatusCode::from_u16(ts_response.status)
+                                                        .unwrap_or(StatusCode::OK);
+                                                    // Append CORS headers
+                                                    res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                                    Ok::<_, Infallible>(res)
+                                                }
+                                                Err(err) => {
+                                                    eprintln!("Error awaiting frontend response for request {}: {:?}", request_id, err);
+                                                    let mut res = Response::new(Body::from("Gateway Timeout"));
+                                                    *res.status_mut() = StatusCode::GATEWAY_TIMEOUT;
+                                                    // Append CORS headers
+                                                    res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
+                                                    res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
+                                                    Ok::<_, Infallible>(res)
+                                                }
+                                            }
                                         }
-                                    };
-
-                                    // Emit the "http-request" event to the main window.
-                                    if let Err(err) = main_window.emit("http-request", event_json) {
-                                        eprintln!("Failed to emit http-request event: {:?}", err);
-                                        pending_requests.remove(&request_id);
-                                        let mut res = Response::new(Body::from("Internal Server Error"));
-                                        *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
-                                        // Append CORS headers
-                                        res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
-                                        res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
-                                        return Ok::<_, Infallible>(res);
-                                    }
-
-                                    // Wait asynchronously for the frontend's response.
-                                    match rx.await {
-                                        Ok(ts_response) => {
-                                            let mut res = Response::new(Body::from(ts_response.body));
-                                            *res.status_mut() = StatusCode::from_u16(ts_response.status)
-                                                .unwrap_or(StatusCode::OK);
-                                            // Append CORS headers
-                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
-                                            Ok::<_, Infallible>(res)
-                                        }
-                                        Err(err) => {
-                                            eprintln!("Error awaiting frontend response for request {}: {:?}", request_id, err);
-                                            let mut res = Response::new(Body::from("Gateway Timeout"));
-                                            *res.status_mut() = StatusCode::GATEWAY_TIMEOUT;
-                                            // Append CORS headers
-                                            res.headers_mut().insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Methods", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Expose-Headers", "*".parse().unwrap());
-                                            res.headers_mut().insert("Access-Control-Allow-Private-Network", "true".parse().unwrap());
-                                            Ok::<_, Infallible>(res)
-                                        }
-                                    }
+                                    }))
                                 }
-                            }))
+                            });
+
+                            // Build and run the Hyper server.
+                            let server = builder.serve(make_svc);
+
+                            if let Err(e) = server.await {
+                                eprintln!("Server error: {}", e);
+                            }
                         }
-                    });
-
-                    // Build and run the Hyper server.
-                    let server = Server::bind(&addr).serve(make_svc);
-
-                    if let Err(e) = server.await {
-                        eprintln!("Server error: {}", e);
+                        Err(e) => {
+                            // TODO: Someone who knows Rust, please show an error dialogue to the user befor exit!
+                            // Show error dialog and exit
+                            // let builder = tauri_plugin_dialog::MessageDialogBuilder(
+                            //     Some(&main_window_clone),
+                            //     "Error",
+                            //     e.to_string(),
+                            // );
+                            // std::println!(e.to_string());
+                            std::process::exit(1);
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to bind server: {}", e);
+                            std::process::exit(1);
+                        }
                     }
                 });
             });
