@@ -117,7 +117,7 @@ const CertificateChip: React.FC<CertificateChipProps> = ({
       </Typography>
       {/* Revoke button - only shown when canRevoke is true */}
       {canRevoke && (
-        <Box sx={{ 
+        <Box sx={{
           position: 'absolute',
           top: 0,
           right: 0

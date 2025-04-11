@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tauri + React + Typescript</title>
+    <style>
+      html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        overscroll-behavior: none; /* Prevents rubber banding/bouncing effect */
+      }
+      #root {
+        height: 100%;
+        width: 100%;
+        overflow: auto; /* Allows scrolling within the app */
+        overscroll-behavior: none; /* Prevents rubber banding within containers */
+      }
+    </style>
   </head>
 
   <body>
