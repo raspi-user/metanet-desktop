@@ -16,16 +16,21 @@ export default async function fetchManifest({
     const url = `${protocol}://${cleanDomain}/manifest.json`
     console.log(url)
     return new Promise(async r => {
-      setTimeout(() => {
-        r({})
-      }, 800)
-      const response = await fetch(url)
-      if (!response.ok) {
+      try {
+        setTimeout(() => {
+          r({})
+        }, 800)
+        const response = await fetch(url)
+        if (!response.ok) {
+          r({})
+          return
+        }
+        const json = await response.json()
+        r(json)
+      } catch (e) {
         r({})
         return
       }
-      const json = await response.json()
-      r(json)
     })
   } catch (error) {
     // console.error(error)
