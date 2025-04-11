@@ -14,7 +14,6 @@ export default async function fetchManifest({
 
     // Construct the final URL with the cleaned domain
     const url = `${protocol}://${cleanDomain}/manifest.json`
-    console.log(url)
     return new Promise(async r => {
       try {
         setTimeout(() => {
