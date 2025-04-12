@@ -23,6 +23,7 @@
     "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-shell": "^2.2.1",
     "boomerang-http": "^0.1.0",
+    "date-fns": "^4.1.0",
     "fuse.js": "^7.1.0",
     "iso-3166-ts": "^2.2.0",
     "jdenticon": "^3.3.0",
