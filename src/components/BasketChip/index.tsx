@@ -2,13 +2,9 @@ import { useContext, useEffect, useState } from 'react'
 import { Chip, Badge, Avatar, Tooltip, Stack, Typography, Divider } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-// import { BasketMap } from 'basketmap'
-// import { Img } from 'uhrp-react'
 import makeStyles from '@mui/styles/makeStyles'
 import style from './style'
 import { generateDefaultIcon } from '../../constants/popularApps'
-// import confederacyHost from '../../utils/confederacyHost'
-// import registryOperator from '../../utils/registryOperator'
 import { useTheme } from '@mui/styles'
 import ShoppingBasket from '@mui/icons-material/ShoppingBasket'
 import { WalletContext } from '../../WalletContext'
@@ -50,19 +46,16 @@ const BasketChip: React.FC<BasketChipProps> = ({
   if (typeof basketId !== 'string') {
     throw new Error('BasketChip was initialized without a valid basketId')
   }
-  // const basketRegistryOperator = registryOperator()
   const classes = useStyles()
   const theme = useTheme()
-  // const { settings } = useContext(SettingsContext)
 
   // Initialize BasketMap
-  const registrant = new RegistryClient(managers.walletManager) // ?
-  // basketmap.config.confederacyHost = confederacyHost()
+  const registrant = new RegistryClient(managers.permissionsManager)
 
   const [basketName, setBasketName] = useState(basketId)
   const [iconURL, setIconURL] = useState(generateDefaultIcon(basketId))
   const [description, setDescription] = useState('Basket description not found.')
-  const [documentationURL, setDocumentationURL] = useState('https://projectbabbage.com')
+  const [documentationURL, setDocumentationURL] = useState('https://docs.bsvblockchain.org')
 
   useEffect(() => {
     const cacheKey = `basketInfo_${basketId}`
