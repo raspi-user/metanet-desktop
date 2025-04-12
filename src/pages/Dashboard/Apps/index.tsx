@@ -99,18 +99,19 @@ const Apps: React.FC = () => {
     appDomains: string[]
   }): Promise<AppData[]> => {
     const dataPromises = appDomains.map(async domain => {
+      let formattedDomain = domain
       if (domain.startsWith('https://')) {
-        domain = domain.substring(8)
+        formattedDomain = domain.substring(8)
       }
       if (domain.startsWith('http://')) {
-        domain = domain.substring(7)
+        formattedDomain = domain.substring(7)
       }
       let appIconImageUrl: string | undefined
-      let appName: string = domain
+      let appName: string = formattedDomain
 
       try {
-        if (await isImageUrl(`https://${domain}/favicon.ico`)) {
-          appIconImageUrl = `https://${domain}/favicon.ico`
+        if (await isImageUrl(`https://${formattedDomain}/favicon.ico`)) {
+          appIconImageUrl = `https://${formattedDomain}/favicon.ico`
         }
         // Attempt to fetch the manifest
         const manifest = await parseAppManifest({ domain })
