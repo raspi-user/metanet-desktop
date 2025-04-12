@@ -118,7 +118,7 @@ const BasketChip: React.FC<BasketChipProps> = ({
       <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between" sx={{
         height: '3em', width: '100%'
       }}>
-        <Typography variant="body1" fontWeight="bold">Protocol:</Typography>
+        <Typography variant="body1" fontWeight="bold">Basket:</Typography>
         <Chip
           style={(theme as any).templates.chip({ size })}
           sx={{
