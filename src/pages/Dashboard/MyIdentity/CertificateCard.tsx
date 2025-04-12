@@ -47,6 +47,7 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
   const [fields, setFields] = useState<{ [key: string]: CertificateFieldDescriptor }>({})
   const { managers, settings } = useContext(WalletContext)
   const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const registrant = new RegistryClient(managers.walletManager)
 
   // Handle modal actions
   const handleModalOpen = () => {
@@ -72,8 +73,6 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
           setDescription(cachedCert.description)
           setFields(JSON.parse(cachedCert.fields))
         }
-
-        const registrant = new RegistryClient(managers.walletManager)
         const results = (await registrant.resolve('certificate', {
           type: certificate.type,
           registryOperators
