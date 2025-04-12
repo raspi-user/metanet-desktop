@@ -12,25 +12,16 @@ import {
   Button,
   Avatar
 } from '@mui/material'
-// import { SettingsContext } from '../../../context/SettingsContext'
 import { Img } from '@bsv/uhrp-react'
-// import CounterpartyChip from '../../../components/CounterpartyChip'
+import CounterpartyChip from '../../../components/CounterpartyChip'
 import { DEFAULT_APP_ICON } from '../../../constants/popularApps'
 import { useHistory } from 'react-router-dom'
 import { WalletContext } from '../../../WalletContext'
-import { CertificateDefinitionData, CertificateFieldDescriptor, RegistryClient } from '@bsv/sdk'
-
-// Define an interface for the certificate object.
-// Adjust as needed to better reflect your data structure.
-interface Certificate {
-  type: string
-  certifier?: any
-  decryptedFields: { [key: string]: any }
-}
+import { CertificateDefinitionData, CertificateFieldDescriptor, IdentityCertificate, RegistryClient } from '@bsv/sdk'
 
 // Props for the CertificateCard component.
 interface CertificateCardProps {
-  certificate: Certificate
+  certificate: IdentityCertificate
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
   clickable?: boolean
 }
@@ -54,7 +45,6 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
   const [iconURL, setIconURL] = useState<string>(DEFAULT_APP_ICON)
   const [description, setDescription] = useState<string>('')
   const [fields, setFields] = useState<{ [key: string]: CertificateFieldDescriptor }>({})
-  // const { settings } = useContext(SettingsContext)
   const { managers, settings } = useContext(WalletContext)
   const [modalOpen, setModalOpen] = useState<boolean>(false)
 
@@ -88,7 +78,6 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
           type: certificate.type,
           registryOperators
         })) as CertificateDefinitionData[]
-
         if (results && results.length > 0) {
           // Compute the most trusted of the results
           let mostTrustedIndex = 0
@@ -168,7 +157,7 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
                 </p>
               </Grid>
               <Grid item paddingBottom="1em">
-                {/* <CounterpartyChip size={0.89} counterparty={certificate.certifier} clickable /> */}
+                <CounterpartyChip size={0.89} counterparty={certificate.certifier} clickable />
               </Grid>
             </Grid>
           </div>
