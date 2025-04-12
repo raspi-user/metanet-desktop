@@ -14,16 +14,26 @@ export default async function fetchManifest({
 
     // Construct the final URL with the cleaned domain
     const url = `${protocol}://${cleanDomain}/manifest.json`
-    
-    // const response = await fetch(url, { method: 'GET' })
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`)
-    // }
-
-    return {} //await response.json()
+    return new Promise(async r => {
+      try {
+        setTimeout(() => {
+          r({})
+        }, 800)
+        const response = await fetch(url)
+        if (!response.ok) {
+          r({})
+          return
+        }
+        const json = await response.json()
+        r(json)
+      } catch (e) {
+        r({})
+        return
+      }
+    })
   } catch (error) {
     // console.error(error)
     // Ignore the error as it's not our problem
-    return undefined
+    return {}
   }
 }
