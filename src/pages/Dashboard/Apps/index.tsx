@@ -231,9 +231,15 @@ const Apps: React.FC = () => {
       </Typography>
 
       <Container>
-        <Grid2 container spacing={3}>
+        <Grid2
+          container
+          spacing={3}
+          alignItems='center'
+          justifyContent='left'
+          className={classes.apps_view}
+        >
           {filteredApps.map((app) => (
-            <Grid2 key={app.domain} sx={{ xs: 6, sm: 6, md: 3, lg: 2 }} className={classes.gridItem}>
+            <Grid2 key={app.domain} size={{ xs: 6, sm: 6, md: 3, lg: 2 }} className={classes.gridItem}>
               <MetanetApp
                 appName={app.appName}
                 domain={app.domain}
