@@ -75,7 +75,7 @@ const AccessAtAGlance: React.FC<AccessAtAGlanceProps> = ({ originator, loading, 
             {recentBasketAccess.map((basket, itemIndex) => (
               <div key={itemIndex}>
                 {basket && (
-                  <BasketChip history={history} basketId={basket} clickable />
+                  <BasketChip basketId={basket} clickable />
                 )}
               </div>
             ))}
@@ -94,9 +94,11 @@ const AccessAtAGlance: React.FC<AccessAtAGlanceProps> = ({ originator, loading, 
       <Box sx={{ bgcolor: 'background.paper', borderRadius: '0.25em', minHeight: '13em' }}>
         <CertificateAccessList
           app={originator}
+          itemsDisplayed="certificates"
+          counterparty=""
+          type="certificate"
           limit={1}
           canRevoke={false}
-          clickable
           displayCount={false}
           listHeaderTitle="Most Recent Certificate"
           onEmptyList={() => setCertificateIsEmpty(true)}
@@ -117,10 +119,11 @@ const AccessAtAGlance: React.FC<AccessAtAGlanceProps> = ({ originator, loading, 
               state: {}
             })
           }}
-          // Optionally, check if the current pathname matches.
-          selected={history.location.pathname === `/dashboard/manage-app/${encodeURIComponent(originator)}`}
+          sx={{
+            backgroundColor: history.location.pathname === `/dashboard/manage-app/${encodeURIComponent(originator)}` ? 'action.selected' : 'inherit'
+          }}
         >
-          View App Access
+          Manage App
         </Button>
       </center>
     </div>

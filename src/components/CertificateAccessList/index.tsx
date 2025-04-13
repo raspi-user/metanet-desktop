@@ -7,22 +7,22 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Button,
   Typography,
-  Grid,
-  ListSubheader,
-  IconButton
+  Button,
+  IconButton,
+  Paper,
+  ListSubheader
 } from '@mui/material'
 import makeStyles from '@mui/styles/makeStyles'
 import style from './style'
-import { formatDistance } from 'date-fns/formatDistance'
-import { toast } from 'react-toastify'
-import CounterpartyChip from '../CounterpartyChip'
-import CertificateChip from '../CertificateChip'
-import sortPermissions from './sortPermissions'
-import AppChip from '../AppChip'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { formatDistance } from 'date-fns'
 import CloseIcon from '@mui/icons-material/Close'
-import { useHistory } from 'react-router-dom'
+import { WalletContext } from '../../WalletContext'
+import CertificateChip from '../CertificateChip'
+import AppChip from '../AppChip'
+import sortPermissions from './sortPermissions'
+import { toast } from 'react-toastify'
 
 // Define interfaces for individual permission and app grant items.
 interface Permission {
@@ -36,7 +36,6 @@ interface Permission {
   onClick?: (event: React.MouseEvent) => void
   fields: { [key: string]: any }
   clickable: boolean
-  // This property is used when revoking a certificate in the apps view.
   permissionGrant?: any
 }
 
@@ -49,7 +48,7 @@ interface AppGrant {
 type GrantItem = AppGrant | Permission
 
 // Props for the CertificateAccessList component.
-interface CertificateAccessListProps {
+interface CertificateAccessListProps extends RouteComponentProps {
   app: string
   itemsDisplayed: string
   counterparty: string
@@ -68,15 +67,16 @@ const useStyles = makeStyles(style, {
 
 const CertificateAccessList: React.FC<CertificateAccessListProps> = ({
   app,
-  itemsDisplayed,
-  counterparty,
-  type,
+  itemsDisplayed = 'certificates',
+  counterparty = '',
+  type = 'certificate',
   limit,
   displayCount = true,
   listHeaderTitle,
   showEmptyList = false,
   canRevoke = false,
-  onEmptyList = () => { }
+  onEmptyList = () => { },
+  history
 }) => {
   const [grants, setGrants] = useState<GrantItem[]>([])
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
@@ -84,7 +84,6 @@ const CertificateAccessList: React.FC<CertificateAccessListProps> = ({
   const [currentApp, setCurrentApp] = useState<AppGrant | null>(null)
   const [dialogLoading, setDialogLoading] = useState<boolean>(false)
   const classes = useStyles()
-  const history = useHistory()
 
   const refreshGrants = useCallback(async () => {
     try {
@@ -237,59 +236,61 @@ const CertificateAccessList: React.FC<CertificateAccessListProps> = ({
                     </>
                   )}
                 </div>
-                <ListItem elevation={4}>
-                  <div className={classes.counterpartyContainer}>
-                    {(grant as AppGrant).permissions.map((permission, idx) => (
-                      <div className={classes.gridItem} key={idx}>
-                        <CertificateChip
-                          certType={permission.type}
-                          lastAccessed={permission.lastAccessed}
-                          issuer={permission.issuer}
-                          onIssuerClick={permission.onIssuerClick}
-                          verifier={permission.verifier}
-                          onVerifierClick={permission.onVerifierClick}
-                          onClick={permission.onClick}
-                          fieldsToDisplay={permission.fields}
-                          history={history}
-                          clickable={permission.clickable}
-                          size={1.3}
-                          expires={formatDistance(new Date(permission.expiry * 1000), new Date(), {
-                            addSuffix: true
-                          })}
-                          onCloseClick={() => revokeAccess(permission)}
-                          canRevoke={canRevoke}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </ListItem>
+                <Paper elevation={4}>
+                  <ListItem>
+                    <div className={classes.counterpartyContainer}>
+                      {(grant as AppGrant).permissions.map((permission, idx) => (
+                        <div className={classes.gridItem} key={idx}>
+                          <CertificateChip
+                            certType={permission.type}
+                            lastAccessed={String(permission.lastAccessed)}
+                            certifier={permission.issuer}
+                            onIssuerClick={permission.onIssuerClick}
+                            serialNumber={permission.verifier}
+                            onVerifierClick={permission.onVerifierClick}
+                            onClick={permission.onClick}
+                            fieldsToDisplay={Object.keys(permission.fields)}
+                            clickable={permission.clickable}
+                            size={1.3}
+                            expires={formatDistance(new Date(permission.expiry * 1000), new Date(), {
+                              addSuffix: true
+                            })}
+                            onCloseClick={() => revokeAccess(permission)}
+                            canRevoke={canRevoke}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </ListItem>
+                </Paper>
               </div>
             ) : (
-              <ListItem className={classes.action_card} elevation={4}>
-                {/*
-                  When itemsDisplayed is not 'apps', we assume each grant is a Permission.
-                */}
-                <CertificateChip
-                  certType={(grant as Permission).type}
-                  lastAccessed={(grant as Permission).lastAccessed}
-                  issuer={(grant as Permission).issuer}
-                  onIssuerClick={(grant as Permission).onIssuerClick}
-                  verifier={(grant as Permission).verifier}
-                  onVerifierClick={(grant as Permission).onVerifierClick}
-                  onClick={(grant as Permission).onClick}
-                  fieldsToDisplay={(grant as Permission).fields}
-                  history={history}
-                  clickable={(grant as Permission).clickable}
-                  size={1.3}
-                  expires={formatDistance(
-                    new Date((grant as Permission).expiry * 1000),
-                    new Date(),
-                    { addSuffix: true }
-                  )}
-                  onCloseClick={() => revokeAccess(grant as Permission)}
-                  canRevoke={canRevoke}
-                />
-              </ListItem>
+              <Paper elevation={4}>
+                <ListItem className={classes.action_card}>
+                  {/*
+                    When itemsDisplayed is not 'apps', we assume each grant is a Permission.
+                  */}
+                  <CertificateChip
+                    certType={(grant as Permission).type}
+                    lastAccessed={String((grant as Permission).lastAccessed)}
+                    certifier={(grant as Permission).issuer}
+                    onIssuerClick={(grant as Permission).onIssuerClick}
+                    serialNumber={(grant as Permission).verifier}
+                    onVerifierClick={(grant as Permission).onVerifierClick}
+                    onClick={(grant as Permission).onClick}
+                    fieldsToDisplay={Object.keys((grant as Permission).fields)}
+                    clickable={(grant as Permission).clickable}
+                    size={1.3}
+                    expires={formatDistance(
+                      new Date((grant as Permission).expiry * 1000),
+                      new Date(),
+                      { addSuffix: true }
+                    )}
+                    onCloseClick={() => revokeAccess(grant as Permission)}
+                    canRevoke={canRevoke}
+                  />
+                </ListItem>
+              </Paper>
             )}
           </React.Fragment>
         ))}
@@ -306,4 +307,4 @@ const CertificateAccessList: React.FC<CertificateAccessListProps> = ({
   )
 }
 
-export default CertificateAccessList
+export default withRouter(CertificateAccessList)
