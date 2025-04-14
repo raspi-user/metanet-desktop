@@ -178,7 +178,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             // Create the menu items for the tray menu with more intuitive labels
-            let show_item = MenuItem::with_id(app, "toggle_visibility", "Open App", true, None::<&str>)?;
+            let show_item = MenuItem::with_id(app, "toggle_visibility", "Show / Hide App", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             
             // Build a menu with our items
