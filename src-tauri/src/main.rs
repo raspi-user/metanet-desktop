@@ -25,6 +25,8 @@ use tokio::sync::oneshot;
 
 use std::path::{Path, PathBuf};
 use tauri::{command, AppHandle, Manager};
+use tauri::menu::{MenuBuilder, MenuItem};
+use tauri::tray::TrayIconBuilder;
 
 use std::fs;
 
@@ -67,15 +69,15 @@ fn is_focused(window: Window) -> bool {
 fn request_focus(window: Window) {
     #[cfg(target_os = "macos")]
     {
-        // 1. "Unminimize" if necessary.
-        if let Err(e) = window.unminimize() {
-            eprintln!("(macOS) unminimize error: {}", e);
+        // Show the window if it's hidden
+        if let Err(e) = window.show() {
+            eprintln!("(macOS) show error: {}", e);
         }
-        // 2. Request user attention (bounces Dock icon).
+        // Request user attention (bounces Dock icon)
         if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Critical)) {
             eprintln!("(macOS) request_user_attention error: {}", e);
         }
-        // 3. Attempt to focus the window.
+        // Attempt to focus the window
         if let Err(e) = window.set_focus() {
             eprintln!("(macOS) set_focus error: {}", e);
         }
@@ -83,7 +85,11 @@ fn request_focus(window: Window) {
 
     #[cfg(target_os = "windows")]
     {
-        // 1. Attempt to focus the window directly.
+        // Show the window if it's hidden
+        if let Err(e) = window.show() {
+            eprintln!("(Windows) show error: {}", e);
+        }
+        // Attempt to focus the window directly
         if let Err(e) = window.set_focus() {
             eprintln!("(Windows) set_focus error: {}", e);
         }
@@ -91,42 +97,42 @@ fn request_focus(window: Window) {
 
     #[cfg(target_os = "linux")]
     {
-        // 1. Attempt to focus.
+        // Show the window if it's hidden
+        if let Err(e) = window.show() {
+            eprintln!("(Linux) show error: {}", e);
+        }
+        // Attempt to focus
         if let Err(e) = window.set_focus() {
             eprintln!("(Linux) set_focus error: {}", e);
-        }
-        // 2. Possibly unminimize as fallback.
-        if let Err(e) = window.unminimize() {
-            eprintln!("(Linux) unminimize error: {}", e);
         }
     }
 }
 
 /// Attempt to move the window out of the user's way so they can resume
-/// other tasks. The exact behavior (minimize/hide) differs per platform.
+/// other tasks. The exact behavior (hide/minimize) differs per platform.
 #[tauri::command]
 fn relinquish_focus(window: Window) {
     #[cfg(target_os = "macos")]
     {
-        // Hide (removes from screen, user’s focus returns to previous app).
-        if let Err(e) = window.minimize() {
+        // Hide (removes from screen, user's focus returns to previous app)
+        if let Err(e) = window.hide() {
             eprintln!("(macOS) hide error: {}", e);
         }
     }
 
     #[cfg(target_os = "windows")]
     {
-        // Minimizing is the typical approach on Windows.
-        if let Err(e) = window.minimize() {
-            eprintln!("(Windows) minimize error: {}", e);
+        // Hide the window to be consistent with macOS behavior
+        if let Err(e) = window.hide() {
+            eprintln!("(Windows) hide error: {}", e);
         }
     }
 
     #[cfg(target_os = "linux")]
     {
-        // Minimizing is also typical on Linux WMs.
-        if let Err(e) = window.minimize() {
-            eprintln!("(Linux) minimize error: {}", e);
+        // Hide the window to be consistent with macOS behavior
+        if let Err(e) = window.hide() {
+            eprintln!("(Linux) hide error: {}", e);
         }
     }
 }
@@ -171,9 +177,66 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
+            // Create the menu items for the tray menu with more intuitive labels
+            let show_item = MenuItem::with_id(app, "toggle_visibility", "Open App", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            
+            // Build a menu with our items
+            let menu_builder = MenuBuilder::new(app)
+                .item(&show_item)
+                .separator()
+                .item(&quit_item);
+                
+            let tray_menu = menu_builder.build()?;
+            
+            // Build the tray icon - use the default icon from the app bundle
+            // The icon will be automatically loaded from the app's resources
+            let _tray = TrayIconBuilder::new()
+                .menu(&tray_menu)
+                .tooltip("Metanet Desktop")
+                .icon(tauri::image::Image::from_path("icons/icon.png")?)
+                .show_menu_on_left_click(true)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "toggle_visibility" => {
+                        if let Some(window) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                            if window.is_visible().unwrap_or(false) {
+                                let _ = window.hide();
+                            } else {
+                                // Position will be set by the window event handler
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {
+                        println!("Menu item {:?} not handled", event.id);
+                    }
+                })
+                .build(app)?;
+
             // Retrieve the main window (we only want to communicate with this window).
             let main_window = app.get_webview_window(MAIN_WINDOW_NAME)
                 .expect("Main window not found");
+
+            // Clone main_window for use in the closure to avoid lifetime issues
+            let main_window_clone = main_window.clone();
+
+            // Prevent app from exiting when window is closed (Cmd + Q)
+            main_window.on_window_event(move |event| {
+                match event {
+                    tauri::WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        let _ = main_window_clone.hide();
+                    }
+                    _ => {}
+                }
+            });
+
+            // Note: On macOS, Cmd + Q behavior is influenced by the system tray.
+            // The app should remain in the tray unless explicitly quit via the tray menu's 'Quit' option.
 
             // Shared, concurrent map to store pending responses.
             let pending_requests: Arc<PendingMap> = Arc::new(DashMap::new());
@@ -357,18 +420,14 @@ fn main() {
                             }
                         }
                         Err(e) => {
-                            // TODO: Someone who knows Rust, please show an error dialogue to the user befor exit!
-                            // Show error dialog and exit
+                            // TODO: Someone who knows Rust, please show an error dialogue to the user before exit!
+                            eprintln!("Failed to bind server: {}", e);
+                            // Commented out dialog code that needs review
                             // let builder = tauri_plugin_dialog::MessageDialogBuilder(
                             //     Some(&main_window_clone),
                             //     "Error",
                             //     e.to_string(),
                             // );
-                            // std::println!(e.to_string());
-                            std::process::exit(1);
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to bind server: {}", e);
                             std::process::exit(1);
                         }
                     }
@@ -376,21 +435,60 @@ fn main() {
             });
 
             #[cfg(target_os = "macos")]
-                       {
-                           let app_handle = app.handle().clone();
-                           app.listen_any("tauri://reopen", move |_event| {
-                               if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_NAME) {
-                                   // Show the hidden window again
-                                   if let Err(e) = window.show() {
-                                       eprintln!("(macOS) show error: {}", e);
-                                   }
-                                   // Optionally, also focus it:
-                                   if let Err(e) = window.set_focus() {
-                                       eprintln!("(macOS) set_focus error: {}", e);
-                                   }
-                               }
-                           });
-                       }
+            {
+                // Set the app to be a menu bar application (no dock icon)
+                use tauri::ActivationPolicy;
+                app.set_activation_policy(ActivationPolicy::Accessory);
+                
+                // Since we're in accessory mode, we don't need to handle dock clicks,
+                // but we'll keep this code to handle any "reopen" events that might occur
+                let app_handle = app.handle().clone();
+                app.listen_any("tauri://reopen", move |_event| {
+                    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_NAME) {
+                        // Show the hidden window again
+                        if let Err(e) = window.show() {
+                            eprintln!("(macOS) show error: {}", e);
+                        }
+                        // Also focus it
+                        if let Err(e) = window.set_focus() {
+                            eprintln!("(macOS) set_focus error: {}", e);
+                        }
+                    }
+                });
+                
+                // Handle system tray events
+                // Handle system tray position events to position the window under the tray icon
+                let app_handle = app.handle().clone();
+                app.listen_any("tauri://system-tray-event", move |event| {
+                    // Print the event type safely
+                    println!("System tray event received");
+                    // Use debug formatting for the payload which works with more types
+                    println!("Payload: {:#?}", event.payload());
+                });
+                
+                // Position the window beneath the system tray icon when shown
+                if let Some(window) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                    // Clone for use in the closure
+                    let window_clone = window.clone();
+                    
+                    // Listen for window events
+                    window.on_window_event(move |event| {
+                        // Check if the window is being focused (shown)
+                        if let tauri::WindowEvent::Focused(focused) = event {
+                            if *focused {
+                                // Use hardcoded positioning since we can't get the tray position directly
+                                let screen_width = 1440.0;  // Default screen width
+                                let x = screen_width - 500.0; // Position near right edge
+                                let y = 25.0; // Just below menu bar
+                                
+                                let position = tauri::LogicalPosition { x, y };
+                                let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                let _ = window_clone.set_always_on_top(true);
+                            }
+                        }
+                    });
+                }
+            }
 
             Ok(())
         })
