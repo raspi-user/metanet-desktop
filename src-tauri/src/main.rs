@@ -20,7 +20,7 @@ use hyper::{
     Body, Request, Response, Server, StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{Emitter, Listener, Window};
+use tauri::{Emitter, Listener, UserAttentionType, Window};
 use tokio::sync::oneshot;
 
 use std::path::{Path, PathBuf};
@@ -72,10 +72,17 @@ struct TsResponse {
 /// A type alias for our concurrent map of pending responses.
 type PendingMap = DashMap<u64, oneshot::Sender<TsResponse>>;
 
-
+#[cfg(target_os = "macos")]
+use once_cell::sync::Lazy;
 /// -----
 /// Tauri COMMANDS for focus management
 /// -----
+
+#[cfg(target_os = "macos")]
+use std::sync::Mutex;
+
+#[cfg(target_os = "macos")]
+static PREV_BUNDLE_ID: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(Some("".to_string())));
 
 #[tauri::command]
 fn is_focused(window: Window) -> bool {
@@ -93,6 +100,22 @@ fn request_focus(window: Window) {
     #[cfg(target_os = "macos")]
     {
         // Make window visible first - critical for macOS
+        use std::process::Command;
+        // 0. Capture the bundle id of the currently focused app
+        if let Ok(output) = Command::new("osascript")
+            .arg("-e")
+            .arg("tell application \"System Events\" to get the bundle identifier of the first process whose frontmost is true")
+            .output()
+        {
+            if output.status.success() {
+                if let Ok(bundle_id) = String::from_utf8(output.stdout) {
+                    let bundle_id = bundle_id.trim().to_string();
+                    let mut prev = PREV_BUNDLE_ID.lock().unwrap();
+                    *prev = Some(bundle_id);
+                }
+            }
+        }
+        // 1. "Unminimize" if necessary.
         if let Err(e) = window.unminimize() {
             eprintln!("(macOS) unminimize error: {}", e);
         }
@@ -187,12 +210,23 @@ static mut WINDOW_HIDDEN_BY_APP: bool = false;
 fn relinquish_focus(window: Window) {
     #[cfg(target_os = "macos")]
     {
-        // Mark that we're hiding the window intentionally
-        unsafe { WINDOW_HIDDEN_BY_APP = true; }
-        
-        // Use hide for better UX on macOS
-        if let Err(e) = window.hide() {
+        use std::process::Command;
+        // Hide (removes from screen, user’s focus returns to previous app).
+        if let Err(e) = window.minimize() {
             eprintln!("(macOS) hide error: {}", e);
+        }
+        // Try to restore focus to previous app
+        let prev_bundle_id = {
+            let prev = PREV_BUNDLE_ID.lock().unwrap();
+            prev.clone()
+        };
+        if let Some(bundle_id) = prev_bundle_id {
+            if !bundle_id.is_empty() && bundle_id != "com.apple.finder" && bundle_id != "" {
+                let script = format!("tell application id \"{}\" to activate", bundle_id);
+                if let Err(e) = Command::new("osascript").arg("-e").arg(&script).output() {
+                    eprintln!("(macOS) failed to re-activate previous app: {}", e);
+                }
+            }
         }
     }
 
@@ -438,18 +472,8 @@ fn main() {
                             }
                         }
                         Err(e) => {
-                            // TODO: Someone who knows Rust, please show an error dialogue to the user befor exit!
-                            // Show error dialog and exit
-                            // let builder = tauri_plugin_dialog::MessageDialogBuilder(
-                            //     Some(&main_window_clone),
-                            //     "Error",
-                            //     e.to_string(),
-                            // );
-                            // std::println!(e.to_string());
-                            std::process::exit(1);
-                        }
-                        Err(e) => {
                             eprintln!("Failed to bind server: {}", e);
+                            // TODO: Show error dialog to the user before exit
                             std::process::exit(1);
                         }
                     }
@@ -503,4 +527,4 @@ fn main() {
                 _ => {}
             }
         });
-}
+    }
