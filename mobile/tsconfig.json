@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "paths": {
+      "@/constants/*": ["src/constants/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "shared/*": ["../shared/components/*"],
+      "shared/contexts/*": ["../shared/contexts/*"],
+      "shared/components/*": ["../shared/components/*"],
+      "shared/pages/*": ["../shared/pages/*"]
+    },
+    "types": ["react-native", "jest", "expo", "@expo/vector-icons"],
+    "lib": ["es6", "dom"],
+    "target": "esnext",
+    "module": "esnext",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "types/**/*"]
+}
