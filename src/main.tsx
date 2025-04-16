@@ -1,70 +1,64 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { WalletContextProvider } from './WalletContext'
-import { UserContextProvider } from './UserContext'
-import { HashRouter as Router, Route, Switch } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { BreakpointProvider } from './utils/useBreakpoints'
-import { ExchangeRateContextProvider } from './components/AmountDisplay/ExchangeRateContextProvider'
-import { AppThemeProvider } from './components/Theme'
+import { UserInterface } from '@bsv/brc100-ui-react-components'
+import { onWalletReady } from './onWalletReady'
+import ErrorBoundary from './ErrorBoundary'
+import ThemeWrapper from './ThemeWrapper'
+import { tauriFunctions } from './tauriFunctions'
 
-import Greeter from './pages/Greeter'
-import Dashboard from './pages/Dashboard'
-import LostPhone from './pages/Recovery/LostPhone'
-import LostPassword from './pages/Recovery/LostPassword'
-import Recovery from './pages/Recovery'
-import BasketAccessHandler from './components/BasketAccessHandler'
-import CertificateAccessHandler from './components/CertificateAccessHandler'
-import ProtocolPermissionHandler from './components/ProtocolPermissionHandler'
-import PasswordHandler from './components/PasswordHandler'
-import RecoveryKeyHandler from './components/RecoveryKeyHandler'
-import SpendingAuthorizationHandler from './components/SpendingAuthorizationHandler'
-import AuthRedirector from './navigation/AuthRedirector'
-import ThemedToastContainer from './components/ThemedToastContainer'
-
-// Define queries for responsive design
-const queries = {
-    xs: '(max-width: 500px)',
-    sm: '(max-width: 720px)',
-    md: '(max-width: 1024px)',
-    or: '(orientation: portrait)'
+// Create a simple UI component as fallback
+const SimplePlaceholderUI = () => {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      padding: '2rem',
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden'
+    }}>
+      <h1>Metanet Desktop</h1>
+      <p>UI component integration in progress...</p>
+    </div>
+  )
 }
 
-// 2. Create the root and render:
+// Create the root and render:
 const rootElement = document.getElementById('root')
 if (rootElement) {
   const root = createRoot(rootElement)
 
   root.render(
     <React.StrictMode>
-      <UserContextProvider>
-        <WalletContextProvider>
-          <ExchangeRateContextProvider>
-            <Router>
-              <AuthRedirector />
-              <BreakpointProvider queries={queries}>
-                <AppThemeProvider>
-                  <PasswordHandler />
-                  <RecoveryKeyHandler />
-                  <BasketAccessHandler />
-                  <CertificateAccessHandler />
-                  <ProtocolPermissionHandler />
-                  <SpendingAuthorizationHandler />
-                  <ThemedToastContainer />
-                  <Switch>
-                    <Route exact path='/' component={Greeter} />
-                    <Route path='/dashboard' component={Dashboard} />
-                    <Route exact path='/recovery/lost-phone' component={LostPhone} />
-                    <Route exact path='/recovery/lost-password' component={LostPassword} />
-                    <Route exact path='/recovery' component={Recovery} />
-                  </Switch>
-                </AppThemeProvider>
-              </BreakpointProvider>
-          </Router>
-          </ExchangeRateContextProvider>
-      </WalletContextProvider>
-      </UserContextProvider>
+      <ErrorBoundary>
+        {/* <ThemeWrapper> */}
+        {/* Attempt to use the main UI component */}
+        <UserInterface 
+          onWalletReady={onWalletReady}
+          tauriFunctions={tauriFunctions}
+        />
+
+        {/* Uncomment this and comment out the line above if there are issues */}
+        {/* <SimplePlaceholderUI /> */}
+        {/* </ThemeWrapper> */}
+      </ErrorBoundary>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </React.StrictMode>
   )
 }

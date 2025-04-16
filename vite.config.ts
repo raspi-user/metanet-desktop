@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   plugins: [
     react({
       // Ensure that all .jsx, .tsx, .js, and .ts files are included.
@@ -35,6 +35,31 @@ export default defineConfig(async () => ({
   },
   resolve: {
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"],
-    preserveSymlinks: true
+    preserveSymlinks: true,
   },
-}));
+  optimizeDeps: {
+    exclude: [
+      '@mui/material/Grid2',
+      './walletBridgeAsyncListen',
+      './Apps/index.jsx',
+      './App/Index.jsx',
+      '../components/Profile.jsx',
+      '../../../images/darkMode.jsx',
+      '../../../images/lightMode.jsx',
+      './CustomDialog/index.jsx'
+    ]
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        '@mui/material/Grid2',
+        './Apps/index.jsx',
+        './App/Index.jsx',
+        '../components/Profile.jsx',
+        '../../../images/darkMode.jsx',
+        '../../../images/lightMode.jsx',
+        './CustomDialog/index.jsx'
+      ]
+    }
+  },
+});
