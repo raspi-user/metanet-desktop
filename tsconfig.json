@@ -24,7 +24,7 @@
   },
   "include": [
     "src"
-  ],
+, "shared/components/PhoneEntry.tsx"  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
