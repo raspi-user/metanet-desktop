@@ -20,7 +20,7 @@ import {
 import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../WalletContext'
-import PhoneEntry from '../../components/PhoneEntry'
+import PhoneEntry from '../../../shared/components/PhoneEntry.js'
 import { Utils } from '@bsv/sdk'
 
 const useStyles = makeStyles(style as any, { name: 'RecoveryLostPhoneNumber' })
@@ -48,7 +48,9 @@ const RecoveryLostPhone: React.FC<any> = ({ history }) => {
     e.preventDefault()
     try {
       setLoading(true)
-      await managers.walletManager!.provideRecoveryKey(Utils.toArray(recoveryKey, 'base64'))
+      await managers.walletManager!.provideRecoveryKey(
+        Utils.toArray(recoveryKey, 'base64')
+      )
       setAccordianView('password')
     } catch (e) {
       console.error(e)
@@ -95,10 +97,11 @@ const RecoveryLostPhone: React.FC<any> = ({ history }) => {
     return (
       <div>
         <Typography paragraph>
-          You are currently logged in. You must log out in order to reset your password.
+          You are currently logged in. You must log out in order to reset your
+          password.
         </Typography>
         <Button
-          color='secondary'
+          color="secondary"
           onClick={async () => {
             if (!window.confirm('Log out?')) return
             await managers.walletManager!.destroy()
@@ -107,10 +110,7 @@ const RecoveryLostPhone: React.FC<any> = ({ history }) => {
         >
           Log Out
         </Button>
-        <Button
-          onClick={() => history.go(-1)}
-          className={classes.back_button}
-        >
+        <Button onClick={() => history.go(-1)} className={classes.back_button}>
           Go Back
         </Button>
       </div>
@@ -119,136 +119,88 @@ const RecoveryLostPhone: React.FC<any> = ({ history }) => {
 
   return (
     <div className={classes.content_wrap}>
-      <Typography variant='h2' paragraph fontFamily='Helvetica' fontSize='2em'>
+      <Typography variant="h2" paragraph fontFamily="Helvetica" fontSize="2em">
         Reset Phone Number
       </Typography>
-      <Accordion
-        expanded={accordianView === 'recovery-key'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'recovery-key'}>
+        <AccordionSummary className={classes.panel_header}>
           <KeyIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
+          <Typography className={classes.panel_heading}>
             Recovery Key
           </Typography>
-          {(accordianView === 'password') && (
+          {accordianView === 'password' && (
             <CheckCircleIcon className={classes.complete_icon} />
           )}
         </AccordionSummary>
         <form onSubmit={handleSubmitRecoveryKey}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
+          <AccordionDetails className={classes.expansion_body}>
             <TextField
               onChange={e => setRecoveryKey(e.target.value)}
-              label='Recovery Key'
+              label="Recovery Key"
               fullWidth
             />
           </AccordionDetails>
           <AccordionActions>
-            <Button
-              variant='contained'
-              color='primary'
-              type='submit'
-            >
+            <Button variant="contained" color="primary" type="submit">
               Next
             </Button>
           </AccordionActions>
         </form>
       </Accordion>
-      <Accordion
-        expanded={accordianView === 'password'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'password'}>
+        <AccordionSummary className={classes.panel_header}>
           <LockIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
-            Password
-          </Typography>
+          <Typography className={classes.panel_heading}>Password</Typography>
         </AccordionSummary>
         <form onSubmit={handleSubmitPassword}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
+          <AccordionDetails className={classes.expansion_body}>
             <TextField
               onChange={e => setPassword(e.target.value)}
-              label='Password'
+              label="Password"
               fullWidth
-              type='password'
+              type="password"
             />
           </AccordionDetails>
           <AccordionActions>
-            {loading
-              ? <CircularProgress />
-              : (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
-                >
-                  Continue
-                </Button>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Button variant="contained" color="primary" type="submit">
+                Continue
+              </Button>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
-      <Accordion
-        expanded={accordianView === 'new-phone'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'new-phone'}>
+        <AccordionSummary className={classes.panel_header}>
           <PhoneIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
-            New Phone
-          </Typography>
+          <Typography className={classes.panel_heading}>New Phone</Typography>
         </AccordionSummary>
         <form onSubmit={handleSubmitNewPhone}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
-            <PhoneEntry
-              value={newPhone}
-              onChange={setNewPhone}
-            />
+          <AccordionDetails className={classes.expansion_body}>
+            <PhoneEntry value={newPhone} onChange={setNewPhone} />
           </AccordionDetails>
           <AccordionActions>
-            {loading
-              ? <CircularProgress />
-              : (
-                <div>
-                  <Button
-                    onClick={() => history.push('/dashboard/apps')}
-                  >
-                    Skip Updating Phone
-                  </Button>
-                  <Button
-                    variant='contained'
-                    color='primary'
-                    type='submit'
-                  >
-                    Finish
-                  </Button>
-                </div>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <div>
+                <Button onClick={() => history.push('/dashboard/apps')}>
+                  Skip Updating Phone
+                </Button>
+                <Button variant="contained" color="primary" type="submit">
+                  Finish
+                </Button>
+              </div>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
-      <Button
-        onClick={() => history.go(-1)}
-        className={classes.back_button}
-      >
+      <Button onClick={() => history.go(-1)} className={classes.back_button}>
         Go Back
       </Button>
-    </div >
+    </div>
   )
 }
 

@@ -24,9 +24,9 @@ import {
   Restore as RestoreIcon,
   Visibility,
   VisibilityOff,
-  CheckCircle as CheckCircleIcon,
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material'
-import PhoneEntry from '../../components/PhoneEntry.js'
+import PhoneEntry from '../../../shared/components/PhoneEntry.js'
 import AppLogo from '../../components/AppLogo'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../WalletContext'
@@ -38,33 +38,39 @@ import WalletConfig from '../../components/WalletConfig.js'
 
 // Helper functions for the Stepper
 const viewToStepIndex = {
-  'phone': 0,
-  'code': 1,
-  'password': 2
-};
+  phone: 0,
+  code: 1,
+  password: 2
+}
 
 // Steps for the stepper
 const steps = [
   {
     label: 'Phone Number',
     icon: <PhoneIcon />,
-    description: 'Enter your phone number for verification',
+    description: 'Enter your phone number for verification'
   },
   {
     label: 'Verification Code',
     icon: <SMSIcon />,
-    description: 'Enter the code you received via SMS',
+    description: 'Enter the code you received via SMS'
   },
   {
     label: 'Password',
     icon: <LockIcon />,
-    description: 'Enter your password',
-  },
-];
+    description: 'Enter your password'
+  }
+]
 
 // Phone form component to reduce cognitive complexity
-const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneFieldRef }) => {
-  const theme = useTheme();
+const PhoneForm = ({
+  phone,
+  setPhone,
+  loading,
+  handleSubmitPhone,
+  phoneFieldRef
+}) => {
+  const theme = useTheme()
   return (
     <form onSubmit={handleSubmitPhone}>
       <PhoneEntry
@@ -77,11 +83,11 @@ const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneFieldRef 
         }}
       />
       <Button
-        variant='contained'
-        type='submit'
+        variant="contained"
+        type="submit"
         disabled={loading || !phone || phone.length < 10}
         fullWidth
-        sx={{ 
+        sx={{
           mt: 2,
           borderRadius: theme.shape.borderRadius,
           textTransform: 'none',
@@ -91,18 +97,25 @@ const PhoneForm = ({ phone, setPhone, loading, handleSubmitPhone, phoneFieldRef 
         {loading ? <CircularProgress size={24} /> : 'Continue'}
       </Button>
     </form>
-  );
-};
+  )
+}
 
 // Code verification form component
-const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, codeFieldRef }) => {
-  const theme = useTheme();
+const CodeForm = ({
+  code,
+  setCode,
+  loading,
+  handleSubmitCode,
+  handleResendCode,
+  codeFieldRef
+}) => {
+  const theme = useTheme()
   return (
     <>
       <form onSubmit={handleSubmitCode}>
         <TextField
           label="6-digit code"
-          onChange={(e) => setCode(e.target.value)}
+          onChange={e => setCode(e.target.value)}
           variant="outlined"
           fullWidth
           disabled={loading}
@@ -111,21 +124,21 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
               ref: codeFieldRef,
               endAdornment: (
                 <InputAdornment position="end">
-                  {code.length === 6 && <CheckCircleIcon color='success' />}
+                  {code.length === 6 && <CheckCircleIcon color="success" />}
                 </InputAdornment>
-              ),
+              )
             }
           }}
-          sx={{ 
-            mb: 2   
+          sx={{
+            mb: 2
           }}
         />
         <Button
-          variant='contained'
-          type='submit'
+          variant="contained"
+          type="submit"
           disabled={loading || code.length !== 6}
           fullWidth
-          sx={{ 
+          sx={{
             mt: 2,
             borderRadius: theme.shape.borderRadius,
             textTransform: 'none',
@@ -147,17 +160,28 @@ const CodeForm = ({ code, setCode, loading, handleSubmitCode, handleResendCode, 
         </Button>
       </Box>
     </>
-  );
-};
+  )
+}
 
 // Password form component
-const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, loading, handleSubmitPassword, accountStatus, passwordFieldRef }) => {
-  const theme = useTheme();
+const PasswordForm = ({
+  password,
+  setPassword,
+  confirmPassword,
+  setConfirmPassword,
+  showPassword,
+  setShowPassword,
+  loading,
+  handleSubmitPassword,
+  accountStatus,
+  passwordFieldRef
+}) => {
+  const theme = useTheme()
   return (
     <form onSubmit={handleSubmitPassword}>
       <TextField
         label="Password"
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={e => setPassword(e.target.value)}
         type={showPassword ? 'text' : 'password'}
         variant="outlined"
         fullWidth
@@ -175,10 +199,10 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
-            ),
+            )
           }
         }}
-        sx={{ 
+        sx={{
           mb: 2
         }}
       />
@@ -187,7 +211,7 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
         <TextField
           label="Confirm Password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={e => setConfirmPassword(e.target.value)}
           type={showPassword ? 'text' : 'password'}
           variant="outlined"
           fullWidth
@@ -204,19 +228,23 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
-              ),
+              )
             }
           }}
-          sx={{ 
+          sx={{
             mb: 2
           }}
         />
       )}
 
       <Button
-        variant='contained'
-        type='submit'
-        disabled={loading || !password || (accountStatus === 'new-user' && !confirmPassword)}
+        variant="contained"
+        type="submit"
+        disabled={
+          loading ||
+          !password ||
+          (accountStatus === 'new-user' && !confirmPassword)
+        }
         fullWidth
         sx={{
           borderRadius: theme.shape.borderRadius,
@@ -225,11 +253,17 @@ const PasswordForm = ({ password, setPassword, confirmPassword, setConfirmPasswo
           py: 1.2
         }}
       >
-        {loading ? <CircularProgress size={24} /> : (accountStatus === 'new-user' ? 'Create Account' : 'Login')}
+        {loading ? (
+          <CircularProgress size={24} />
+        ) : accountStatus === 'new-user' ? (
+          'Create Account'
+        ) : (
+          'Login'
+        )}
       </Button>
     </form>
-  );
-};
+  )
+}
 
 // Main Greeter component with reduced complexity
 const Greeter: React.FC<any> = ({ history }) => {
@@ -243,7 +277,9 @@ const Greeter: React.FC<any> = ({ history }) => {
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [accountStatus, setAccountStatus] = useState<string | undefined>(undefined)
+  const [accountStatus, setAccountStatus] = useState<string | undefined>(
+    undefined
+  )
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -254,57 +290,63 @@ const Greeter: React.FC<any> = ({ history }) => {
   const walletManager = managers?.walletManager
 
   // Step 1: The user enters a phone number, we call manager.startAuth(...)
-  const handleSubmitPhone = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!walletManager) {
-      toast.error("Wallet Manager not ready yet.")
-      return
-    }
-    try {
-      setLoading(true)
-      await walletManager?.startAuth({ phoneNumber: phone })
-      setStep('code')
-      toast.success('A code has been sent to your phone.')
-      // Move focus to code field
-      if (codeFieldRef.current) {
-        codeFieldRef.current.focus()
+  const handleSubmitPhone = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!walletManager) {
+        toast.error('Wallet Manager not ready yet.')
+        return
       }
-    } catch (err: any) {
-      console.error(err)
-      toast.error(err.message || "Failed to send code")
-    } finally {
-      setLoading(false)
-    }
-  }, [walletManager, phone])
+      try {
+        setLoading(true)
+        await walletManager?.startAuth({ phoneNumber: phone })
+        setStep('code')
+        toast.success('A code has been sent to your phone.')
+        // Move focus to code field
+        if (codeFieldRef.current) {
+          codeFieldRef.current.focus()
+        }
+      } catch (err: any) {
+        console.error(err)
+        toast.error(err.message || 'Failed to send code')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [walletManager, phone]
+  )
 
   // Step 2: The user enters the OTP code, we call manager.completeAuth(...)
-  const handleSubmitCode = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!walletManager) {
-      toast.error("Wallet Manager not ready yet.")
-      return
-    }
-    try {
-      setLoading(true)
-      await walletManager.completeAuth({ phoneNumber: phone, otp: code })
-
-      if (walletManager.authenticationFlow === 'new-user') {
-        setAccountStatus('new-user')
-      } else {
-        setAccountStatus('existing-user')
+  const handleSubmitCode = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!walletManager) {
+        toast.error('Wallet Manager not ready yet.')
+        return
       }
+      try {
+        setLoading(true)
+        await walletManager.completeAuth({ phoneNumber: phone, otp: code })
 
-      setStep('password')
-      if (passwordFieldRef.current) {
-        passwordFieldRef.current.focus()
+        if (walletManager.authenticationFlow === 'new-user') {
+          setAccountStatus('new-user')
+        } else {
+          setAccountStatus('existing-user')
+        }
+
+        setStep('password')
+        if (passwordFieldRef.current) {
+          passwordFieldRef.current.focus()
+        }
+      } catch (err: any) {
+        console.error(err)
+        toast.error(err.message || 'Failed to verify code')
+      } finally {
+        setLoading(false)
       }
-    } catch (err: any) {
-      console.error(err)
-      toast.error(err.message || "Failed to verify code")
-    } finally {
-      setLoading(false)
-    }
-  }, [walletManager, phone, code])
+    },
+    [walletManager, phone, code]
+  )
 
   // Optional "resend code" that just calls startAuth again
   const handleResendCode = useCallback(async () => {
@@ -324,79 +366,94 @@ const Greeter: React.FC<any> = ({ history }) => {
   }, [walletManager, phone])
 
   // Step 3: Provide a password for the final step.
-  const handleSubmitPassword = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!walletManager) {
-      toast.error("Wallet Manager not ready yet.")
-      return
-    }
-
-    // If new-user, confirm password match
-    if (accountStatus === 'new-user' && password !== confirmPassword) {
-      toast.error("Passwords don't match.")
-      return
-    }
-
-    setLoading(true)
-    try {
-      await walletManager.providePassword(password)
-
-      if (walletManager.authenticated) {
-        // Save snapshot to local storage
-        localStorage.snap = Utils.toBase64(walletManager.saveSnapshot())
-        toast.success("Authenticated successfully!")
-        history.push('/dashboard/apps')
-      } else {
-        throw new Error('Authentication failed, maybe password is incorrect?')
+  const handleSubmitPassword = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!walletManager) {
+        toast.error('Wallet Manager not ready yet.')
+        return
       }
-    } catch (err: any) {
-      console.error(err)
-      toast.error(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [walletManager, password, confirmPassword])
+
+      // If new-user, confirm password match
+      if (accountStatus === 'new-user' && password !== confirmPassword) {
+        toast.error("Passwords don't match.")
+        return
+      }
+
+      setLoading(true)
+      try {
+        await walletManager.providePassword(password)
+
+        if (walletManager.authenticated) {
+          // Save snapshot to local storage
+          localStorage.snap = Utils.toBase64(walletManager.saveSnapshot())
+          toast.success('Authenticated successfully!')
+          history.push('/dashboard/apps')
+        } else {
+          throw new Error('Authentication failed, maybe password is incorrect?')
+        }
+      } catch (err: any) {
+        console.error(err)
+        toast.error(err.message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [walletManager, password, confirmPassword]
+  )
 
   if (!pageLoaded) {
     return <PageLoading />
   }
 
   return (
-    <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-      <Paper 
-        elevation={4} 
-        sx={{ 
-          p: 4, 
+    <Container
+      maxWidth="sm"
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          p: 4,
           borderRadius: 2,
           bgcolor: 'background.paper',
           boxShadow: theme.shadows[3]
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 4
+          }}
+        >
           <Box sx={{ mb: 2, width: '100px', height: '100px' }}>
-            <AppLogo
-              rotate
-              size="100px"
-              color="#2196F3"
-            />
+            <AppLogo rotate size="100px" color="#2196F3" />
           </Box>
-          <Typography 
-            variant='h2' 
-            fontFamily='Helvetica' 
-            fontSize='2em'
+          <Typography
+            variant="h2"
+            fontFamily="Helvetica"
+            fontSize="2em"
             sx={{
               mb: 1,
               fontWeight: 'bold',
-              background: theme.palette.mode === 'dark' 
-                ? 'linear-gradient(90deg, #FFFFFF 0%, #F5F5F5 100%)'
-                : 'linear-gradient(90deg, #2196F3 0%, #4569E5 100%)',
+              background:
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(90deg, #FFFFFF 0%, #F5F5F5 100%)'
+                  : 'linear-gradient(90deg, #2196F3 0%, #4569E5 100%)',
               backgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}
           >
             {appName}
           </Typography>
-          <Typography 
+          <Typography
             variant="body1"
             color="text.secondary"
             align="center"
@@ -405,7 +462,7 @@ const Greeter: React.FC<any> = ({ history }) => {
             Secure BSV Blockchain Wallet
           </Typography>
           <Divider sx={{ width: '80%' }} />
-          <Typography 
+          <Typography
             variant="caption"
             color="text.secondary"
             align="center"
@@ -416,71 +473,71 @@ const Greeter: React.FC<any> = ({ history }) => {
         </Box>
 
         <WalletConfig />
-        
+
         {/* Authentication Stepper - replaces Accordions for clearer progression */}
         {configStatus === 'configured' && (
           <Stepper activeStep={viewToStepIndex[step]} orientation="vertical">
-          {steps.map((step, index) => (
-            <Step key={step.label}>
-              <StepLabel 
-                icon={step.icon}
-                optional={
-                  <Typography variant="caption" color="text.secondary">
-                    {step.description}
+            {steps.map((step, index) => (
+              <Step key={step.label}>
+                <StepLabel
+                  icon={step.icon}
+                  optional={
+                    <Typography variant="caption" color="text.secondary">
+                      {step.description}
+                    </Typography>
+                  }
+                >
+                  <Typography variant="body2" fontWeight={500}>
+                    {step.label}
                   </Typography>
-                }
-              >
-                <Typography variant="body2" fontWeight={500}>
-                  {step.label}
-                </Typography>
-              </StepLabel>
-              <StepContent>
-                {index === 0 && (
-                  <PhoneForm 
-                    phone={phone}
-                    setPhone={setPhone}
-                    loading={loading}
-                    handleSubmitPhone={handleSubmitPhone}
-                    phoneFieldRef={phoneFieldRef}
-                  />
-                )}
-                
-                {index === 1 && (
-                  <CodeForm
-                    code={code}
-                    setCode={setCode}
-                    loading={loading}
-                    handleSubmitCode={handleSubmitCode}
-                    handleResendCode={handleResendCode}
-                    codeFieldRef={codeFieldRef}
-                  />
-                )}
-                
-                {index === 2 && (
-                  <PasswordForm 
-                    password={password}
-                    setPassword={setPassword}
-                    confirmPassword={confirmPassword}
-                    setConfirmPassword={setConfirmPassword}
-                    showPassword={showPassword}
-                    setShowPassword={setShowPassword}
-                    loading={loading}
-                    handleSubmitPassword={handleSubmitPassword}
-                    accountStatus={accountStatus}
-                    passwordFieldRef={passwordFieldRef}
-                  />
-                )}
-              </StepContent>
-            </Step>
-          ))}
+                </StepLabel>
+                <StepContent>
+                  {index === 0 && (
+                    <PhoneForm
+                      phone={phone}
+                      setPhone={setPhone}
+                      loading={loading}
+                      handleSubmitPhone={handleSubmitPhone}
+                      phoneFieldRef={phoneFieldRef}
+                    />
+                  )}
+
+                  {index === 1 && (
+                    <CodeForm
+                      code={code}
+                      setCode={setCode}
+                      loading={loading}
+                      handleSubmitCode={handleSubmitCode}
+                      handleResendCode={handleResendCode}
+                      codeFieldRef={codeFieldRef}
+                    />
+                  )}
+
+                  {index === 2 && (
+                    <PasswordForm
+                      password={password}
+                      setPassword={setPassword}
+                      confirmPassword={confirmPassword}
+                      setConfirmPassword={setConfirmPassword}
+                      showPassword={showPassword}
+                      setShowPassword={setShowPassword}
+                      loading={loading}
+                      handleSubmitPassword={handleSubmitPassword}
+                      accountStatus={accountStatus}
+                      passwordFieldRef={passwordFieldRef}
+                    />
+                  )}
+                </StepContent>
+              </Step>
+            ))}
           </Stepper>
         )}
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
-          <RouterLink to='/recovery' style={{ textDecoration: 'none' }}>
-            <Button 
-              variant="text" 
-              color='secondary'
+          <RouterLink to="/recovery" style={{ textDecoration: 'none' }}>
+            <Button
+              variant="text"
+              color="secondary"
               size="small"
               startIcon={<RestoreIcon />}
             >
@@ -490,10 +547,10 @@ const Greeter: React.FC<any> = ({ history }) => {
         </Box>
 
         <Typography
-          variant='caption'
-          color='textSecondary'
-          align='center'
-          sx={{ 
+          variant="caption"
+          color="textSecondary"
+          align="center"
+          sx={{
             display: 'block',
             mt: 3,
             mb: 1,
@@ -501,19 +558,26 @@ const Greeter: React.FC<any> = ({ history }) => {
             opacity: 0.7
           }}
         >
-          By using this software, you acknowledge that you have read, understood and accepted the terms of the{' '}
+          By using this software, you acknowledge that you have read, understood
+          and accepted the terms of the{' '}
           <a
-            href='https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt'
-            target='_blank'
-            rel='noopener noreferrer'
+            href="https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={async e => {
               e.preventDefault()
-              await open('https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt')
+              await open(
+                'https://github.com/bitcoin-sv/metanet-desktop/blob/master/LICENSE.txt'
+              )
             }}
-            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
+            style={{
+              color: theme.palette.primary.main,
+              textDecoration: 'none'
+            }}
           >
             Software License
-          </a>.
+          </a>
+          .
         </Typography>
       </Paper>
     </Container>

@@ -20,7 +20,7 @@ import {
 import { makeStyles } from '@mui/styles'
 import { toast } from 'react-toastify'
 import { WalletContext } from '../../WalletContext'
-import PhoneEntry from '../../components/PhoneEntry.js'
+import PhoneEntry from '../../../shared/components/PhoneEntry.js'
 import style from './style.js'
 import { Utils } from '@bsv/sdk'
 
@@ -40,7 +40,8 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
 
   // Ensure the correct authentication mode
   useEffect(() => {
-    managers.walletManager!.authenticationMode = 'presentation-key-and-recovery-key'
+    managers.walletManager!.authenticationMode =
+      'presentation-key-and-recovery-key'
   }, [])
 
   useEffect(() => {
@@ -94,10 +95,14 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
     e.preventDefault()
     try {
       setLoading(true)
-      await managers.walletManager!.provideRecoveryKey(Utils.toArray(recoveryKey, 'base64'))
+      await managers.walletManager!.provideRecoveryKey(
+        Utils.toArray(recoveryKey, 'base64')
+      )
       if (managers.walletManager!.authenticated) {
         setAccordianView('new-password')
-        localStorage.snap = Utils.toBase64(managers.walletManager!.saveSnapshot())
+        localStorage.snap = Utils.toBase64(
+          managers.walletManager!.saveSnapshot()
+        )
       } else {
         throw new Error('Not authenticated, was it incorrect?')
       }
@@ -128,10 +133,11 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
     return (
       <div>
         <Typography paragraph>
-          You are currently logged in. You must log out in order to reset your password.
+          You are currently logged in. You must log out in order to reset your
+          password.
         </Typography>
         <Button
-          color='secondary'
+          color="secondary"
           onClick={async () => {
             if (!window.confirm('Log out?')) return
             await managers.walletManager!.destroy()
@@ -140,10 +146,7 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
         >
           Log Out
         </Button>
-        <Button
-          onClick={() => history.go(-1)}
-          className={classes.back_button}
-        >
+        <Button onClick={() => history.go(-1)} className={classes.back_button}>
           Go Back
         </Button>
       </div>
@@ -152,19 +155,13 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
 
   return (
     <div className={classes.content_wrap}>
-      <Typography variant='h2' paragraph fontFamily='Helvetica' fontSize='2em'>
+      <Typography variant="h2" paragraph fontFamily="Helvetica" fontSize="2em">
         Reset Password
       </Typography>
-      <Accordion
-        expanded={accordianView === 'phone'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'phone'}>
+        <AccordionSummary className={classes.panel_header}>
           <PhoneIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
+          <Typography className={classes.panel_heading}>
             Phone Number
           </Typography>
           {(accordianView === 'code' || accordianView === 'password') && (
@@ -172,75 +169,52 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
           )}
         </AccordionSummary>
         <form onSubmit={handleSubmitPhone}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
-            <PhoneEntry
-              value={phone}
-              onChange={setPhone}
-            />
+          <AccordionDetails className={classes.expansion_body}>
+            <PhoneEntry value={phone} onChange={setPhone} />
           </AccordionDetails>
           <AccordionActions>
-            {loading
-              ? <CircularProgress />
-              : (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
-                >
-                  Send Code
-                </Button>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Button variant="contained" color="primary" type="submit">
+                Send Code
+              </Button>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
-      <Accordion
-        expanded={accordianView === 'code'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'code'}>
+        <AccordionSummary className={classes.panel_header}>
           <SMSIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
-            Enter code
-          </Typography>
+          <Typography className={classes.panel_heading}>Enter code</Typography>
           {accordianView === 'password' && (
             <CheckCircleIcon className={classes.complete_icon} />
           )}
         </AccordionSummary>
         <form onSubmit={handleSubmitCode}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
+          <AccordionDetails className={classes.expansion_body}>
             <TextField
               onChange={e => setCode(e.target.value)}
-              label='Code'
+              label="Code"
               fullWidth
             />
           </AccordionDetails>
           <AccordionActions>
             <Button
-              color='secondary'
+              color="secondary"
               onClick={handleResendCode}
               disabled={loading}
-            // align='left'
+              // align='left'
             >
               Resend Code
             </Button>
-            {loading
-              ? <CircularProgress />
-              : (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
-                >
-                  Next
-                </Button>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Button variant="contained" color="primary" type="submit">
+                Next
+              </Button>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
@@ -248,96 +222,71 @@ const RecoveryLostPassword: React.FC<any> = ({ history }) => {
         className={classes.accordion}
         expanded={accordianView === 'recovery-key'}
       >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+        <AccordionSummary className={classes.panel_header}>
           <KeyIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
+          <Typography className={classes.panel_heading}>
             Recovery Key
           </Typography>
-          {(accordianView === 'password') && (
+          {accordianView === 'password' && (
             <CheckCircleIcon className={classes.complete_icon} />
           )}
         </AccordionSummary>
         <form onSubmit={handleSubmitRecoveryKey}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
+          <AccordionDetails className={classes.expansion_body}>
             <TextField
               onChange={e => setRecoveryKey(e.target.value)}
-              label='Recovery Key'
+              label="Recovery Key"
               fullWidth
             />
           </AccordionDetails>
           <AccordionActions>
-            {loading
-              ? <CircularProgress />
-              : (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
-                >
-                  Continue
-                </Button>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Button variant="contained" color="primary" type="submit">
+                Continue
+              </Button>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
-      <Accordion
-        expanded={accordianView === 'new-password'}
-      >
-        <AccordionSummary
-          className={classes.panel_header}
-        >
+      <Accordion expanded={accordianView === 'new-password'}>
+        <AccordionSummary className={classes.panel_header}>
           <LockIcon className={classes.expansion_icon} />
-          <Typography
-            className={classes.panel_heading}
-          >
+          <Typography className={classes.panel_heading}>
             New Password
           </Typography>
         </AccordionSummary>
         <form onSubmit={handleSubmitPassword}>
-          <AccordionDetails
-            className={classes.expansion_body}
-          >
+          <AccordionDetails className={classes.expansion_body}>
             <TextField
-              margin='normal'
+              margin="normal"
               onChange={e => setPassword(e.target.value)}
-              label='Password'
+              label="Password"
               fullWidth
-              type='password'
+              type="password"
             />
             <br />
             <TextField
-              margin='normal'
+              margin="normal"
               onChange={e => setConfirmPassword(e.target.value)}
-              label='Confirm Password'
+              label="Confirm Password"
               fullWidth
-              type='password'
+              type="password"
             />
           </AccordionDetails>
           <AccordionActions>
-            {loading
-              ? <CircularProgress />
-              : (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
-                >
-                  Finish
-                </Button>
-              )}
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Button variant="contained" color="primary" type="submit">
+                Finish
+              </Button>
+            )}
           </AccordionActions>
         </form>
       </Accordion>
-      <Button
-        onClick={() => history.go(-1)}
-        className={classes.back_button}
-      >
+      <Button onClick={() => history.go(-1)} className={classes.back_button}>
         Go Back
       </Button>
     </div>
