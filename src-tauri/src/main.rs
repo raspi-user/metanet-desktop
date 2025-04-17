@@ -177,37 +177,49 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
-             // ── Build the tray icon (Tauri v2 API) ────────────────────────────────
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&quit])?;
+             // ── Build the tray icon (Tauri v2 API) ────────────────────────────────
+        let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+        let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+        // Create a separator using an empty string as title
+        let separator = MenuItem::with_id(app, "_separator_", "-", false, None::<&str>)?;
+        let menu = Menu::with_items(app, &[&show, &separator, &quit])?;
 
         TrayIconBuilder::new()
-        .menu(&menu)
-        .icon(app.default_window_icon().unwrap().clone()) 
-        .tooltip("Metanet Desktop")
-        .menu_on_left_click(false) // don’t open menu on left click
-        .on_menu_event(|app, e| {
-            if e.id.as_ref() == "quit" { app.exit(0); }
-        })
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click {
-            button: MouseButton::Left,
-            button_state: MouseButtonState::Up,
-            ..
-            } = event
-            {
-            let app = tray.app_handle();
-            if let Some(win) = app.get_webview_window(MAIN_WINDOW_NAME) {
-                if win.is_visible().unwrap_or(false) {
-                let _ = win.hide();
-                } else {
-                let _ = win.show();
-                let _ = win.set_focus();
+            .menu(&menu)
+            .icon(app.default_window_icon().unwrap().clone()) 
+            .tooltip("Metanet Desktop")
+            .menu_on_left_click(false) // don't open menu on left click
+            .on_menu_event(|app, e| {
+                match e.id.as_ref() {
+                    "quit" => { app.exit(0); }
+                    "show" => {
+                        if let Some(win) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                            let _ = win.show();
+                            let _ = win.set_focus();
+                        }
+                    }
+                    _ => {}
                 }
-            }
-            }
-        })
-        .build(app)?;
+            })
+            .on_tray_icon_event(|tray, event| {
+                if let TrayIconEvent::Click {
+                    button: MouseButton::Left,
+                    button_state: MouseButtonState::Up,
+                    ..
+                } = event
+                {
+                    let app = tray.app_handle();
+                    if let Some(win) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                        if win.is_visible().unwrap_or(false) {
+                            let _ = win.hide();
+                        } else {
+                            let _ = win.show();
+                            let _ = win.set_focus();
+                        }
+                    }
+                }
+            })
+            .build(app)?;
 
         // Keep main window alive but hide on close
         let main_window = app.get_webview_window(MAIN_WINDOW_NAME).expect("main window");
@@ -417,6 +429,9 @@ fn main() {
             });
         });
 
+
+
+        // Platform specific configurations
         #[cfg(target_os = "macos")]
         {
             // Set the app to be a menu bar application (no dock icon)
@@ -426,7 +441,7 @@ fn main() {
             // Since we're in accessory mode, we don't need to handle dock clicks,
             // but we'll keep this code to handle any "reopen" events that might occur
             let app_handle = app.handle().clone();
-            app.listen_any("tauri://reopen", move |_event| {
+            app.listen("tauri://reopen", move |_event| {
                 if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_NAME) {
                     // Show the hidden window again
                     if let Err(e) = window.show() {
@@ -437,16 +452,6 @@ fn main() {
                         eprintln!("(macOS) set_focus error: {}", e);
                     }
                 }
-            });
-            
-            // Handle system tray events
-            // Handle system tray position events to position the window under the tray icon
-            let app_handle = app.handle().clone();
-            app.listen_any("tauri://system-tray-event", move |event| {
-                // Print the event type safely
-                println!("System tray event received");
-                // Use debug formatting for the payload which works with more types
-                println!("Payload: {:#?}", event.payload());
             });
             
             // Position the window beneath the system tray icon when shown
@@ -472,6 +477,70 @@ fn main() {
                 });
             }
         }
+
+        #[cfg(target_os = "windows")]
+        {
+            // Windows specific positioning when window is shown
+            if let Some(window) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(focused) = event {
+                        if *focused {
+                            // Position near the system tray (bottom right)
+                            if let Ok(monitor) = window_clone.current_monitor() {
+                                if let Some(monitor) = monitor {
+                                    if let Ok(size) = monitor.size() {
+                                        let position = tauri::LogicalPosition {
+                                            x: size.width as f64 - 500.0,
+                                            y: size.height as f64 - 500.0,
+                                        };
+                                        let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                        let _ = window_clone.set_always_on_top(true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            // Linux specific positioning when window is shown
+            if let Some(window) = app.get_webview_window(MAIN_WINDOW_NAME) {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(focused) = event {
+                        if *focused {
+                            // Position near top right corner of the screen
+                            if let Ok(monitor) = window_clone.current_monitor() {
+                                if let Some(monitor) = monitor {
+                                    if let Ok(size) = monitor.size() {
+                                        let position = tauri::LogicalPosition {
+                                            x: size.width as f64 - 500.0,
+                                            y: 40.0, // Just below top panel
+                                        };
+                                        let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                        let _ = window_clone.set_always_on_top(true);
+                                    }
+                                }
+                            } else {
+                                // Fallback positioning if monitor info can't be retrieved
+                                let position = tauri::LogicalPosition {
+                                    x: 1440.0 - 500.0, // Estimate screen width
+                                    y: 40.0, // Just below top panel
+                                };
+                                let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                let _ = window_clone.set_always_on_top(true);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+
 
         Ok(())
     })
