@@ -188,7 +188,7 @@ fn main() {
             .menu(&menu)
             .icon(app.default_window_icon().unwrap().clone()) 
             .tooltip("Metanet Desktop")
-            .menu_on_left_click(false) // don't open menu on left click
+            .show_menu_on_left_click(false) // don't open menu on left click
             .on_menu_event(|app, e| {
                 match e.id.as_ref() {
                     "quit" => { app.exit(0); }
@@ -489,14 +489,14 @@ fn main() {
                             // Position near the system tray (bottom right)
                             if let Ok(monitor) = window_clone.current_monitor() {
                                 if let Some(monitor) = monitor {
-                                    if let Ok(size) = monitor.size() {
-                                        let position = tauri::LogicalPosition {
-                                            x: size.width as f64 - 500.0,
-                                            y: size.height as f64 - 500.0,
-                                        };
-                                        let _ = window_clone.set_position(tauri::Position::Logical(position));
-                                        let _ = window_clone.set_always_on_top(true);
-                                    }
+                                    // Get the monitor size directly - it's not a Result
+                                    let size = monitor.size();
+                                    let position = tauri::LogicalPosition {
+                                        x: size.width as f64 - 500.0,
+                                        y: size.height as f64 - 500.0,
+                                    };
+                                    let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                    let _ = window_clone.set_always_on_top(true);
                                 }
                             }
                         }
@@ -516,14 +516,14 @@ fn main() {
                             // Position near top right corner of the screen
                             if let Ok(monitor) = window_clone.current_monitor() {
                                 if let Some(monitor) = monitor {
-                                    if let Ok(size) = monitor.size() {
-                                        let position = tauri::LogicalPosition {
-                                            x: size.width as f64 - 500.0,
-                                            y: 40.0, // Just below top panel
-                                        };
-                                        let _ = window_clone.set_position(tauri::Position::Logical(position));
-                                        let _ = window_clone.set_always_on_top(true);
-                                    }
+                                    // Get the monitor size directly - it's not a Result
+                                    let size = monitor.size();
+                                    let position = tauri::LogicalPosition {
+                                        x: size.width as f64 - 500.0,
+                                        y: 40.0, // Just below top panel
+                                    };
+                                    let _ = window_clone.set_position(tauri::Position::Logical(position));
+                                    let _ = window_clone.set_always_on_top(true);
                                 }
                             } else {
                                 // Fallback positioning if monitor info can't be retrieved
