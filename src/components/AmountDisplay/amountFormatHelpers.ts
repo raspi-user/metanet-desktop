@@ -1,6 +1,7 @@
-const localeDefault = Intl.NumberFormat().resolvedOptions().locale
-const groupDefault = Intl.NumberFormat().formatToParts(10234.56).filter(p => p.type === 'group')[0].value
-const decimalDefault = Intl.NumberFormat().formatToParts(1234.56).filter(p => p.type === 'decimal')[0].value
+const localeDefault = navigator.language || 'en-US'
+const groupDefault = Intl.NumberFormat(localeDefault).formatToParts(10234.56).filter(p => p.type === 'group')[0].value
+const decimalDefault = Intl.NumberFormat(localeDefault).formatToParts(1234.56).filter(p => p.type === 'decimal')[0].value
+console.log(`localeDefault: ${localeDefault} groupDefault: '${groupDefault}' decimalDefault: '${decimalDefault}'`)
 
 export const satoshisOptions = {
   fiatFormats: [
