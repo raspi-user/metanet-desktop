@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useState, memo } from 'react';
 import { Text, View } from 'react-native';
 
-// Adjust the import path to use the alias defined in metro.config.js
 const PhoneEntry = lazy(() => import('shared/components/PhoneEntry'));
 
 const PhonePage = memo(() => {
@@ -17,7 +16,7 @@ const PhonePage = memo(() => {
       <Suspense fallback={<Text>Loading...</Text>}>
         <PhoneEntry value={phoneValue} onChange={handlePhoneChange} required={true} />
       </Suspense>
-      <Text>Phone Page</Text>
+      <Text>Phone Page (Updated)</Text>
     </View>
   );
 });
