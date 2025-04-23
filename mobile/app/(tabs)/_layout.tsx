@@ -1,43 +1,57 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
-import { UserContextProvider } from 'shared/contexts/UserContext';
 import { Platform } from 'react-native';
+import { UserContextProvider } from 'shared/contexts/UserContext';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+import PhonePage from './phone';
+import GreeterPage from './index';
+import Dashboard from './dashboard';
+
+const Drawer = createDrawerNavigator();
 
 export default function Layout() {
   return (
     <UserContextProvider>
-      <Tabs
-        screenOptions={{
-          headerStyle: {
-            // Override default header shadow styles
-            ...(Platform.OS === 'web'
-              ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-              : Platform.OS === 'android'
-              ? { elevation: 4 }
-              : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }),
-          },
-          headerBackgroundContainerStyle: {
-            // Override header background shadow styles
-            ...(Platform.OS === 'web'
-              ? { boxShadow: 'none' }
-              : Platform.OS === 'android'
-              ? { elevation: 0 }
-              : { shadowColor: 'transparent', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0, shadowRadius: 0 }),
-          },
-          tabBarStyle: {
-            // Ensure tab bar is also shadow-free
-            ...(Platform.OS === 'web'
-              ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-              : Platform.OS === 'android'
-              ? { elevation: 4 }
-              : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }),
-          },
-        }}
-      >
-        <Tabs.Screen name="phone" options={{ title: 'Phone Entry' }} />
-        <Tabs.Screen name="index" options={{ title: 'Welcome' }} />
-        <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
-      </Tabs>
+      <NavigationContainer independent={true}>
+        <Drawer.Navigator
+          screenOptions={{
+            headerStyle: {
+              ...(Platform.OS === 'web'
+                ? { boxShadow: 'none' }
+                : Platform.OS === 'android'
+                ? { elevation: 0 }
+                : { shadowColor: 'transparent', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0, shadowRadius: 0 }),
+            },
+            headerBackgroundContainerStyle: {
+              ...(Platform.OS === 'web'
+                ? { boxShadow: 'none' }
+                : Platform.OS === 'android'
+                ? { elevation: 0 }
+                : { shadowColor: 'transparent', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0, shadowRadius: 0 }),
+            },
+            drawerStyle: {
+              backgroundColor: '#fff',
+              width: 250,
+            },
+          }}
+        >
+          <Drawer.Screen
+            name="phone"
+            component={PhonePage}
+            options={{ title: 'Phone Entry' }}
+          />
+          <Drawer.Screen
+            name="index"
+            component={GreeterPage}
+            options={{ title: 'Welcome' }}
+          />
+          <Drawer.Screen
+            name="dashboard"
+            component={Dashboard}
+            options={{ title: 'Dashboard' }}
+          />
+        </Drawer.Navigator>
+      </NavigationContainer>
     </UserContextProvider>
   );
 }

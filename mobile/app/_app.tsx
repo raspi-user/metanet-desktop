@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import 'react-native-gesture-handler';
 import { Slot } from 'expo-router'
 import { LogBox, YellowBox } from 'react-native'
 import { UserContextProvider } from 'shared/contexts/UserContext'
@@ -15,8 +16,10 @@ const warningsToIgnore = [
   'Route "./_app.tsx"',
   'Route "./(tabs)/_layout copy.tsx"',
   '[children]: Too many screens have been defined',
-  '"shadow" style props are deprecated'
-]
+  'shadow', // Broader pattern for shadow-related warnings
+  'findDOMNode', // Broader pattern for findDOMNode warnings
+  'resizeMode', // Broader pattern for resizeMode warnings
+];
 
 if (typeof window !== 'undefined') {
   const originalWarn = console.warn
