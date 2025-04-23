@@ -1,4 +1,4 @@
-package com.deggen.wallet
+package com.wallet
 
 import android.os.Build
 import android.os.Bundle
