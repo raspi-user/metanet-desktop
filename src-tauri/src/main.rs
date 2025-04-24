@@ -424,6 +424,7 @@ fn main() {
         .expect("Error while building Tauri application")
         .run(|app_handle, event| {
             match event {
+                #[cfg(target_os = "macos")]
                 tauri::RunEvent::Reopen { .. } => {
                     println!("macOS: Detected dock click via RunEvent::Reopen");
                     // This is the modern way to handle dock clicks in Tauri v2
