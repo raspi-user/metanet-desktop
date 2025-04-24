@@ -1,27 +1,39 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-native",
+    "jsx": "preserve",
     "baseUrl": ".",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "paths": {
       "@/constants/*": ["src/constants/*"],
       "@/hooks/*": ["src/hooks/*"],
+      "shared/components/Button": ["../shared/components/Button.tsx"],
+      "shared/components/CodeForm": ["../shared/components/CodeForm.tsx"],
+      "shared/components/AppLogo": ["../shared/components/AppLogo.tsx"],
+      "shared/components/PageLoading": ["../shared/components/PageLoading.tsx"],
+      "shared/components/WalletConfig": ["../shared/components/WalletConfig.tsx"],
       "shared/*": ["../shared/components/*"],
       "shared/contexts/*": ["../shared/contexts/*"],
       "shared/components/*": ["../shared/components/*"],
       "shared/pages/*": ["../shared/pages/*"]
     },
-    "types": ["react-native", "jest", "expo", "@expo/vector-icons"],
-    "lib": ["es6", "dom"],
+    "lib": ["es6", "dom", "esnext"],
     "target": "esnext",
     "module": "esnext",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "../node_modules/@types"
+    ],
+    "noImplicitAny": false,
+    "strict": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false
   },
   "exclude": ["node_modules"],
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "types/**/*"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "types/**/*", "../shared/**/*"]
 }
