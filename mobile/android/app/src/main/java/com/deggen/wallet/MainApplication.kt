@@ -1,4 +1,4 @@
-package com.wallet
+package com.deggen.wallet
 
 import android.app.Application
 import android.content.res.Configuration
