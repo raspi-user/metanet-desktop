@@ -148,17 +148,17 @@ fn relinquish_focus(window: Window) {
 
     #[cfg(target_os = "windows")]
     {
-        // Hide the window
-        if let Err(e) = window.hide() {
-            eprintln!("(Windows) hide error: {}", e);
+        // Minimize the window instead of hiding
+        if let Err(e) = window.minimize() {
+            eprintln!("(Windows) minimize error: {}", e);
         }
     }
 
     #[cfg(target_os = "linux")]
     {
-        // Hide the window
-        if let Err(e) = window.hide() {
-            eprintln!("(Linux) hide error: {}", e);
+        // Minimize the window
+        if let Err(e) = window.minimize() {
+            eprintln!("(Linux) minimize error: {}", e);
         }
     }
 }
