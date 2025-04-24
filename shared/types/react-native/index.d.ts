@@ -19,6 +19,10 @@ declare module 'react-native' {
   export interface TextInputProps {
     value?: string;
     onChangeText?: (text: string) => void;
+    style?: any;
+    placeholder?: string;
+    keyboardType?: string;
+    editable?: boolean;
     [key: string]: any;
   }
 
@@ -55,8 +59,23 @@ declare module 'react-native' {
 
   export const View: React.ComponentType<ViewProps>;
   export const Text: React.ComponentType<TextProps>;
-  export type TextInput = React.ComponentType<TextInputProps>; // Define as type alias
-  export const TextInput: TextInput;
+
+  // Define the instance type for TextInput
+  export interface TextInputInstance {
+    focus(): void;
+    blur(): void;
+    clear(): void;
+    isFocused(): boolean;
+  }
+
+  // Define TextInput as a type alias for the instance type
+  export type TextInput = TextInputInstance;
+
+  // Define TextInput as a React component
+  export const TextInput: React.ForwardRefExoticComponent<
+    TextInputProps & React.RefAttributes<TextInputInstance>
+  >;
+
   export const Modal: React.ComponentType<ModalProps>;
   export const ScrollView: React.ComponentType<ScrollViewProps>;
   export const StyleSheet: {
