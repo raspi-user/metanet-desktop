@@ -1,7 +1,6 @@
-import React, { Suspense, lazy, useState, memo } from 'react';
+import React, { useState, memo } from 'react';
 import { Text, View } from 'react-native';
-
-const PhoneEntry = lazy(() => import('shared/components/PhoneEntry'));
+import PhoneEntryWrapper from 'src/PhoneEntryWrapper';
 
 const PhonePage = memo(() => {
   const [phoneValue, setPhoneValue] = useState('');
@@ -13,9 +12,7 @@ const PhonePage = memo(() => {
 
   return (
     <View>
-      <Suspense fallback={<Text>Loading...</Text>}>
-        <PhoneEntry value={phoneValue} onChange={handlePhoneChange} required={true} />
-      </Suspense>
+      <PhoneEntryWrapper value={phoneValue} onChange={handlePhoneChange} required={true} />
       <Text>Phone Page (Updated)</Text>
     </View>
   );
