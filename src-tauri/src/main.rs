@@ -82,7 +82,7 @@ fn request_focus(window: Window) {
         }
         
         // Request user attention (bounces Dock icon)
-        if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Critical)) {
+        if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Informational)) {
             eprintln!("(macOS) request_user_attention error: {}", e);
         }
         
