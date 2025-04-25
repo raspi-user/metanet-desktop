@@ -1,32 +1,45 @@
 import React from 'react';
-import { WebView } from 'react-native-webview';
-import { Platform } from 'react-native';
+import { WebView } from 'react-native-webview'; // Add this import
 
-interface PhoneEntryProps {
-  value: string;
-  onChange: (value: string) => void;
-  error?: string;
-  required?: boolean;
-  disabled?: boolean;
-  sx?: any;
-}
+const injectedJavaScript = `
+    window.addEventListener('load', () => {
+        console.log('WebView: Page loaded');
+        window.ReactNativeWebView.postMessage('WebView: Page loaded');
+        setTimeout(() => {
+            document.body.style.display = 'none';
+            setTimeout(() => {
+                document.body.style.display = 'block';
+            }, 0);
+        }, 1000);
+    });
+    setTimeout(() => {
+        console.log('WebView: DOM after 2s: Elements present');
+        window.ReactNativeWebView.postMessage('WebView: DOM after 2s: Elements present');
+    }, 2000);
+`;
 
-const PhoneEntryWebView: React.FC<PhoneEntryProps> = (props) => {
-  if (Platform.OS === 'web') {
-    // Fallback for web (unlikely to be used due to PhoneEntryWrapper)
-    const PhoneEntry = require('shared/components/PhoneEntry').default;
-    return <PhoneEntry {...props} />;
-  }
-  return (
-    <WebView
-      source={{ uri: 'http://10.0.2.2:3000/phone-entry' }} // Adjust port if needed
-      style={{ flex: 1 }}
-      onMessage={(event) => {
-        const { data } = event.nativeEvent;
-        if (data) props.onChange(data);
-      }}
-    />
-  );
+const PhoneEntryWebView = () => {
+    return (
+        <WebView
+            source={{ uri: 'file:///android_asset/index.html' }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            allowUniversalAccessFromFileURLs={true}
+            allowFileAccess={true}
+            mixedContentMode="always"
+            injectedJavaScript={injectedJavaScript}
+            onMessage={(event) => {
+                console.log('WebView received message:', event.nativeEvent.data);
+                if (event.nativeEvent.data === 'WebView: Page loaded') {
+                    console.log('WebView: Confirmed page loaded');
+                }
+                if (event.nativeEvent.data === 'WebView: React is NOT loaded') {
+                    console.log('WebView: React is NOT loaded');
+                }
+            }}
+        />
+    );
 };
 
 export default PhoneEntryWebView;
