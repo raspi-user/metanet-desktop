@@ -130,11 +130,24 @@ fn request_focus(window: Window) {
         if let Err(e) = window.show() {
             eprintln!("(Windows) show error: {}", e);
         }
+        // Unminimize the window (important!)
+        if let Err(e) = window.unminimize() {
+            eprintln!("(Windows) unminimize error: {}", e);
+        }
         // Attempt to focus the window directly
         if let Err(e) = window.set_focus() {
             eprintln!("(Windows) set_focus error: {}", e);
         }
+        // Temporarily set always-on-top to force focus
+        if let Err(e) = window.set_always_on_top(true) {
+            eprintln!("(Windows) set_always_on_top(true) error: {}", e);
+        }
+        // Remove always-on-top after focusing
+        if let Err(e) = window.set_always_on_top(false) {
+            eprintln!("(Windows) set_always_on_top(false) error: {}", e);
+        }
     }
+
 
     #[cfg(target_os = "linux")]
     {
