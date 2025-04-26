@@ -30,6 +30,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.deggen.wallet"/>
         <data android:scheme="com.deggen.wallet"/>
+        <data android:scheme="exp+wallet"/>
       </intent-filter>
     </activity>
   </application>

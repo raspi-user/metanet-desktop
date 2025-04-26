@@ -10,5 +10,8 @@
 # react-native-reanimated
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
-
+-keep class @mui/** { *; }
+-keep class com.google.android.material.** { *; }
+-dontwarn com.google.android.material.**
+-keep class @emotion/** { *; }
 # Add any project specific keep options here:

@@ -1,7 +1,10 @@
 import React, { Suspense, lazy } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
 
-// Define props for PhoneEntry
+const cache = createCache({ key: 'mui' });
+
 interface PhoneEntryProps {
   value: string;
   onChange: (value: string) => void;
@@ -11,21 +14,21 @@ interface PhoneEntryProps {
   sx?: any;
 }
 
-// Web: Lazy load PhoneEntry
 const LazyPhoneEntry = lazy(() => import('shared/components/PhoneEntry'));
-
-// Android: Use WebView (non-lazy)
 import PhoneEntryWebView from './PhoneEntryWebView';
 
 const PhoneEntryWrapper: React.FC<PhoneEntryProps> = (props) => {
-  if (Platform.OS === 'web') {
-    return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <LazyPhoneEntry {...props} />
-      </Suspense>
-    );
-  }
-  return <PhoneEntryWebView {...props} />;
+  return (
+    <CacheProvider value={cache}>
+      {Platform.OS === 'web' ? (
+        <Suspense fallback={<View style={{ padding: 16 }}><div>Loading...</div></View>}>
+          <LazyPhoneEntry {...props} />
+        </Suspense>
+      ) : (
+        <PhoneEntryWebView {...props} />
+      )}
+    </CacheProvider>
+  );
 };
 
 export default PhoneEntryWrapper;

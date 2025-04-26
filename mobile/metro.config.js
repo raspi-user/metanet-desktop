@@ -39,8 +39,9 @@ module.exports = {
       'cjs',
       'mjs',
     ],
-    assetExts: ['png', 'jpg', 'jpeg', 'gif', 'svg'],
+    assetExts: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'woff', 'woff2', 'ttf', 'eot'],
     extraNodeModules: {
+      'react-native-reanimated': require.resolve('./src/shims/reanimated.js'),
       '@babel/runtime': path.resolve(__dirname, 'node_modules/@babel/runtime'),
       '@mui/material': path.resolve(__dirname, 'node_modules/@mui/material'),
       'libphonenumber-js': path.resolve(__dirname, 'node_modules/libphonenumber-js'),
@@ -70,7 +71,8 @@ module.exports = {
       }
       return context.resolveRequest(context, moduleName, platform);
     },
-    // Add support for Expo Router
+    platforms: ['ios', 'android', 'web'],
+    resolverMainFields: ['browser', 'module', 'main'],
     unstable_enableSymlinks: true,
     unstable_enablePackageExports: true,
   },
