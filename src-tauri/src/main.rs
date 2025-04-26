@@ -138,13 +138,29 @@ fn request_focus(window: Window) {
 
     #[cfg(target_os = "linux")]
     {
+        // First, unminimize the window if it's minimized
+        if let Err(e) = window.unminimize() {
+            eprintln!("(Linux) unminimize error: {}", e);
+        }
+        
         // Show the window if it's hidden
         if let Err(e) = window.show() {
             eprintln!("(Linux) show error: {}", e);
         }
-        // Attempt to focus
+        
+        // Attempt to focus the window
         if let Err(e) = window.set_focus() {
             eprintln!("(Linux) set_focus error: {}", e);
+        }
+        
+        // On Linux, sometimes we need multiple focus attempts
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        if let Ok(focused) = window.is_focused() {
+            if !focused {
+                if let Err(e) = window.set_focus() {
+                    eprintln!("(Linux) set_focus retry error: {}", e);
+                }
+            }
         }
     }
 }
