@@ -17,7 +17,7 @@ if (rootElement) {
       <ErrorBoundary>
         <UserInterface
           onWalletReady={onWalletReady}
-          tauriFunctions={tauriFunctions}
+          nativeHandlers={tauriFunctions}
         />
       </ErrorBoundary>
       <ToastContainer

@@ -28,6 +28,27 @@ use tauri::{command, AppHandle, Manager};
 
 use std::fs;
 
+// Import the Tauri plugins
+use tauri_plugin_dialog;
+
+// Add a command to save files using the standard Rust fs module
+#[tauri::command]
+async fn save_file(path: String, contents: Vec<u8>) -> Result<(), String> {
+    use std::fs::File;
+    use std::io::Write;
+    
+    println!("Saving file to: {}", path);
+    
+    // Create the file
+    let mut file = File::create(&path).map_err(|e| e.to_string())?;
+    
+    // Write the contents
+    file.write_all(&contents).map_err(|e| e.to_string())?;
+    
+    println!("File saved successfully");
+    Ok(())
+}
+
 static MAIN_WINDOW_NAME: &str = "main";
 
 /// Payload sent from Rust to the frontend for each HTTP request.
@@ -416,10 +437,12 @@ fn main() {
             is_focused,
             request_focus,
             relinquish_focus,
-            download
+            download,
+            save_file
         ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .build(tauri::generate_context!())
         .expect("Error while building Tauri application")
         .run(|app_handle, event| {
