@@ -6,6 +6,7 @@ import { UserInterface } from '@bsv/brc100-ui-react-components'
 import { onWalletReady } from './onWalletReady'
 import ErrorBoundary from './ErrorBoundary'
 import { tauriFunctions } from './tauriFunctions'
+import packageJson from '../package.json'
 
 // Create the root and render:
 const rootElement = document.getElementById('root')
@@ -18,6 +19,8 @@ if (rootElement) {
         <UserInterface
           onWalletReady={onWalletReady}
           nativeHandlers={tauriFunctions}
+          appVersion={packageJson.version}
+          appName="Metanet Desktop"
         />
       </ErrorBoundary>
       <ToastContainer
