@@ -82,7 +82,7 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 #[cfg(target_os = "macos")]
-static PREV_BUNDLE_ID: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(Some("".to_string())));
+static PREV_BUNDLE_ID: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
 
 #[tauri::command]
 fn is_focused(window: Window) -> bool {
