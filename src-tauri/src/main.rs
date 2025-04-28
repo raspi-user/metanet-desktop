@@ -201,11 +201,11 @@ fn request_focus(window: Window) {
 /// Attempt to move the window out of the user's way so they can resume
 /// other tasks. The exact behavior (switch/minimize) differs per platform.
 #[tauri::command]
-fn relinquish_focus(window: Window) {
+fn relinquish_focus(_window: Window) {
     #[cfg(any(target_os = "windows", target_os = "linux"))]
     {
         // Minimize the window instead of hiding
-        if let Err(e) = window.minimize() {
+        if let Err(e) = _window.minimize() {
             eprintln!("(Windows/Linux) minimize error: {}", e);
         }
     }
