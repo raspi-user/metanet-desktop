@@ -210,9 +210,10 @@ static mut WINDOW_HIDDEN_BY_APP: bool = false;
 fn relinquish_focus(window: Window) {
     #[cfg(target_os = "macos")]
     {
+        unsafe { WINDOW_HIDDEN_BY_APP = true; }
         use std::process::Command;
         // Hide (removes from screen, user’s focus returns to previous app).
-        if let Err(e) = window.minimize() {
+        if let Err(e) = window.hide() {
             eprintln!("(macOS) hide error: {}", e);
         }
         // Try to restore focus to previous app
@@ -473,7 +474,6 @@ fn main() {
                         }
                         Err(e) => {
                             eprintln!("Failed to bind server: {}", e);
-                            // TODO: Show error dialog to the user before exit
                             std::process::exit(1);
                         }
                     }
