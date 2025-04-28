@@ -222,7 +222,7 @@ fn relinquish_focus(window: Window) {
             prev.clone()
         };
         if let Some(bundle_id) = prev_bundle_id {
-            if !bundle_id.is_empty() && bundle_id != "com.apple.finder" && bundle_id != "" {
+            if !bundle_id.is_empty() && bundle_id != "com.apple.finder" {
                 let script = format!("tell application id \"{}\" to activate", bundle_id);
                 if let Err(e) = Command::new("osascript").arg("-e").arg(&script).output() {
                     eprintln!("(macOS) failed to re-activate previous app: {}", e);
