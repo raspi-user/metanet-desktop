@@ -20,7 +20,7 @@ use hyper::{
     Body, Request, Response, Server, StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{Emitter, Listener, UserAttentionType, Window};
+use tauri::{Emitter, Listener, Window};
 use tokio::sync::oneshot;
 
 use std::path::{Path, PathBuf};
