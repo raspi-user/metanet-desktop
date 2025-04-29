@@ -201,12 +201,20 @@ fn request_focus(window: Window) {
 /// Attempt to move the window out of the user's way so they can resume
 /// other tasks. The exact behavior (switch/minimize) differs per platform.
 #[tauri::command]
-fn relinquish_focus(_window: Window) {
-    #[cfg(any(target_os = "windows", target_os = "linux"))]
+fn relinquish_focus(window: Window) {
+    #[cfg(target_os = "linux")]
     {
         // Minimize the window instead of hiding
-        if let Err(e) = _window.minimize() {
-            eprintln!("(Windows/Linux) minimize error: {}", e);
+        if let Err(e) = window.minimize() {
+            eprintln!("Linux minimize error: {}", e);
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // Minimize the window instead of hiding
+        if let Err(e) = window.minimize() {
+            eprintln!("Windows minimize error: {}", e);
         }
     }
 
@@ -222,10 +230,11 @@ fn relinquish_focus(_window: Window) {
             if !bundle_id.is_empty() && bundle_id != "com.apple.finder" {
                 let script = format!("tell application id \"{}\" to activate", bundle_id);
                 if let Err(e) = Command::new("osascript").arg("-e").arg(&script).output() {
-                    eprintln!("(macOS) failed to re-activate previous app: {}", e);
+                    eprintln!("MacOS failed to re-activate previous app: {}", e);
                 }
             }
         }
+        _ = window.is_focused();
     }
 }
 
@@ -477,6 +486,6 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .build(tauri::generate_context!())
-        .expect("Error while building Tauri application");
+        .run(tauri::generate_context!())
+        .expect("Error while running Tauri application");
 }
