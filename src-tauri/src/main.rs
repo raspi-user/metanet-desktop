@@ -36,15 +36,15 @@ use tauri_plugin_dialog;
 async fn save_file(path: String, contents: Vec<u8>) -> Result<(), String> {
     use std::fs::File;
     use std::io::Write;
-    
+
     println!("Saving file to: {}", path);
-    
+
     // Create the file
     let mut file = File::create(&path).map_err(|e| e.to_string())?;
-    
+
     // Write the contents
     file.write_all(&contents).map_err(|e| e.to_string())?;
-    
+
     println!("File saved successfully");
     Ok(())
 }
@@ -72,10 +72,17 @@ struct TsResponse {
 /// A type alias for our concurrent map of pending responses.
 type PendingMap = DashMap<u64, oneshot::Sender<TsResponse>>;
 
-
+#[cfg(target_os = "macos")]
+use once_cell::sync::Lazy;
 /// -----
 /// Tauri COMMANDS for focus management
 /// -----
+
+#[cfg(target_os = "macos")]
+use std::sync::Mutex;
+
+#[cfg(target_os = "macos")]
+static PREV_BUNDLE_ID: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
 
 #[tauri::command]
 fn is_focused(window: Window) -> bool {
@@ -87,26 +94,40 @@ fn is_focused(window: Window) -> bool {
 
 #[tauri::command]
 fn request_focus(window: Window) {
-    // Reset our hidden flag whenever focus is explicitly requested
-    unsafe { WINDOW_HIDDEN_BY_APP = false; }
-    
     #[cfg(target_os = "macos")]
     {
         // Make window visible first - critical for macOS
+        use std::process::Command;
+        // 0. Capture the bundle id of the currently focused app
+        if let Ok(output) = Command::new("osascript")
+            .arg("-e")
+            .arg("tell application \"System Events\" to get the bundle identifier of the first process whose frontmost is true")
+            .output()
+        {
+            if output.status.success() {
+                if let Ok(bundle_id) = String::from_utf8(output.stdout) {
+                    let bundle_id = bundle_id.trim().to_string();
+                    let mut prev = PREV_BUNDLE_ID.lock().unwrap();
+                    *prev = Some(bundle_id);
+                }
+            }
+        }
+        // 1. "Unminimize" if necessary.
         if let Err(e) = window.unminimize() {
             eprintln!("(macOS) unminimize error: {}", e);
         }
-        
-        // Ensure the window is shown 
+
+        // Ensure the window is shown
         if let Err(e) = window.show() {
             eprintln!("(macOS) show error: {}", e);
         }
-        
+
         // Request user attention (bounces Dock icon)
-        if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Informational)) {
+        if let Err(e) = window.request_user_attention(Some(tauri::UserAttentionType::Informational))
+        {
             eprintln!("(macOS) request_user_attention error: {}", e);
         }
-        
+
         // Focus the window - try multiple times with delays if needed
         for i in 0..3 {
             if let Ok(focused) = window.is_focused() {
@@ -114,11 +135,11 @@ fn request_focus(window: Window) {
                     break;
                 }
             }
-            
+
             if let Err(e) = window.set_focus() {
                 eprintln!("(macOS) set_focus attempt {} error: {}", i, e);
             }
-            
+
             // Small delay to allow macOS to process the focus request
             std::thread::sleep(std::time::Duration::from_millis(50));
         }
@@ -148,24 +169,23 @@ fn request_focus(window: Window) {
         }
     }
 
-
     #[cfg(target_os = "linux")]
     {
         // First, unminimize the window if it's minimized
         if let Err(e) = window.unminimize() {
             eprintln!("(Linux) unminimize error: {}", e);
         }
-        
+
         // Show the window if it's hidden
         if let Err(e) = window.show() {
             eprintln!("(Linux) show error: {}", e);
         }
-        
+
         // Attempt to focus the window
         if let Err(e) = window.set_focus() {
             eprintln!("(Linux) set_focus error: {}", e);
         }
-        
+
         // On Linux, sometimes we need multiple focus attempts
         std::thread::sleep(std::time::Duration::from_millis(30));
         if let Ok(focused) = window.is_focused() {
@@ -178,21 +198,15 @@ fn request_focus(window: Window) {
     }
 }
 
-/// Store the window state data to track which windows have been hidden
-static mut WINDOW_HIDDEN_BY_APP: bool = false;
-
 /// Attempt to move the window out of the user's way so they can resume
-/// other tasks. The exact behavior (hide/minimize) differs per platform.
+/// other tasks. The exact behavior (switch/minimize) differs per platform.
 #[tauri::command]
 fn relinquish_focus(window: Window) {
-    #[cfg(target_os = "macos")]
+    #[cfg(target_os = "linux")]
     {
-        // Mark that we're hiding the window intentionally
-        unsafe { WINDOW_HIDDEN_BY_APP = true; }
-        
-        // Use hide for better UX on macOS
-        if let Err(e) = window.hide() {
-            eprintln!("(macOS) hide error: {}", e);
+        // Minimize the window instead of hiding
+        if let Err(e) = window.minimize() {
+            eprintln!("Linux minimize error: {}", e);
         }
     }
 
@@ -200,16 +214,27 @@ fn relinquish_focus(window: Window) {
     {
         // Minimize the window instead of hiding
         if let Err(e) = window.minimize() {
-            eprintln!("(Windows) minimize error: {}", e);
+            eprintln!("Windows minimize error: {}", e);
         }
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(target_os = "macos")]
     {
-        // Minimize the window
-        if let Err(e) = window.minimize() {
-            eprintln!("(Linux) minimize error: {}", e);
+        use std::process::Command;
+        // Try to restore focus to previous app
+        let prev_bundle_id = {
+            let prev = PREV_BUNDLE_ID.lock().unwrap();
+            prev.clone()
+        };
+        if let Some(bundle_id) = prev_bundle_id {
+            if !bundle_id.is_empty() && bundle_id != "com.apple.finder" {
+                let script = format!("tell application id \"{}\" to activate", bundle_id);
+                if let Err(e) = Command::new("osascript").arg("-e").arg(&script).output() {
+                    eprintln!("MacOS failed to re-activate previous app: {}", e);
+                }
+            }
         }
+        _ = window.is_focused();
     }
 }
 
@@ -438,17 +463,6 @@ fn main() {
                             }
                         }
                         Err(e) => {
-                            // TODO: Someone who knows Rust, please show an error dialogue to the user befor exit!
-                            // Show error dialog and exit
-                            // let builder = tauri_plugin_dialog::MessageDialogBuilder(
-                            //     Some(&main_window_clone),
-                            //     "Error",
-                            //     e.to_string(),
-                            // );
-                            // std::println!(e.to_string());
-                            std::process::exit(1);
-                        }
-                        Err(e) => {
                             eprintln!("Failed to bind server: {}", e);
                             std::process::exit(1);
                         }
@@ -472,35 +486,6 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .build(tauri::generate_context!())
-        .expect("Error while building Tauri application")
-        .run(|app_handle, event| {
-            match event {
-                #[cfg(target_os = "macos")]
-                tauri::RunEvent::Reopen { .. } => {
-                    println!("macOS: Detected dock click via RunEvent::Reopen");
-                    // This is the modern way to handle dock clicks in Tauri v2
-                    unsafe {
-                        if WINDOW_HIDDEN_BY_APP {
-                            if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_NAME) {
-                                let is_visible = window.is_visible().unwrap_or(false);
-                                if !is_visible {
-                                    // Reset the flag
-                                    WINDOW_HIDDEN_BY_APP = false;
-                                    
-                                    println!("macOS: Showing window after dock click");
-                                    if let Err(e) = window.show() {
-                                        eprintln!("(macOS) show error after dock click: {}", e);
-                                    }
-                                    if let Err(e) = window.set_focus() {
-                                        eprintln!("(macOS) set_focus error after dock click: {}", e);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                _ => {}
-            }
-        });
+        .run(tauri::generate_context!())
+        .expect("Error while running Tauri application");
 }
