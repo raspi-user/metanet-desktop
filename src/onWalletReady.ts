@@ -194,13 +194,28 @@ export const onWalletReady = async (wallet: WalletInterface): Promise<(() => voi
               body: JSON.stringify(result),
             }
           } catch (error) {
-            console.error('internalizeAction error:', error)
-            response = {
-              request_id: req.request_id,
-              status: 400,
-              body: JSON.stringify({
-                message: error instanceof Error ? error.message : String(error)
-              }),
+            if (typeof error === 'object' && error.constructor.name === 'WERR_REVIEW_ACTIONS') {
+              const e = new WERR_REVIEW_ACTIONS(
+                error['reviewActionResults'],
+                error['sendWithResults'],
+                error['txid'],
+                error['tx'],
+              )
+              console.error('internalizeAction WERR_REVIEW_ACTIONS:', e)
+              response = {
+                request_id: req.request_id,
+                status: 400,
+                body: JSON.stringify(e)
+              }
+            } else {
+              console.error('internalizeAction error:', error)
+              response = {
+                request_id: req.request_id,
+                status: 400,
+                body: JSON.stringify({
+                  message: error instanceof Error ? error.message : String(error)
+                }),
+              }
             }
           }
           break
