@@ -34,7 +34,7 @@
     "react-toastify": "^11.0.3"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.4.0",
+    "@tauri-apps/cli": "^2.5.0",
     "@tauri-apps/plugin-opener": "^2.2.6",
     "@types/node": "^22.13.1",
     "@types/react": "^18.3.1",
