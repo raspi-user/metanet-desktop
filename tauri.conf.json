@@ -1,0 +1,7 @@
+{
+  "$schema": "https://tauri.app/schema.json",
+  "identifier": "com.metanet.client",
+  "build": {
+    "beforeBuildCommand": "npm run build"
+  }
+}
